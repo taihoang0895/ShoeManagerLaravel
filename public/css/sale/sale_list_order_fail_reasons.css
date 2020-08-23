@@ -1,0 +1,43 @@
+.tbl_item .fail_reason_note{
+    width : 20%;
+}
+.tbl_item .fail_reason_code{
+    width : 20%;
+}
+
+.tbl .order_fail_reason_row_selected{
+    background-color : #DDF4FF;
+}
+.tbl_item .fail_reason_cause{
+     width : 60%;
+}
+.tbl{
+    margin-top : 15px;
+}
+#confirm_dialog_delete_fail_reason{
+    display : none;
+}
+.tbl .fail_reason_row_selected{
+    background-color : #DDF4FF;
+}
+
+#list_fail_reason_filter{
+    width : 60%;
+    margin : 0 auto;
+}
+#list_fail_reason_filter .label{
+    width : 10%;
+    text-align:center;
+}
+
+#list_fail_reason_filter .value{
+    width : 26%;
+    text-align:center;
+}
+
+#list_fail_reason_filter .btn_filter{
+    width : 70%;
+     font-family : 'roboto_bold';
+    font-size : 16px;
+    color : white;
+}

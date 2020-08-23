@@ -1,0 +1,225 @@
+@font-face {
+    font-family : 'roboto_bold';
+    src : url('../fonts/roboto_bold.ttf');
+}
+@font-face {
+    font-family : 'roboto_regular';
+    src : url('../fonts/roboto_regular.ttf');
+}
+@font-face {
+    font-family : 'roboto_medium';
+    src : url('../fonts/roboto_medium.ttf');
+}
+body {
+
+      margin: 0;
+      padding: 0;
+}
+#menu {
+     position : absolute;
+     width : 200px;
+     height : calc(100vh - 70px);
+     overflow: auto;
+     background-color : #ffffff;
+}
+
+
+#header {
+    background-color: #383838;
+    width: (100vw-200px);
+    height : 70px;
+}
+#content {
+    position : absolute;
+    width : calc(100vw - 200px);
+    margin-left : 200px;
+    height : calc(100vh - 70px);
+    background-color: #E5E5E5;
+    overflow: auto;
+}
+
+.toast_message_dialog{
+      display:none;
+}
+.toast_message{
+    padding : 10px;
+    background-color : #0CBDE4;
+    border-radius : 8px;
+    font-family : 'roboto_regular';
+    font-size : 16px;
+    margin-top : 10px;
+    display: inline-block;
+    color : #ffffff;
+}
+.tbl td {
+     word-break: break-all;
+}
+label{
+     word-break: break-all;
+}
+#content .title {
+     width : 100%;
+     text-align : center;
+     font-family : 'roboto_bold';
+     font-size : 2.5em;
+     color : #575F64;
+     margin-top : 15px;
+     margin-bottom : 15px;
+}
+
+
+#menu .menu_item{
+  margin: auto;
+  width: 200px;
+  text-align : center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  padding-top: 15px;
+  padding-bottom: 15px;
+  font-family : "roboto_regular";
+  font-size : 20px;
+}
+
+#menu .selected{
+  color: #FE8419;
+}
+
+.tbl {
+    background-color: #ffffff;
+    width : 95%;
+    margin-left :2.5%;
+    border-collapse: collapse;
+}
+.tbl .tbl_header_item {
+    background-color : #778F9B;
+    text-align : center;
+    font-family : 'roboto_bold';
+    min-height : 50px;
+    height : 5vh;
+
+    font-size : 18px;
+    color: white;
+    padding: 0;
+    margin: 0;
+}
+
+.tbl .tbl_item {
+    background-color : #ffffff;
+    text-align : center;
+    font-family : 'roboto_regular';
+    min-height : 50px;
+    height : 5vh;
+    font-size : 16px;
+    color: #000000;
+    border-bottom: 1px solid #E5E5E5;
+}
+
+.btn_add{
+    background-image :  linear-gradient(to right, rgba(6,185,224,1), rgba(13,211,255,0.8));
+    width:100px;
+     height : 40px;
+     line-height: 40px;
+     align : center;
+     text-align : center;
+     border-radius : 5px;
+      color: white;
+      font-family : 'roboto_bold';
+
+
+}
+.btn_add:hover{
+     cursor: pointer;
+}
+.btn_update{
+     background-image :  linear-gradient(to right, rgba(28,196,136,1), rgba(28,196,135,0.7));
+    width:100px;
+    height : 40px;
+     line-height: 40px;
+     align : center;
+     text-align : center;
+     border-radius : 5px;
+      color: white;
+      font-family : 'roboto_bold';
+}
+.btn_update:hover{
+     cursor: pointer;
+}
+
+.btn_delete{
+     background-image :  linear-gradient(to right, rgba(255,0,0,1), rgba(237,35,35,1));
+     width:100px;
+    height : 40px;
+     line-height: 40px;
+
+     align : center;
+     text-align : center;
+     border-radius : 5px;
+      color: white;
+      font-family : 'roboto_bold';
+}
+
+.btn_delete:hover{
+     cursor: pointer;
+}
+
+.btn_search{
+     background-color : #F99033;
+     width:110px;
+     height : 35px;
+     display : table;
+     border-radius : 5px;
+}
+.btn_search .search_icon{
+    height : 15px;
+    margin-left : 10px;
+    margin-top : 7px;
+    width : auto;
+}
+
+.btn_search:hover{
+     cursor: pointer;
+}
+
+.btn_search .btn_search_text{
+    color: white;
+    font-family : 'roboto_regular';
+    vertical-align:middle;
+     font-size : 0.9em;
+    display: table-cell;
+
+}
+
+.btn_pagination.enable{
+    font-family : 'roboto_regular';
+   font-size : 18px;
+    width:70px;
+    padding-top : 8px;
+    padding-bottom : 8px;
+    border-radius : 6px;
+    text-align : center;
+    background-color : #ffffff;
+    color : #0185f9;
+     border: 1px solid rgba(0, 0, 0, 0.2);
+     margin-left : 10px;
+}
+
+.btn_pagination.disable{
+    font-family : 'roboto_regular';
+    font-size : 18px;
+    width:70px;
+    padding-top : 8px;
+    padding-bottom : 8px;
+    border-radius : 6px;
+    text-align : center;
+    background-color : #ffffff;
+    color : rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    margin-left : 10px;
+}
+
+.btn_pagination:hover{
+     cursor: pointer;
+}
+
+.row_selected{
+    background-color : #DDF4FF;
+}

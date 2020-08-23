@@ -1,0 +1,49 @@
+.tbl{
+    margin-top : 15px;
+}
+.tbl .product_code {
+    width : 24%;
+}
+
+.tbl .name {
+    width : 24%;
+}
+
+.tbl .price {
+    width : 24%;
+}
+
+
+.tbl .show_detail_header {
+    width : 28%;
+}
+
+.tbl .show_detail {
+    width : 10%;
+    color : #007bff;
+
+}
+.tbl .show_detail:hover{
+     cursor: pointer;
+     text-decoration: underline;
+}
+
+#list_products_filter{
+    margin-top : 15px;
+}
+#list_products_filter table{
+    margin : auto;
+}
+#list_products_filter #search_product_marketing_code{
+    width : 300px;
+    margin-left:15px;
+    margin-right:15px;
+}
+#list_products_filter .list_product_btn_search{
+    width : 100px;
+     font-family : 'roboto_medium';
+    color : white;
+    font-size : 16px;
+    margin-left:15px;
+    margin-right:15px;
+}

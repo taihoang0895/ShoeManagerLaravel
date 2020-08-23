@@ -1,0 +1,115 @@
+#dialog_list_notifications{
+
+      position: fixed; /* Stay in place */
+      z-index: 1; /* Sit on top */
+       margin-top : 72px;
+      left: 0;
+      top: 0;
+      width: 100%; /* Full width */
+      height: 100%; /* Full height */
+      overflow: auto; /* Enable scroll if needed */
+
+}
+#dialog_list_notifications .remind_title{
+    color: #5e6c84;
+    width : 100%;
+    text-align : center;
+    margin : 10px;
+
+    padding-bottom : 10px;
+     font-family : 'roboto_regular';
+    font-size : 18px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+}
+#dialog_list_notifications #btn_mark_all{
+    float : right;
+    margin-right : 15px;
+    font-family : 'roboto_regular';
+    font-size : 15px;
+    color : #6b778c;
+    text-decoration: underline;
+}
+
+#dialog_list_notifications #btn_filter{
+    float : left;
+    margin-left : 15px;
+    font-family : 'roboto_regular';
+    font-size : 15px;
+     color : #6b778c;
+     text-decoration: underline;
+}
+#dialog_list_notifications #btn_filter{
+
+}
+#dialog_list_notifications #list_notifications{
+     width : 100%;
+     height : 400px;
+    overflow: auto;
+
+     margin-top : 50px;
+ }
+#dialog_list_notifications #list_notifications table{
+    width : 100%;
+    margin:auto;
+    border-collapse: collapse;
+
+}
+
+#dialog_list_notifications #list_notifications .remind_item{
+   border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+   border-top: 1px solid rgba(0, 0, 0, 0.2);
+
+}
+#dialog_list_notifications #list_notifications .remind_item .content{
+    width : 85%;
+    padding-left : 15px;
+    padding-top:10px;
+    padding-bottom : 10px;
+    font-family : 'roboto_regular';
+    font-size : 16px;
+}
+#dialog_list_notifications #list_remind_empty{
+    clear : left;
+    margin-top : 100px;
+    text-align : center;
+
+}
+
+#dialog_list_notifications #list_remind_empty .message{
+    font-size : 18px;
+     font-family : 'roboto_bold';
+     color : #174B4D;
+     margin-top:15px;
+}
+#dialog_list_notifications #list_remind_empty{
+    padding-bottom : 30px;
+}
+
+#dialog_list_notifications #list_notifications .remind_item .btn_mark{
+    width : 15%;
+    text-align:center;
+    padding-top : 20px;
+    padding-bottom : 20px;
+
+}
+#dialog_list_notifications #btn_filter:hover{
+    cursor: pointer;
+    color : #94a3bd;
+}
+
+#dialog_list_notifications #btn_mark_all:hover{
+    cursor: pointer;
+    color : #94a3bd;
+
+}
+
+
+#dialog_list_notifications_content{
+     background-color: #ffffff;
+      margin-left: calc(100vw - 460px);
+      border: 1px solid #888;
+      width: 450px;
+
+      border-radius:5px;
+
+}

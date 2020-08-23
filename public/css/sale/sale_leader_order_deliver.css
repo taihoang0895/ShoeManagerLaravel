@@ -1,0 +1,111 @@
+.tbl_order_deliver{
+     overflow-x:auto;
+      border-collapse: collapse;
+      display : block;
+      margin : auto;
+      margin-top : 15px;
+      margin-left : 15px;
+}
+
+.tbl_order_deliver thead {
+  display: table; /* to take the same width as tr */
+  width: calc(100% - 17px); /* - 17px because of the scrollbar width */
+}
+.tbl_order_deliver tbody {
+  display: block; /* to enable vertical scrolling */
+  height :200px;
+  overflow-x : hidden;
+  overflow-y: auto; /* keeps the scrollbar even if it doesn't need it; display purpose */
+}
+.tbl_order_deliver .tbl_header_item {
+    background-color : #778F9B;
+    text-align : center;
+    font-family : 'roboto_bold';
+    min-height : 50px;
+    height : 50px;
+
+    font-size : 18px;
+    color: white;
+    padding: 0;
+    margin: 0;
+}
+.tbl_order_deliver .col_mark {
+    min-width : 50px;
+    text-align : center;
+}
+.tbl_order_deliver .order_code{
+     min-width : 150px;
+     text-align : center;
+}
+.tbl_order_deliver .phone_number {
+    min-width : 210px;
+     text-align : center;
+
+}
+.tbl_order_deliver .customer_name{
+     min-width :  210px;
+      text-align : center;
+}
+.tbl_order_deliver .product_name{
+     min-width :  210px;
+      text-align : center;
+}
+
+.tbl_order_deliver .customer_province {
+    min-width : 150px;
+     text-align : center;
+}
+
+.tbl_order_deliver .customer_district {
+    min-width : 150px;
+     text-align : center;
+}
+
+.tbl_order_deliver .customer_street {
+    min-width : 150px;
+     text-align : center;
+}
+
+.tbl_order_deliver .customer_address {
+    min-width : 200px;
+     text-align : center;
+}
+
+.tbl_order_deliver .quantity {
+    min-width : 140px;
+     text-align : center;
+}
+
+.tbl_order_deliver .kg {
+    min-width : 140px;
+     text-align : center;
+}
+
+.tbl_order_deliver .actually_collected {
+    min-width : 210px;
+     text-align : center;
+}
+
+.tbl_order_deliver .pick_money {
+    min-width :210px;
+     text-align : center;
+}
+.tbl_order_deliver .note {
+    min-width :210px;
+     text-align : center;
+}
+
+.tbl_order_deliver .tbl_item {
+    background-color : #ffffff;
+    text-align : center;
+    font-family : 'roboto_regular';
+    min-height : 50px;
+    height : 5vh;
+    font-size : 16px;
+    color: #000000;
+    border-bottom: 1px solid #E5E5E5;
+}
+
+
+
+

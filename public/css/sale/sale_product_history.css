@@ -1,0 +1,75 @@
+.tbl_histories{
+    margin-top : 15px;
+    background-color: #ffffff;
+    width : 95%;
+    margin-left :2.5%;
+    border-collapse: collapse;
+}
+.tbl_histories .tbl_header_item{
+    background-color : #778F9B;
+    text-align : center;
+    font-family : 'roboto_bold';
+    min-height : 50px;
+    height : 5vh;
+
+    font-size : 18px;
+    color: white;
+    padding: 0;
+    margin: 0;
+}
+.tbl_histories td {
+     word-break: break-all;
+}
+.tbl_histories .tbl_item {
+    background-color : #ffffff;
+    text-align : center;
+    font-family : 'roboto_regular';
+    min-height : 50px;
+    height : 5vh;
+    font-size : 18px;
+    color: #000000;
+    border-bottom: 1px solid #E5E5E5;
+}
+.tbl_histories .date {
+    width : 14.28%;
+}
+.tbl_histories .username {
+    width : 14.28%;
+}
+.tbl_histories .action {
+    width : 10%;
+}
+.tbl_histories .sale_name {
+    width : 10%;
+}
+.tbl_histories .order_state {
+    width : 18.5%;
+}
+
+.tbl_histories .note {
+     width : 18.5%;
+}
+.tbl_histories .code {
+    width : 14.28%;
+}
+
+.tbl_histories .histories_row_selected{
+    background-color : #DDF4FF;
+}
+
+#list_histories_filter{
+   overflow: auto; /* Enable scroll if needed */
+    margin : 0 auto;
+}
+
+
+
+#list_histories_filter .btn_filter{
+    width : 100px;
+     font-family : 'roboto_bold';
+    font-size : 16px;
+    color : white;
+    margin-left:15px;
+    margin-right:15px;
+}
+

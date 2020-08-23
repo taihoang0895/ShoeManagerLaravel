@@ -1,0 +1,107 @@
+#show_detail_marketing_product_dialog{
+
+      position: fixed; /* Stay in place */
+      z-index: 1; /* Sit on top */
+      margin-top : 70px;
+      left: 0;
+      top: 0;
+      width: 100%; /* Full width */
+      height: 100%; /* Full height */
+      overflow: auto; /* Enable scroll if needed */
+      background-color: rgb(0,0,0); /* Fallback color */
+      background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+#show_detail_marketing_product_dialog_content{
+     background-color: #fefefe;
+      margin: auto;
+      bmarketing_product: 1px solid #888;
+      width: 70%;
+      padding : 5px;
+      bmarketing_product-radius:10px;
+}
+
+#show_detail_marketing_product_dialog_content .lbl_name_col1{
+
+    text-align : center;
+    font-family : 'roboto_bold';
+    font-size : 16px;
+    width : 15%;
+}
+
+#show_detail_marketing_product_dialog_content .value_col1{
+    width : 30%;
+}
+#show_detail_marketing_product_dialog_content .lbl_name_col2{
+
+    text-align : center;
+    font-family : 'roboto_bold';
+    font-size : 16px;
+    width : 15%;
+}
+
+#show_detail_marketing_product_dialog_content .value_col2{
+    width : 30%;
+}
+
+#show_detail_marketing_product_dialog_content .marketing_product_field_row td{
+    padding-top: 15px;
+}
+
+
+.btn_cancel{
+    width : 90%;
+    height:48px;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top : 15px;
+    background-color : #00B6DE;
+}
+.btn_cancel:hover {
+      background-color : #00B6DE;
+}
+
+#tbl_detail_marketing_product{
+    background-color: #ffffff;
+    width : 90%;
+    margin:auto;
+}
+#detail_marketing_product_content{
+    display: inline-block;
+    overflow-y: auto;
+    width : 90%;
+    max-height : 400px;
+    margin-left:5%;
+    margin-top : 15px;
+}
+#tbl_detail_marketing_product .tbl_detail_marketing_product_header {
+    background-color : #778F9B;
+    text-align : center;
+    font-family : 'roboto_bold';
+    min-height : 50px;
+    height : 5vh;
+    font-size : 18px;
+    color: white;
+    padding: 0;
+    margin: 0;
+}
+
+#tbl_detail_marketing_product .tbl_detail_marketing_product_item{
+   background-color : #ffffff;
+   height:50px;
+   border-bottom: 1px solid #E5E5E5;
+}
+
+#tbl_detail_marketing_product .bank_account {
+    width : 25%;
+}
+#tbl_detail_marketing_product .budget {
+    width : 25%;
+}
+#tbl_detail_marketing_product .total_comment {
+    width : 25%;
+}
+
+#tbl_detail_marketing_product .campaign_name {
+    width : 25%;
+}

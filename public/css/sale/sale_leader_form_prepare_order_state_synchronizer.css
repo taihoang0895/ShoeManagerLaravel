@@ -1,0 +1,148 @@
+.loader {
+  border: 5px solid #f3f3f3; /* Light grey */
+  border-top: 5px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 25px;
+  height: 25px;
+  margin : auto;
+  animation: spin 2s linear infinite;
+  display : none;
+}
+.img_failed{
+  width: 25px;
+  height: 25px;
+  display : none;
+  margin : auto;
+}
+
+.img_success{
+  width: 25px;
+  height: 25px;
+   display : none;
+   margin : auto;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#order_state_synchronizer_dialog{
+      position: fixed; /* Stay in place */
+      z-index: 1; /* Sit on top */
+       padding-top : 70px;
+      left: 0;
+      top: 0;
+      width: 100%; /* Full width */
+      height: 100%; /* Full height */
+      overflow: auto; /* Enable scroll if needed */
+      background-color: rgb(0,0,0); /* Fallback color */
+      background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+#order_state_synchronizer_dialog_content{
+     background-color: #fefefe;
+      margin: auto;
+      border: 1px solid #888;
+      width: 80%;
+      padding : 5px;
+      border-radius:10px;
+}
+
+#order_state_synchronizer_dialog .tbl_order_state_synchronizer{
+     margin-top : 15px;
+     margin : auto;
+     background-color: #ffffff;
+     border-collapse: collapse;
+     display : block;
+     overflow-x:auto;
+     margin-left : 20px;
+}
+
+#order_state_synchronizer_dialog .tbl_order_state_synchronizer thead {
+  display: table; /* to take the same width as tr */
+ width: calc(100% - 17px); /* - 17px because of the scrollbar width */
+}
+
+#order_state_synchronizer_dialog_content .tbl_order_state_synchronizer tbody{
+  display: block; /* to enable vertical scrolling */
+  overflow-x : hidden;
+  overflow-y: auto; /* keeps the scrollbar even if it doesn't need it; display purpose */
+
+  width: calc(100% - 17px); /* - 17px because of the scrollbar width */
+}
+#order_state_synchronizer_dialog .tbl_order_state_synchronizer .tbl_header_item {
+    background-color : #778F9B;
+    text-align : center;
+    font-family : 'roboto_bold';
+    min-height : 50px;
+    height : 50px;
+    font-size : 18px;
+    color: white;
+    padding: 0;
+    margin: 0;
+}
+
+#order_state_synchronizer_dialog #tbl_order_state_synchronizer .col_mark {
+    text-align : center;
+     width : 5%;
+    min-width : 70px;
+
+
+}
+#order_state_synchronizer_dialog #tbl_order_state_synchronizer .order_code {
+      text-align : center;
+
+}
+#order_state_synchronizer_dialog #tbl_order_state_synchronizer .order_created{
+      text-align : center;
+}
+
+#order_state_synchronizer_dialog #tbl_order_state_synchronizer .order_customer_phone {
+       text-align : center;
+}
+
+#order_state_synchronizer_dialog #tbl_order_state_synchronizer .order_state {
+      text-align : center;
+}
+
+
+
+
+
+#order_state_synchronizer_dialog #tbl_order_state_synchronizer .tbl_item {
+    background-color : #ffffff;
+    text-align : center;
+    font-family : 'roboto_regular';
+    min-height : 50px;
+    height : 5vh;
+    font-size : 16px;
+    color: #000000;
+    border-bottom: 1px solid #E5E5E5;
+}
+
+
+#order_state_synchronizer_dialog .btn_ok{
+    width :200px;
+    height:48px;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top : 15px;
+    background-color : #1CC487;
+}
+#order_state_synchronizer_dialog .btn_cancel{
+    width : 200px;
+    height:48px;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top : 15px;
+    background-color : #00B6DE;
+}
+#order_state_synchronizer_dialog .btn_ok:hover {
+     background-color : #1CC487;
+}
+#order_state_synchronizer_dialog .btn_cancel:hover {
+      background-color : #00B6DE;
+}
+
+
+

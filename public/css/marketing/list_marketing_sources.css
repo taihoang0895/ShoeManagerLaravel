@@ -1,0 +1,20 @@
+.tbl_item .marketing_source_code{
+    width : 20%;
+}
+.tbl_item .marketing_source_name{
+    width : 20%;
+}
+.tbl_item .marketing_source_note{
+     width : 60%;
+}
+
+.tbl .marketing_source_row_selected{
+    background-color : #DDF4FF;
+}
+
+.tbl{
+    margin-top : 15px;
+}
+#confirm_dialog_delete_marketing_source{
+    display : none;
+}

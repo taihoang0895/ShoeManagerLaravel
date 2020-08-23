@@ -1,0 +1,54 @@
+.tbl{
+    margin-top : 15px;
+}
+.tbl .product_code {
+    width : 21%;
+}
+
+.tbl .name {
+    width : 21%;
+}
+
+.tbl .price {
+    width : 21%;
+}
+
+.tbl .historical_cost {
+    width : 21%;
+}
+.tbl .show_detail_header {
+    width : 16%;
+}
+
+.tbl .product_row_selected{
+    background-color : #DDF4FF;
+}
+.tbl .show_detail {
+    width : 10%;
+    color : #007bff;
+
+}
+.tbl .show_detail:hover{
+     cursor: pointer;
+     text-decoration: underline;
+}
+
+#list_products_filter{
+    margin-top : 15px;
+}
+#list_products_filter table{
+    margin : auto;
+}
+#list_products_filter #list_product_search_product_code{
+    width : 300px;
+    margin-left:15px;
+    margin-right:15px;
+}
+#list_products_filter #list_product_btn_search{
+    width : 100px;
+    font-family : 'roboto_medium';
+    color : white;
+    font-size : 16px;
+    margin-left:15px;
+    margin-right:15px;
+}

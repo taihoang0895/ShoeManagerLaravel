@@ -1,0 +1,105 @@
+.tbl_customers{
+    margin-top : 15px;
+    background-color: #ffffff;
+    width : 95%;
+    margin-left :2.5%;
+    border-collapse: collapse;
+}
+.tbl_customers .tbl_header_item{
+    background-color : #778F9B;
+    text-align : center;
+    font-family : 'roboto_bold';
+    min-height : 50px;
+    height : 5vh;
+
+    font-size : 18px;
+    color: white;
+    padding: 0;
+    margin: 0;
+}
+.tbl_customers td {
+     word-break: break-all;
+}
+.tbl_customers .tbl_item {
+    background-color : #ffffff;
+    text-align : center;
+    font-family : 'roboto_regular';
+    min-height : 50px;
+    height : 5vh;
+    font-size : 18px;
+    color: #000000;
+    border-bottom: 1px solid #E5E5E5;
+}
+.tbl_customers .code {
+    width : 10%;
+}
+.tbl_customers .phone_number {
+    width : 15%;
+}
+.tbl_customers .state {
+    width : 15%;
+}
+.tbl_customers .province {
+    width : 10%;
+}
+.tbl_customers .district {
+    width : 10%;
+}
+.tbl_customers .street {
+    width : 15%;
+
+}
+.tbl_customers .address {
+    width : 15%;
+}
+.tbl_customers .show_detail,.show_detail_header {
+    width : 10%;
+}
+.tbl_customers .show_detail {
+    width : 10%;
+    color : #007bff;
+
+}
+
+.tbl_customers .show_detail:hover{
+     cursor: pointer;
+     text-decoration: underline;
+}
+
+.tbl_customers .customer_row_selected{
+    background-color : #DDF4FF;
+}
+.search_text{
+    width:85%;
+    height:30px;
+    padding-left : 10px;
+     border-radius : 5px;
+     border: none;
+      box-shadow: 3px 3px rgba(0,0,0,0.2);
+}
+.search_text:focus {
+    outline-width: 0;
+}
+
+#confirm_dialog_delete_customer{
+    display : block;
+}
+#list_customer_filter{
+    margin-top : 15px;
+}
+#list_customer_filter table{
+    margin : auto;
+}
+#list_customer_filter #list_customer_search_phone_number{
+    width : 300px;
+    margin-left:15px;
+    margin-right:15px;
+}
+#list_customer_filter .list_product_btn_search{
+    width : 100px;
+     font-family : 'roboto_bold';
+    font-size : 16px;
+    color : white;
+    margin-left:15px;
+    margin-right:15px;
+}

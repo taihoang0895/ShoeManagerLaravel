@@ -1,0 +1,35 @@
+.tbl_item .bank_account{
+     width : 80%;
+}
+.tbl_item .bank_account_date{
+     width : 20%;
+}
+.tbl{
+    margin-top : 15px;
+}
+
+.tbl .bank_account_row_selected{
+    background-color : #DDF4FF;
+}
+
+#list_bank_account_filter table{
+    margin : 0 auto;
+    text-align: center;
+}
+#list_bank_account_filter #search_bank_account{
+    width : 300px;
+}
+
+
+#list_bank_account_filter .btn_search_text{
+    width : 100px;
+    font-family : 'roboto_medium';
+    color : white;
+    font-size : 16px;
+    margin-left:15px;
+    margin-right:15px;
+}
+
+#bank_account_row_selected{
+ background-color : #DDF4FF;
+}

@@ -1,0 +1,77 @@
+
+#menu_btn_notification{
+    width:48px;
+    height:52px;
+    position: relative;
+    display: inline-block;
+    margin-top : 10px;
+    margin-left : calc(100vw - 180px);
+    border-radius: 5px;
+}
+#menu_btn_logout:hover{
+     cursor: pointer;
+     text-decoration: underline;
+}
+#menu_btn_logout{
+    position: relative;
+    font-family : 'roboto_regular';
+    display: inline-block;
+    color : rgba(255, 255, 255, 0.7);
+    float : right;
+    font-size : 21px;
+    margin-top : 20px;
+    margin-right : 20px;
+}
+
+#menu_btn_notification:hover{
+    cursor: pointer;
+    background : hsla(0,0%,100%,.1);
+
+}
+#menu_btn_notification .total_message{
+  min-width : 22px;
+  min-height : 22px;
+  max-width : 22px;
+  max-height : 22px;
+  position: absolute;
+  border-radius: 50%;
+  top: -2px;
+  right: -2px;
+  padding: 5px;
+  color : white;
+  background-color:red;
+  font-size:10px;
+}
+
+#menu_btn_notification .total_message.no_message{
+    display : none;
+}
+#menu_btn_notification .icon{
+    width:44px;
+    height:48px;
+
+    display:table-cell;
+    vertical-align:middle;
+    text-align:center
+}
+#menu_btn_notification .icon img{
+    max-width:24px;
+    max-height:24px;
+    width:auto;
+    height:auto;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    content:url('../images/ic_notification_empty.png');
+
+}
+#menu_btn_notification .icon img.active{
+    max-width:24px;
+    max-height:24px;
+    width:auto;
+    height:auto;
+     margin-left: auto;
+    margin-right: auto;
+    display: block;
+    content:url('../images/ic_notifications.png');
+}

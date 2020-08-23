@@ -1,0 +1,110 @@
+.tbl_order_state_manager{
+    width : 95%;
+    margin-left :2.5%;
+    border-collapse: collapse;
+    margin-top : 15px;
+
+}
+.tbl_order_state_manager thead {
+  display: table; /* to take the same width as tr */
+  width: calc(100% - 17px); /* - 17px because of the scrollbar width */
+}
+.tbl_order_state_manager tbody {
+  display: block; /* to enable vertical scrolling */
+  height :200px;
+  overflow-x : hidden;
+  overflow-y: auto; /* keeps the scrollbar even if it doesn't need it; display purpose */
+}
+
+.tbl_order_state_manager .tbl_header_item {
+    background-color : #778F9B;
+    text-align : center;
+    font-family : 'roboto_bold';
+    min-height : 50px;
+    height : 50px;
+
+    font-size : 18px;
+    color: white;
+    padding: 0;
+    margin: 0;
+}
+.tbl_order_state_manager .col_mark {
+    width : 5%;
+    min-width : 70px;
+    text-align : center;
+
+}
+.tbl_order_state_manager .order_code {
+    width : 10%;
+      min-width : 10%;
+
+
+}
+.tbl_order_state_manager .order_created{
+     width : 20%;
+}
+
+.tbl_order_state_manager .order_customer_phone {
+    width : 15%;
+}
+
+.tbl_order_state_manager .order_state {
+    width : 40%;
+}
+
+
+.tbl_order_state_manager .show_detail_order {
+    width : 10%;
+    color : #007bff;
+}
+.tbl_order_state_manager .show_detail_order:hover{
+     cursor: pointer;
+     text-decoration: underline;
+}
+.tbl_order_state_manager .tbl_item {
+    background-color : #ffffff;
+    text-align : center;
+    font-family : 'roboto_regular';
+    min-height : 50px;
+    height : 5vh;
+    font-size : 16px;
+    color: #000000;
+    border-bottom: 1px solid #E5E5E5;
+}
+
+
+#list_order_filter{
+   overflow: auto; /* Enable scroll if needed */
+    margin : 0 auto;
+}
+
+#list_order_filter .filter_start_time{
+     width : 300px;
+    text-align:center;
+
+}
+#list_order_filter .filter_end_time{
+     width : 320px;
+    text-align:center;
+
+}
+
+
+#list_order_filter .filter_by_order_state{
+     width : 200px;
+    text-align:center;
+    margin-left:15px;
+    margin-right:15px;
+
+}
+#list_order_filter .btn_filter{
+    width : 100px;
+    margin-left:15px;
+    margin-right:15px;
+     font-family : 'roboto_bold';
+    font-size : 16px;
+    color : white;
+}
+
+
+

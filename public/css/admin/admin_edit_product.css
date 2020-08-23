@@ -1,0 +1,127 @@
+#edit_product_dialog{
+
+      position: fixed; /* Stay in place */
+      z-index: 1; /* Sit on top */
+      padding-top : 70px;
+      left: 0;
+      top: 0;
+      width: 100%; /* Full width */
+      height: 100%; /* Full height */
+      overflow: auto; /* Enable scroll if needed */
+      background-color: rgb(0,0,0); /* Fallback color */
+      background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+#edit_product_dialog_content{
+     background-color: #fefefe;
+      margin: auto;
+      border: 1px solid #888;
+      width: 70%;
+      padding : 5px;
+      border-radius:10px;
+}
+#edit_product_dialog_content .product_field_row .lbl_name_col1{
+
+    text-align : center;
+    font-family : 'roboto_bold';
+    font-size : 16px;
+    width : 15%;
+}
+#edit_product_dialog_content .product_field_row .value_col1{
+    width : 30%;
+}
+#edit_product_dialog_content .product_field_row .lbl_name_col2{
+
+    text-align : center;
+    font-family : 'roboto_bold';
+    font-size : 16px;
+    width : 15%;
+}
+
+#edit_product_dialog_content .product_field_row .value_col2{
+    width : 30%;
+
+}
+#edit_product_dialog_content .product_field_row td{
+    padding-top: 15px;
+}
+
+.btn_ok{
+    width : 90%;
+    height:48px;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top : 15px;
+    background-color : #1CC487;
+}
+.btn_cancel{
+    width : 90%;
+    height:48px;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top : 15px;
+    background-color : #00B6DE;
+}
+.btn_ok:hover {
+     background-color : #1CC487;
+}
+.btn_cancel:hover {
+      background-color : #00B6DE;
+}
+
+#detail_product_content{
+    overflow-y: auto;
+    width : 70%;
+    max-height : 300px;
+    height:300px;
+    margin : auto;
+    margin-top : 15px;
+}
+#edit_product_dialog .tbl_detail_product .tbl_detail_product_header {
+    background-color : #778F9B;
+    text-align : center;
+    font-family : 'roboto_bold';
+    min-height : 50px;
+    height : 5vh;
+    font-size : 18px;
+    color: white;
+    padding: 0;
+    margin: 0;
+}
+#edit_product_dialog #tbl_detail_product {
+      border: 1px solid #E5E5E5;
+}
+#edit_product_dialog #tbl_detail_product .size{
+    width : 30%;
+}
+
+#edit_product_dialog #tbl_detail_product .color{
+    width : 30%;
+}
+#edit_product_dialog #tbl_detail_product .button{
+    width : 40%;
+}
+#edit_product_dialog .tbl_detail_product_item{
+   background-color : #ffffff;
+   height:55px;
+    border-bottom: 1px solid #E5E5E5;
+}
+
+#edit_product_dialog .tbl_detail_product_item_updating{
+    display : None;
+}
+#edit_product_dialog .detail_product_btn_add{
+    background-image :  linear-gradient(to right, rgba(6,185,224,1), rgba(13,211,255,0.8));
+    width : 70px;
+    margin: 0 auto;
+}
+#edit_product_dialog .detail_product_btn_update{
+    background-image :  linear-gradient(to right, rgba(28,196,136,1), rgba(28,196,135,0.7));
+    background-color : #1CC487;
+    width : 70px;
+}
+#edit_product_dialog .detail_product_btn_delete{
+    background-image :  linear-gradient(to right, rgba(255,0,0,1), rgba(237,35,35,1));
+    width : 70px;
+      background-color : #00B6DE;
+}

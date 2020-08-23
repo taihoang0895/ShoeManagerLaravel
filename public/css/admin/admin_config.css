@@ -1,0 +1,27 @@
+#tbl_config{
+    width : 80%;
+    margin : auto;
+}
+
+#tbl_config .lbl_name{
+
+    text-align : center;
+    font-family : 'roboto_bold';
+    font-size : 16px;
+    width : 25%;
+}
+#tbl_config .config_row td{
+    padding-top: 15px;
+}
+#tbl_config .value{
+    width : 75%;
+}
+
+#config_btn_save{
+    width : 90%;
+    height:48px;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top : 15px;
+    background-color : #1CC487;
+}

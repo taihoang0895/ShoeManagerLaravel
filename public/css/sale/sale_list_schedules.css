@@ -1,0 +1,42 @@
+.tbl_item .schedule_time{
+    width : 20%;
+}
+
+.tbl_item .schedule_note{
+     width : 80%;
+}
+.tbl{
+    margin-top : 15px;
+}
+#add_schedule_dialog{
+    display : none;
+}
+#confirm_dialog_delete_schedule{
+    display : none;
+}
+.tbl .schedule_row_selected{
+    background-color : #DDF4FF;
+}
+
+#list_schedule_filter{
+    width : 60%;
+    margin : 0 auto;
+}
+#list_schedule_filter .label{
+    width : 10%;
+    text-align:center;
+}
+
+#list_schedule_filter .value{
+    width : 26%;
+    text-align:center;
+}
+
+#list_schedule_filter .btn_filter{
+      width : 100px;
+    margin-left:15px;
+    margin-right:15px;
+     font-family : 'roboto_bold';
+    font-size : 16px;
+    color : white;
+}

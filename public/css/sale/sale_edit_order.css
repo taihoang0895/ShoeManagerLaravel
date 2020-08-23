@@ -1,0 +1,151 @@
+#edit_order_dialog{
+
+      position: fixed; /* Stay in place */
+      z-index: 1; /* Sit on top */
+      padding-top : 70px;
+      left: 0;
+      top: 0;
+      width: 100%; /* Full width */
+      height: 100%; /* Full height */
+      overflow: auto; /* Enable scroll if needed */
+      background-color: rgb(0,0,0); /* Fallback color */
+      background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+#edit_order_dialog_content{
+     background-color: #fefefe;
+      margin: auto;
+      border: 1px solid #888;
+      width: 90%;
+      padding : 5px;
+      border-radius:10px;
+}
+
+#edit_order_dialog .lbl_name_col1{
+
+    text-align : center;
+    font-family : 'roboto_bold';
+    font-size : 16px;
+    width : 15%;
+}
+
+#edit_order_dialog .value_col1{
+    width : 30%;
+}
+#edit_order_dialog .lbl_name_col2{
+
+    text-align : center;
+    font-family : 'roboto_bold';
+    font-size : 16px;
+    width : 15%;
+}
+
+#edit_order_dialog .value_col2{
+    width : 30%;
+}
+
+#edit_order_dialog .order_field_row td{
+    padding-top: 15px;
+}
+
+#edit_order_dialog .btn_ok{
+    width : 90%;
+    height:48px;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top : 15px;
+    background-color : #1CC487;
+}
+#edit_order_dialog .btn_cancel{
+    width : 90%;
+    height:48px;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top : 15px;
+    background-color : #00B6DE;
+}
+#edit_order_dialog .btn_ok:hover {
+     background-color : #1CC487;
+}
+#edit_order_dialog .btn_cancel:hover {
+      background-color : #00B6DE;
+}
+#edit_order_dialog .dropdown .btn {background: #ffffff; color:#000000;}
+
+#edit_order_dialog .tbl_detail_order{
+    background-color: #ffffff;
+
+}
+#detail_order_content{
+display: inline-block;
+    overflow-y: auto;
+    width : 90%;
+    max-height : 300px;
+    height:300px;
+    margin-left:5%;
+    margin-top : 15px;
+}
+#edit_order_dialog .tbl_detail_order .tbl_detail_order_header {
+    background-color : #778F9B;
+    text-align : center;
+    font-family : 'roboto_bold';
+    min-height : 50px;
+    height : 5vh;
+    font-size : 18px;
+    color: white;
+    padding: 0;
+    margin: 0;
+}
+#edit_order_dialog .tbl_detail_order_item{
+   background-color : #ffffff;
+   height:55px;
+    border-bottom: 1px solid #E5E5E5;
+}
+
+#edit_order_dialog .tbl_detail_order .product_code {
+    width : 10%;
+}
+#edit_order_dialog .tbl_detail_order .size {
+    width : 10%;
+}
+#edit_order_dialog .tbl_detail_order .color {
+    width : 10%;
+}
+#edit_order_dialog .tbl_detail_order .quantity {
+    width : 5%;
+}
+#edit_order_dialog .tbl_detail_order .discount_code {
+    width : 15%;
+}
+#edit_order_dialog .tbl_detail_order .actually_collected {
+    width : 10%;
+}
+#edit_order_dialog .tbl_detail_order .pick_money {
+    width : 10%;
+}
+#edit_order_dialog .tbl_detail_order .price {
+    width : 10%;
+}
+
+#edit_order_dialog .tbl_detail_order .button {
+    width : 20%;
+
+}
+#edit_order_dialog .tbl_detail_order_item_updating{
+    display : None;
+}
+#edit_order_dialog .detail_order_btn_add{
+    background-image :  linear-gradient(to right, rgba(6,185,224,1), rgba(13,211,255,0.8));
+    width : 70px;
+    margin: 0 auto;
+}
+#edit_order_dialog .detail_order_btn_update{
+    background-image :  linear-gradient(to right, rgba(28,196,136,1), rgba(28,196,135,0.7));
+    background-color : #1CC487;
+    width : 70px;
+}
+#edit_order_dialog .detail_order_btn_delete{
+    background-image :  linear-gradient(to right, rgba(255,0,0,1), rgba(237,35,35,1));
+    width : 70px;
+      background-color : #00B6DE;
+}

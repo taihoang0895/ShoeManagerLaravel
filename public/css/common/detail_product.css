@@ -1,0 +1,94 @@
+#detail_product_dialog{
+
+      position: fixed; /* Stay in place */
+      z-index: 1; /* Sit on top */
+      padding-top : 70px;
+      left: 0;
+      top: 0;
+      width: 100%; /* Full width */
+      height: 100%; /* Full height */
+      overflow: auto; /* Enable scroll if needed */
+      background-color: rgb(0,0,0); /* Fallback color */
+      background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+#tbl_detail_product{
+  max-width : 100%;
+  overflow-x:auto;
+  border-collapse: collapse;
+  margin : auto;
+}
+
+#code_color_product {
+    background-color:#fce5cd;
+    color : blue;
+    text-align : center;
+    font-family : 'roboto_regular';
+
+    font-size : 20px;
+}
+#code_color_product td{
+      border: 1px solid black;
+
+}
+.sum_quantity_cell{
+    background-color:#00ffff;
+    color:black;
+    font-size:16px;
+}
+
+#size_product {
+    background-color : yellow;
+    color:black;
+    text-align : center;
+    font-family : 'roboto_bold';
+
+}
+#size_product td{
+      border: 1px solid black;
+}
+
+#remaining_quantity_product{
+    background-color : red;
+    color:yellow;
+    text-align : center;
+    font-family : 'roboto_bold';
+}
+
+#remaining_quantity_product td{
+      border: 1px solid black;
+}
+#total_remaining_quantity_product{
+    background-color : #20124d;
+    color:white;
+    text-align : center;
+    font-family : 'roboto_bold';
+    font-size : 20px;
+}
+
+#total_remaining_quantity_product td{
+      border: 1px solid black;
+}
+
+#detail_product_dialog_content{
+     background-color: #fefefe;
+      margin: auto;
+      border: 1px solid #888;
+      width: 80%;
+      padding : 5px;
+      border-radius:10px;
+
+
+}
+#tbl_detail_product{
+  overflow-x:auto;
+  border-collapse: collapse;
+  margin : auto;
+}
+#detail_product_dialog .btn_cancel{
+    width : 90%;
+    height:48px;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top : 15px;
+    background-color : #00B6DE;
+}
