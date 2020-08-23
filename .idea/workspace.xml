@@ -139,7 +139,7 @@
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/resources/views/storekeeper" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/resources/views" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -149,19 +149,19 @@
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="C:\xampp\htdocs\shoemanager\resources\views\storekeeper" />
-      <recent name="C:\xampp\htdocs\shoemanager\resources\views" />
-      <recent name="C:\xampp\htdocs\shoemanager\public\js\admin" />
-      <recent name="C:\xampp\htdocs\shoemanager\public\css\admin" />
-      <recent name="C:\xampp\htdocs\shoemanager\resources\views\admin" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\xampp\htdocs\shoemanager\resources\views\admin" />
       <recent name="C:\xampp\htdocs\shoemanager\resources\views\common" />
       <recent name="C:\xampp\htdocs\shoemanager\app\models\functions" />
       <recent name="C:\xampp\htdocs\shoemanager" />
       <recent name="C:\xampp\htdocs\shoemanager\public" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\xampp\htdocs\shoemanager\resources\views" />
+      <recent name="C:\xampp\htdocs\shoemanager\resources\views\storekeeper" />
+      <recent name="C:\xampp\htdocs\shoemanager\public\js\admin" />
+      <recent name="C:\xampp\htdocs\shoemanager\public\css\admin" />
+      <recent name="C:\xampp\htdocs\shoemanager\resources\views\admin" />
     </key>
   </component>
   <component name="RunManager" selected="PHPUnit.DBAdminFunctionsTest.testExample">
@@ -199,6 +199,7 @@
       <workItem from="1598171233309" duration="7392000" />
       <workItem from="1598178868754" duration="5735000" />
       <workItem from="1598190518880" duration="9615000" />
+      <workItem from="1598200585242" duration="7142000" />
     </task>
     <servers />
   </component>
@@ -250,14 +251,14 @@
       <screen x="-1920" y="87" width="1920" height="1040" />
     </state>
     <state x="-1920" y="87" width="1307" height="848" maximized="true" key="dock-window-3/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598195436408" />
-    <state x="-1445" y="87" width="1307" height="848" key="dock-window-4" timestamp="1598199444912">
+    <state x="-1445" y="87" width="1307" height="848" key="dock-window-4" timestamp="1598200766010">
       <screen x="-1920" y="87" width="1920" height="1040" />
     </state>
-    <state x="-1445" y="87" width="1307" height="848" key="dock-window-4/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598199444912" />
-    <state x="-1504" y="87" width="1307" height="848" key="dock-window-5" timestamp="1598198234747">
+    <state x="-1445" y="87" width="1307" height="848" key="dock-window-4/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598200766010" />
+    <state x="-1504" y="87" width="1307" height="848" key="dock-window-5" timestamp="1598204767322">
       <screen x="-1920" y="87" width="1920" height="1040" />
     </state>
-    <state x="-1504" y="87" width="1307" height="848" key="dock-window-5/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598198234747" />
+    <state x="-1504" y="87" width="1307" height="848" key="dock-window-5/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598204767322" />
     <state x="616" y="240" key="run.anything.popup" timestamp="1598200038492">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>

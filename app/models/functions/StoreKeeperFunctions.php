@@ -557,21 +557,45 @@ class StoreKeeperFunctions
 
     public static function listDetailProducts()
     {
-        return DetailProduct::all();
+        return DB::table('detail_products')
+            ->join('product_categories', 'product_categories.id', "=", "detail_products.product_category_id")
+            ->select("detail_products.id as id", "detail_products.product_code as product_code", "product_categories.size as size", "product_categories.color as color")
+            ->get();
     }
 
-    public static function reportImportingProduct($startTime = null, $endTime = null)
+    public static function reportProduct($tabIndex, $startTime = null, $endTime = null)
     {
         $filterOptions = [];
         if ($startTime != null && $endTime != null) {
             $filterOptions[] = ['created', '>=', $startTime];
             $filterOptions[] = ['created', '<=', $endTime];
         }
-        $results = DB::table("importing_products")
-            ->select("detail_product_id", DB::raw('SUM(quantity) as total_quantity'), DB::raw('DATE(created) as day'))
+        $tableName = "importing_products";
+        switch ($tabIndex) {
+            case 0:
+                break;
+            case 1:
+                $tableName = "detail_orders";
+                break;
+            case 2:
+                $tableName = "returning_products";
+                break;
+            case 3:
+                $tableName = "failed_products";
+                break;
+        }
+        $query = DB::table($tableName);
+        if ($tabIndex == 1) {
+            $query->join("orders",'detail_orders.order_id', "=", "orders.id")
+                ->select(DB::raw("detail_orders.detail_product_id as detail_product_id"),
+                    DB::raw('SUM(detail_orders.quantity) as total_quantity'),
+                    DB::raw('DATE(orders.created) as day'));
+        } else {
+            $query->select("detail_product_id", DB::raw('SUM(quantity) as total_quantity'), DB::raw('DATE(created) as day'));
+        }
+        $results = $query->where($filterOptions)
             ->groupBy('detail_product_id', 'day')
             ->orderBy('day')
-            ->where($filterOptions)
             ->get();
         $listProductReports = [];
         foreach ($results as $importingProductReport) {
@@ -579,9 +603,11 @@ class StoreKeeperFunctions
             $productReport->created_date = Util::formatDate(Util::convertDateSql($importingProductReport->day));
             $productReport->detail_product_id = $importingProductReport->detail_product_id;
             $productReport->quantity = $importingProductReport->total_quantity;
+
             array_push($listProductReports, $productReport);
+
+
         }
         return $listProductReports;
     }
-
 }

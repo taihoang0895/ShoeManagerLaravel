@@ -549,18 +549,17 @@ class StorekeeperController
             'sum_failed_quantity' => $sum_failed_quantity,
             'sum_remaining_quantity' => $sum_remaining_quantity
         ]);
+
     }
 
-    public function importingProductReport(Request $request)
+    private function createProductReport($request, $tabIndex)
     {
-        $response = array(
-            "status" => 200,
-            "content" => "",
-            "message" => ""
-        );
-        $start_time = Util::safeParseDate($request->get('start_time', ''));
-        $end_time = Util::safeParseDate($request->get('end_time', ''));
-        $listProductReports = StoreKeeperFunctions::reportImportingProduct($start_time, $end_time);
+        $start_time_str = $request->get('start_time', '');
+        $end_time_str = $request->get('end_time', '');
+        $start_time = Util::safeParseDate($start_time_str);
+        $end_time = Util::safeParseDate($end_time_str);
+        $listProductReports = StoreKeeperFunctions::reportProduct($tabIndex,$start_time, $end_time);
+
         $listDetailproduct = StoreKeeperFunctions::listDetailProducts();
         $size_cells = [];
         $code_color_cells = [];
@@ -569,31 +568,124 @@ class StorekeeperController
             $product_code = $detailproduct->product_code;
             $product_size = $detailproduct->size;
             $product_color = $detailproduct->color;
+
             $detail_product_id = $detailproduct->id;
             $key = json_encode([$product_code, $product_color]);
-            if(!array_key_exists($key, $group_data_by_size)){
+            if (!array_key_exists($key, $group_data_by_size)) {
                 $group_data_by_size[$key] = [];
             }
-            $group_data_by_size[$key]
+            array_push($group_data_by_size[$key], json_encode([$product_size, $detail_product_id]));
         }
+        $detail_product_map_col = [];
+        $col_index = 0;
+        foreach ($group_data_by_size as $key => $group) {
+            $key = json_decode($key);
+            $code_color_cell = new TableCell($key[0] . " " . $key[1], count($group));
+            array_push($code_color_cells, $code_color_cell);
+            foreach ($group as $value) {
+                $value = json_decode($value);
+                $product_size = $value[0];
+                $detail_product_id = $value[1];
+                $size_cell = new TableCell($product_size);
+                array_push($size_cells, $size_cell);
+                $detail_product_map_col[$detail_product_id] = $col_index;
+                $col_index += 1;
+            }
+        }
+        $sum_quantity_by_size = [];
+        for ($i = 0; $i < count($size_cells); ++$i) {
+            array_push($sum_quantity_by_size, 0);
+        }
+        $group_data_by_date = [];
+        foreach ($listProductReports as $productReport) {
+            $date_str = $productReport->created_date;
+            if (!array_key_exists($date_str, $group_data_by_date)) {
+                $group_data_by_date[$date_str] = [];
+            }
+            array_push($group_data_by_date[$date_str], json_encode([$productReport->detail_product_id, $productReport->quantity]));
+        }
+        $list_reports_by_date = [];
+        foreach ($group_data_by_date as $date_str => $list_value) {
+            $quantity_row = [];
+            for ($i = 0; $i < count($size_cells); ++$i) {
+                array_push($quantity_row, 0);
+            }
+
+            foreach ($list_value as $value) {
+                $value = json_decode($value);
+                $detail_product_id = $value[0];
+                $quantity = $value[1];
 
 
-        echo count($listProductReports);
-        return response()->json($response);
+                $quantity_row[$detail_product_map_col[$detail_product_id]] = $quantity;
+                $sum_quantity_by_size[$detail_product_map_col[$detail_product_id]] += $quantity;
+            }
+            $sum_quantity_by_date = array_sum($quantity_row);
+            $record = [];
+            $date_cell = new TableCell($date_str, $colspan = 1, $width = 125);
+            $sum_quantity_cell = new TableCell($sum_quantity_by_date, $colspan = 1, $width = 70);
+            array_push($record, $date_cell);
+            array_push($record, $sum_quantity_cell);
+
+            foreach ($quantity_row as $quantity) {
+                array_push($record, new TableCell($quantity));
+            }
+            array_push($list_reports_by_date, $record);
+        }
+        $start_index = 0;
+        $quantity_by_code_color_cells = [];
+        foreach ($group_data_by_size as $key => $group) {
+            $end_index = $start_index + count($group);
+            $sum_quantity = 0;
+            for ($i = $start_index; $i < $end_index; $i++) {
+                $sum_quantity += $sum_quantity_by_size[$i];
+            }
+            array_push($quantity_by_code_color_cells, new TableCell($sum_quantity, count($group)));
+            $start_index += count($group);
+
+
+        }
+        $quantity_by_size_cells = [];
+
+        foreach ($sum_quantity_by_size as $quantity) {
+            array_push($quantity_by_size_cells, new TableCell($quantity));
+        }
+        $total_quantity = array_sum($sum_quantity_by_size);
+        $view_name = "storekeeper.storekeeper_product_report";
+        $actives = ["","","",""];
+        $actives[$tabIndex] = "active";
+        return view($view_name, [
+            'code_color_cells' => $code_color_cells,
+            'size_cells' => $size_cells,
+            'quantity_by_size_cells' => $quantity_by_size_cells,
+            'quantity_by_code_color_cells' => $quantity_by_code_color_cells,
+            'list_reports_by_date' => $list_reports_by_date,
+            'total_quantity' => $total_quantity,
+            'start_time' => $start_time_str,
+            'end_time' => $end_time_str,
+            'actives' => $actives
+        ]);
     }
 
-    public function returningProductReport(Request $request)
+    public function importingProductReport(Request $request)
     {
-
-    }
-
-    public function failedProductReport(Request $request)
-    {
-
+        return $this->createProductReport($request, 0);
     }
 
     public function exportingProductReport(Request $request)
     {
-
+        return $this->createProductReport($request, 1);
     }
+
+    public function returningProductReport(Request $request)
+    {
+        return $this->createProductReport($request, 2);
+    }
+
+    public function failedProductReport(Request $request)
+    {
+        return $this->createProductReport($request, 3);
+    }
+
+
 }
