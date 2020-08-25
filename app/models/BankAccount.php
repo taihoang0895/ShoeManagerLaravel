@@ -4,7 +4,7 @@ namespace App\models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class BankAccounts extends Model
+class BankAccount extends Model
 {
     //
     public $timestamps = false;

@@ -15,12 +15,12 @@ class CreateMarketingProductTable extends Migration
     {
         Schema::create('marketing_products', function (Blueprint $table) {
             $table->increments("id");
-            $table->string("code");
+            $table->string("code")->nullable();
             $table->unsignedInteger('user_id');
             $table->unsignedInteger('marketing_source_id');
             $table->string('product_code');
 
-            $table->integer("total_commnent")->default(0);
+            $table->integer("total_comment")->default(0);
             $table->integer("total_budget")->default(0);
             $table->dateTime("created");
             $table->foreign('user_id')->references('id')->on('users');

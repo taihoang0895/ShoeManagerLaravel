@@ -450,8 +450,9 @@ function saveMarketingProduct(){
                   var marketing_product_created = $('#edit_marketing_product_created_text').val().trim();
 
                 list_campaigns = collectListCampaigns();
-                setupCSRF();
-                marketing_product = {}
+                marketing_product = {
+                    '_token': $('meta[name=csrf-token]').attr('content')
+                }
                 marketing_product['marketing_product_id'] = marketing_product_id;
                 marketing_product['marketing_product_created'] = marketing_product_created;
                 marketing_product['product_code'] = product_code;

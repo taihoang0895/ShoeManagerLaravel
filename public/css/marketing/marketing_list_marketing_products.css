@@ -61,6 +61,11 @@
     margin-right:15px;
 
 }
+#list_marketing_product_filter #search_product_code{
+    width : 200px;
+    margin-left:15px;
+    margin-right:15px;
+}
 
 #list_marketing_product_filter .btn_filter{
     width : 100px;

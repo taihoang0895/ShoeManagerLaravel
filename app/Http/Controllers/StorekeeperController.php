@@ -98,6 +98,7 @@ class StorekeeperController
             $listProductColors = CommonFunctions::listProductColors();
             $listProductSizes = CommonFunctions::listProductSizes();
             $listProductCodes = json_encode(CommonFunctions::listProductCodes());
+
             $productSizeSelected = $importingProduct->product_size;
             $productCodeSelected = $importingProduct->product_code;
             $productColorSelected = $importingProduct->product_color;
@@ -558,7 +559,7 @@ class StorekeeperController
         $end_time_str = $request->get('end_time', '');
         $start_time = Util::safeParseDate($start_time_str);
         $end_time = Util::safeParseDate($end_time_str);
-        $listProductReports = StoreKeeperFunctions::reportProduct($tabIndex,$start_time, $end_time);
+        $listProductReports = StoreKeeperFunctions::reportProduct($tabIndex, $start_time, $end_time);
 
         $listDetailproduct = StoreKeeperFunctions::listDetailProducts();
         $size_cells = [];
@@ -651,10 +652,9 @@ class StorekeeperController
             array_push($quantity_by_size_cells, new TableCell($quantity));
         }
         $total_quantity = array_sum($sum_quantity_by_size);
-        $view_name = "storekeeper.storekeeper_product_report";
-        $actives = ["","","",""];
+        $actives = ["", "", "", ""];
         $actives[$tabIndex] = "active";
-        return view($view_name, [
+        return view("storekeeper.storekeeper_product_report", [
             'code_color_cells' => $code_color_cells,
             'size_cells' => $size_cells,
             'quantity_by_size_cells' => $quantity_by_size_cells,
@@ -663,7 +663,8 @@ class StorekeeperController
             'total_quantity' => $total_quantity,
             'start_time' => $start_time_str,
             'end_time' => $end_time_str,
-            'actives' => $actives
+            'actives' => $actives,
+            'tab_index' => $tabIndex
         ]);
     }
 
@@ -685,6 +686,45 @@ class StorekeeperController
     public function failedProductReport(Request $request)
     {
         return $this->createProductReport($request, 3);
+    }
+
+    private function createProductHistory($request, $tabIndex)
+    {
+
+        $start_time_str = $request->get('start_time', '');
+        $end_time_str = $request->get('end_time', '');
+        $start_time = Util::safeParseDate($start_time_str);
+        $end_time = Util::safeParseDate($end_time_str);
+        $list_histories = StoreKeeperFunctions::listImportingExportingHistories($tabIndex, $start_time, $end_time);
+        $actives = ["", "", "", ""];
+        $actives[$tabIndex] = "active";
+        return view("storekeeper.storekeeper_importing_exporting_history", [
+            'list_histories' => $list_histories,
+            'start_time' => $start_time_str,
+            'end_time' => $end_time_str,
+            'actives' => $actives,
+            'tab_index' => $tabIndex
+        ]);
+    }
+
+    public function importingProductHistory(Request $request)
+    {
+        return $this->createProductHistory($request, 0);
+    }
+
+    public function exportingProductHistory(Request $request)
+    {
+        return $this->createProductHistory($request, 1);
+    }
+
+    public function returningProductHistory(Request $request)
+    {
+        return $this->createProductHistory($request, 2);
+    }
+
+    public function failedProductHistory(Request $request)
+    {
+        return $this->createProductHistory($request, 3);
     }
 
 

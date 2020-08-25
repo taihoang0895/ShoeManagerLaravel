@@ -129,7 +129,7 @@ function collectFilterParam(){
     var end_time = $('#marketing_product_filter_end_time_text').val().trim();
     var filter_marketing_source_id = $('#filter_marketing_source_id_selected').val().trim();
      var filter_member_id = $('#filter_member_id_selected').val().trim();
-
+    var search_product_code = $('#search_product_code').val().trim();
     var param = "";
     if(start_time != '' && end_time != ''){
         param = 'start_time='+start_time +"&"+"end_time=" +end_time;
@@ -139,6 +139,9 @@ function collectFilterParam(){
     }
     if (filter_member_id != "-1"){
         param += "&filter_member_id="+filter_member_id
+    }
+    if(search_product_code != ""){
+        param += "&search_product_code=" + search_product_code
     }
     if(param.startsWith("&")){
         param = param.substring(1);

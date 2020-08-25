@@ -21,13 +21,15 @@ class CreateDetailOrderTable extends Migration
             $table->integer("actually_collected");
             $table->integer("pick_money");
 
-            $table->unsignedInteger('discount_id');
+            $table->unsignedInteger('marketing_product_id')->nullable();
+            $table->unsignedInteger('discount_id')->nullable();
             $table->unsignedInteger('product_category_id');
             $table->unsignedInteger('detail_product_id');
 
             $table->foreign("discount_id")->references('id')->on('discounts');
             $table->foreign("product_category_id")->references('id')->on('product_categories');
             $table->foreign("detail_product_id")->references('id')->on('detail_products');
+            $table->foreign("marketing_product_id")->references('id')->on('marketing_products');
         });
     }
 

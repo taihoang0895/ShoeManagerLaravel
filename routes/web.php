@@ -89,3 +89,19 @@ Route::get("storekeeper/importing-product-report/", "StorekeeperController@impor
 Route::get("storekeeper/returning-product-report/", "StorekeeperController@returningProductReport")->middleware("auth", 'notification')->name("storekeeper-importing-product-report");
 Route::get("storekeeper/failed-product-report/", "StorekeeperController@failedProductReport")->middleware("auth", 'notification')->name("storekeeper-importing-product-report");
 Route::get("storekeeper/exporting-product-report/", "StorekeeperController@exportingProductReport")->middleware("auth", 'notification')->name("storekeeper-exporting-product-report");
+
+Route::get("storekeeper/importing-product-history/", "StorekeeperController@importingProductHistory")->middleware("auth", 'notification')->name("storekeeper-importing-product-history");
+Route::get("storekeeper/failed-product-history/", "StorekeeperController@failedProductHistory")->middleware("auth", 'notification')->name("storekeeper-failed-product-history");
+Route::get("storekeeper/returning-product-history/", "StorekeeperController@returningProductHistory")->middleware("auth", 'notification')->name("storekeeper-returning-product-history");
+Route::get("storekeeper/exporting-product-history/", "StorekeeperController@exportingProductHistory")->middleware("auth", 'notification')->name("storekeeper-exporting-product-history");
+
+
+Route::get("marketing", "MarketingController@listProducts")->middleware("auth", 'notification')->name("marketing-main");
+Route::get("marketing/products/", "MarketingController@listProducts")->middleware("auth", 'notification')->name("marketing-list-products");
+
+Route::get("marketing/marketing-products/", "MarketingController@listMarketingProducts")->middleware("auth", 'notification')->name("marketing-list-marketing-products");
+Route::get("marketing/form-add-marketing-product/", "MarketingController@getFormAddMarketingProduct")->name("marketing-form-add-marketing-product");
+Route::get("marketing/form-update-marketing-product/", "MarketingController@getFormUpdateMarketingProduct")->name("marketing-form-update-marketing-product");
+Route::get("marketing/detail-marketing-product/", "MarketingController@detailMarketingProductCode")->name("marketing-detail-marketing-product");
+Route::post("marketing/save-marketing-product/", "MarketingController@saveMarketingProduct")->name("marketing-save-marketing-product");
+Route::post("marketing/delete-marketing-product", "MarketingController@deleteMarketingProduct")->name("marketing-detail-marketing-product");

@@ -13,6 +13,7 @@ use App\models\ImportingProduct;
 use App\models\Inventory;
 use App\models\ProductCategory;
 use App\models\ReturningProduct;
+use App\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -586,7 +587,7 @@ class StoreKeeperFunctions
         }
         $query = DB::table($tableName);
         if ($tabIndex == 1) {
-            $query->join("orders",'detail_orders.order_id', "=", "orders.id")
+            $query->join("orders", 'detail_orders.order_id', "=", "orders.id")
                 ->select(DB::raw("detail_orders.detail_product_id as detail_product_id"),
                     DB::raw('SUM(detail_orders.quantity) as total_quantity'),
                     DB::raw('DATE(orders.created) as day'));
@@ -605,9 +606,59 @@ class StoreKeeperFunctions
             $productReport->quantity = $importingProductReport->total_quantity;
 
             array_push($listProductReports, $productReport);
-
-
         }
         return $listProductReports;
     }
+
+    public static function listImportingExportingHistories($tabIndex, $startTime = null, $endTime = null)
+    {
+        $tableName = "history_importing_products";
+        switch ($tabIndex) {
+            case 0:
+                break;
+            case 1:
+                $tableName = "history_exporting_products";
+                break;
+            case 2:
+                $tableName = "history_returning_products";
+                break;
+            case 3:
+                $tableName = "history_failed_products";
+                break;
+        }
+        $filterOptions = [];
+        if ($startTime != null && $endTime != null) {
+            $filterOptions[] = ['created', '>=', $startTime];
+            $filterOptions[] = ['created', '<=', $endTime];
+        }
+        $query = DB::table($tableName);
+        $perPage = config('settings.per_page');
+        $results = $query->where($filterOptions)->paginate($perPage);
+        foreach ($results as $historyProduct) {
+            $data = [];
+            switch ($tabIndex) {
+                case 0:
+                    $data = json_decode($historyProduct->importing_product);
+                    break;
+                case 1:
+                    $data = json_decode($historyProduct->exporting_product);
+                    break;
+                case 2:
+                    $data = json_decode($historyProduct->returning_product);
+                    break;
+                case 3:
+                    $data = json_decode($historyProduct->failed_product);
+                    break;
+            }
+            $historyProduct->username = User::where("id", $historyProduct->user_id)->first()->username;
+            $historyProduct->action = ActionCode::getName($historyProduct->action);
+            $historyProduct->date_str = Util::formatDateTime(Util::convertDateTimeSql($historyProduct->created));
+            $historyProduct->product_code = $data->product_code;
+            $historyProduct->product_size = $data->product_size;
+            $historyProduct->product_color = $data->product_color;
+            $historyProduct->quantity = $data->quantity;
+        }
+        return $results;
+    }
+
 }
