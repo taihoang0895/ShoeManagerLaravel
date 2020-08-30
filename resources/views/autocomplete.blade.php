@@ -5,11 +5,13 @@
 </div>
 
 <script>
+
     var autocomplete_data = JSON.parse({!!json_encode($autocomplete_data)!!});
     $(document).ready(function () {
         $("#{{$autocomplete_id}}").autocomplete({
             source: autocomplete_data
         });
+
     })
 
 </script>

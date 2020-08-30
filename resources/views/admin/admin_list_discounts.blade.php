@@ -4,6 +4,8 @@
     <link rel="stylesheet" href={{ asset('css/admin/admin_main.css' ) }}>
     <link rel="stylesheet" href={{ asset('css/admin/admin_list_discounts.css') }}>
     <script src={{ asset('js/admin/admin_list_discounts.js')}}></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
     <meta name="csrf-token" content="{{ Session::token() }}">
 @endsection
 
@@ -77,8 +79,7 @@
         </tr>
     </table>
     <div id="dialog_edit_discount"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+
     <script type="text/javascript">
         $(document).ready(function () {
             document.title = 'Khuyến Mại';

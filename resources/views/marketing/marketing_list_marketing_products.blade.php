@@ -13,8 +13,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
     <script src={{ asset('js/marketing/marketing_list_marketing_products.js' ) }}></script>
-    <link rel="stylesheet" type="text/css" href="{{asset('jqueryui/jquery-ui.min.css')}}">
-    <script src="{{asset('jqueryui/jquery-ui.min.js')}}" type="text/javascript"></script>
     <meta name="csrf-token" content="{{ Session::token() }}">
 @endsection
 @section('content')

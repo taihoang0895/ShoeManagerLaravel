@@ -24,6 +24,10 @@ class Util
     {
         return mb_strtoupper($string, "UTF-8");
     }
+    public static function toLower($string)
+    {
+        return mb_strtolower($string, "UTF-8");
+    }
 
     public static function parseInt($number, $default = null)
     {
@@ -78,11 +82,11 @@ class Util
         return "";
     }
 
-    public static function safeParseDate($dateStr)
+    public static function safeParseDate($dateStr, $default=null)
     {
         $dateSegments = explode("/", $dateStr);
         if (count($dateSegments) != 3) {
-            return null;
+            return $default;
         }
 
         try {
@@ -92,7 +96,38 @@ class Util
             return Carbon::create($year = (int)$year, $month = (int)$month, $day = (int)$day, 0, 0, 0);
         } catch (\Exception $e) {
             Log::log("error", $e->getMessage());
-            return null;
+            return $default;
+        }
+    }
+
+    public static function safeParseDateTime($dateStr, $default=null)
+    {
+        $dateTimeSegments =  $dateSegments = explode(" ", $dateStr);
+        if(count($dateTimeSegments) != 2){
+            return $default;
+        }
+        $dateSegments = explode("/", $dateTimeSegments[0]);
+        if (count($dateSegments) != 3) {
+            return $default;
+        }
+        $timeSegments = explode(":", $dateTimeSegments[1]);
+        if (count($timeSegments) != 3) {
+            return $default;
+        }
+
+        try {
+            $day = (int)$dateSegments[0];
+            $month = (int)$dateSegments[1];
+            $year = (int)$dateSegments[2];
+
+            $hour = (int)$timeSegments[0];
+            $minute = (int)$timeSegments[1];
+            $second = (int)$timeSegments[2];
+
+            return Carbon::create($year = $year, $month = $month, $day = $day, $hour, $minute, $second);
+        } catch (\Exception $e) {
+            Log::log("error", $e->getMessage());
+            return $default;
         }
     }
 

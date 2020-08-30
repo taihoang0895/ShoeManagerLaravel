@@ -1,15 +1,12 @@
-.tbl_item .fail_reason_note{
-    width : 20%;
-}
 .tbl_item .fail_reason_code{
-    width : 20%;
+    width : 30%;
 }
 
 .tbl .order_fail_reason_row_selected{
     background-color : #DDF4FF;
 }
 .tbl_item .fail_reason_cause{
-     width : 60%;
+     width : 70%;
 }
 .tbl{
     margin-top : 15px;

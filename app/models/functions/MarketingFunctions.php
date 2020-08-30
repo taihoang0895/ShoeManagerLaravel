@@ -30,9 +30,10 @@ class MarketingFunctions
         return Product::where($filterOptions)->paginate($perPage);
     }
 
-    public static function listMarketingProductCodes(){
+    public static function listMarketingProductCodes()
+    {
         $listProductCodes = [];
-        foreach (DB::table('marketing_products')->distinct()->get(['code']) as $productCat){
+        foreach (DB::table('marketing_products')->distinct()->get(['code']) as $productCat) {
             array_push($listProductCodes, $productCat->code);
         }
         return $listProductCodes;
@@ -148,5 +149,151 @@ class MarketingFunctions
         }
         return ResultCode::FAILED_UNKNOWN;
     }
+
+    public static function findMarketingSource()
+    {
+        $perPage = config('settings.per_page');
+        return MarketingSource::where([])->paginate($perPage);
+    }
+
+    public static function saveMarketingSource($marketingSourceInfo)
+    {
+        try {
+            $marketingSource = MarketingSource::where("id", $marketingSourceInfo->id)->first();
+            if ($marketingSource == null) {
+                $marketingSource = new MarketingSource();
+            }
+            $marketingSource->name = $marketingSourceInfo->name;
+            $marketingSource->note = $marketingSourceInfo->note;
+            if ($marketingSource->save()) {
+                return ResultCode::SUCCESS;
+            }
+        } catch (\Exception $e) {
+            Log::log("error message", $e->getMessage());
+        }
+        return ResultCode::FAILED_UNKNOWN;
+
+    }
+
+    public static function getMarketingSource($marketingSourceId)
+    {
+        $marketingSource = MarketingSource::where("id", $marketingSourceId)->first();
+        return $marketingSource;
+    }
+
+    public static function deleteMarketingSource($user, $marketingSourceId)
+    {
+        try {
+            if ($user->isMember()) {
+                return ResultCode::FAILED_PERMISSION_DENY;
+            }
+            if (MarketingSource::where("id", $marketingSourceId)->delete()) {
+                return ResultCode::SUCCESS;
+            }
+        } catch (\Exception $e) {
+            Log::log("error message", $e->getMessage());
+        }
+        return ResultCode::FAILED_UNKNOWN;
+
+    }
+
+    public static function findBankAccount($bankAccount = "")
+    {
+        $filterOptions = [];
+        $filterOptions['is_active'] = true;
+        if ($bankAccount != "") {
+            $filterOptions[] = ["name", "like", '%' . $bankAccount . '%'];
+        }
+        $perPage = config('settings.per_page');
+        return BankAccount::where($filterOptions)->paginate($perPage);
+    }
+
+    public static function getBankAccount($id)
+    {
+        $bankAccount = BankAccount::where("id", $id)->first();
+        return $bankAccount;
+    }
+
+    public static function saveBankAccount($bankAccountInfo)
+    {
+        $bankAccount = BankAccount::where("id", $bankAccountInfo->id)->first();
+        if ($bankAccount == null) {
+            $bankAccount = new BankAccount();
+            $bankAccount->created = Util::now();
+        }
+        $bankAccount->name = $bankAccountInfo->name;
+        if ($bankAccount->save()) {
+            return ResultCode::SUCCESS;
+        }
+        return ResultCode::FAILED_UNKNOWN;
+    }
+
+    public static function deleteBankAccount($id)
+    {
+        try {
+            $bankAccount = BankAccount::where("id", $id)->first();
+            if ($bankAccount != null) {
+                $bankAccount->is_active = false;
+                if ($bankAccount->save()) {
+                    return ResultCode::SUCCESS;
+                }
+            }
+        } catch (\Exception $e) {
+            Log::log("error message", $e->getMessage());
+        }
+        return ResultCode::FAILED_UNKNOWN;
+    }
+
+    public static function reportRevenue($listUserIds, $day = null, $month = null, $year = null)
+    {
+        $filterOptions = [];
+        $query = DB::table("marketing_products");
+        $query->select("users.username as username","bank_accounts.name as bank_account_name", DB::raw('SUM(campaigns.budget) as total_budget'));
+        $query->join("campaigns", "marketing_products.id","=", "campaigns.marketing_product_id");
+        $query->join("bank_accounts", "campaigns.bank_account_id", "=", "bank_accounts.id");
+        $query->join("users", "users.id", "=", "marketing_products.user_id");
+        $query->groupBy("username", "bank_account_name");
+        $query->whereIn("users.id", $listUserIds);
+        if($day != null){
+            $query->whereDay("marketing_products.created", $day);
+        }
+        if($month != null){
+            $query->whereMonth("marketing_products.created", $month);
+        }
+        if($year != null){
+            $query->whereYear("marketing_products.created", $year);
+        }
+        $results = $query->where($filterOptions)->get();
+        $dataset = [];
+        $colHeader = [];
+        $rowHeader = [];
+        foreach ($results as $row){
+            $bankAccount = $row->bank_account_name;
+            $owner = $row->username;
+            if(!array_key_exists($owner, $dataset)){
+                $dataset[$owner] = [];
+            }
+            $dataset[$owner][$bankAccount] = $row->total_budget;
+            if(!in_array(strval($bankAccount), $colHeader)){
+                array_push($colHeader,strval($bankAccount));
+            }
+            if(!in_array(strval($owner), $rowHeader)){
+                array_push($rowHeader,strval($owner));
+            }
+        }
+        foreach ($rowHeader as $row){
+            foreach ($colHeader as $col){
+                if(!array_key_exists($col, $dataset[$row])){
+                    $dataset[$row][$col] = 0;
+                }
+            }
+        }
+        $revenueReport = new \stdClass();
+        $revenueReport->col_names = $colHeader;
+        $revenueReport->row_names = $rowHeader;
+        $revenueReport->dataset = $dataset;
+        return $revenueReport;
+    }
+
 
 }

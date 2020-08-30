@@ -3,10 +3,10 @@ var dropdownDefaultColorText = "Chọn màu";
 
 
 function collectFilterParam(){
-    var product_marketing_code = $('#search_product_marketing_code').val().trim();
+    var product_marketing_code = $('#search_product_code').val().trim();
     var param = "";
     if(product_marketing_code != ''){
-        param+= "product_marketing_code=" + product_marketing_code;
+        param+= "product_code=" + product_marketing_code;
     }
     return param;
 }
@@ -63,7 +63,7 @@ function handleShowDetailProduct(){
                     return;
               }
               is_waiting_for_request = true;
-               $.get("/sale/detail-product?product_code=" + product_code.toString(), function(response) {
+               $.get("common/detail-product/?product_code=" + product_code.toString(), function(response) {
                         if(response['status'] == 200){
                                $('#dialog_edit_product').empty();
                                $('#dialog_edit_product').html(response['content']);

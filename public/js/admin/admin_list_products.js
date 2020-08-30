@@ -46,7 +46,7 @@ function handleShowDetailProduct() {
         var data = {
             "product_code": product_code.toString()
         }
-        $.get("/detail-product/", data, function (response) {
+        $.get("common/detail-product/", data, function (response) {
             if (response['status'] == 200) {
                 $('#dialog_edit_product').empty();
                 $('#dialog_edit_product').html(response['content']);

@@ -19,4 +19,9 @@ class Inventory extends Model
         }
         return $inventory;
     }
+    public static function get($detailProductId)
+    {
+        return Inventory::where("detail_product_id", $detailProductId)->first();
+    }
+
 }

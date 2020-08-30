@@ -5,10 +5,14 @@ namespace App\models\functions;
 
 
 use App\models\Config;
+use App\models\Discount;
+use App\models\District;
 use App\models\functions\rows\DetailProductRow;
+use App\models\Inventory;
 use App\models\Notification;
 use App\models\NotificationManager;
 use App\models\Product;
+use App\models\Province;
 use Illuminate\Support\Facades\DB;
 
 class CommonFunctions
@@ -154,33 +158,108 @@ class CommonFunctions
             $notificationManager->save();
             DB::commit();
         } catch (\Exception $e) {
-            echo ($e->getMessage());
+            echo($e->getMessage());
             DB::rollBack();
         }
     }
 
-    public static function listProductSizes(){
+    public static function listProductSizes()
+    {
         $listSizes = [];
-        foreach (DB::table('product_categories')->distinct()->get(['size']) as $productCat){
+        foreach (DB::table('product_categories')->distinct()->get(['size']) as $productCat) {
             array_push($listSizes, $productCat->size);
         }
         return $listSizes;
 
     }
-    public static function listProductCodes(){
+
+    public static function listProductCodes()
+    {
         $listProductCodes = [];
-        foreach (DB::table('products')->distinct()->get(['code']) as $productCat){
+        foreach (DB::table('products')->distinct()->get(['code']) as $productCat) {
             array_push($listProductCodes, $productCat->code);
         }
         return $listProductCodes;
 
     }
 
-    public static function listProductColors(){
+    public static function listProductColors()
+    {
         $listColors = [];
-        foreach (DB::table('product_categories')->distinct()->get(['color']) as $productCat){
+        foreach (DB::table('product_categories')->distinct()->get(['color']) as $productCat) {
             array_push($listColors, $productCat->color);
         }
         return $listColors;
     }
+
+    public static function getListProvinceNames()
+    {
+        $provinces = Province::all();
+        $listProvinceName = [];
+        foreach ($provinces as $province) {
+            array_push($listProvinceName, $province->name);
+        }
+        return $listProvinceName;
+    }
+
+
+    public static function getDistrictNames($provinceName)
+    {
+        $query = DB::table("districts");
+        $query->select("districts.name as name");
+        $query->join("provinces", "provinces.id", "=", "districts.province_id");
+        $query->where("provinces.name", 'like', "%" . $provinceName . "%");
+        $districts = $query->get();
+        $listDistrictName = [];
+        foreach ($districts as $district) {
+            array_push($listDistrictName, $district->name);
+        }
+        return $listDistrictName;
+    }
+
+    public static function getStreetsNames($provinceName, $districtName)
+    {
+        $query = DB::table("streets");
+        $query->select("streets.name as name");
+        $query->join("districts", "streets.district_id", "=", "districts.id");
+        $query->join("provinces", "provinces.id", "=", "districts.province_id");
+        $query->where("provinces.name", $provinceName);
+        $query->where("districts.name", $districtName);
+        $streets = $query->get();
+        $listStreetName = [];
+        foreach ($streets as $street) {
+            array_push($listStreetName, $street->name);
+        }
+        return $listStreetName;
+    }
+
+    public static function getStreet($provinceName, $districtName, $streetName)
+    {
+        $query = DB::table("streets");
+        $query->select("streets.*");
+        $query->join("districts", "streets.district_id", "=", "districts.id");
+        $query->join("provinces", "provinces.id", "=", "districts.province_id");
+        $query->where("provinces.name", $provinceName);
+        $query->where("districts.name", $districtName);
+        $query->where("streets.name", $streetName);
+        return $query->first();
+    }
+
+    public static function listDiscounts()
+    {
+        $filterOptions = [];
+        $filterOptions[] = ["start_time", "<=", Util::now()];
+        $filterOptions[] = ["end_time", ">=", Util::now()];
+        return Discount::where($filterOptions)->get();
+    }
+
+    public static function getRemainingQuantity($detailProductId)
+    {
+        $inventory = Inventory::get($detailProductId);
+        if ($inventory != null) {
+            return $inventory->importing_quantity - $inventory->exporting_quantity;
+        }
+        return 0;
+    }
+
 }

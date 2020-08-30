@@ -19,8 +19,9 @@ class CretateCustomerTable extends Migration
             $table->string('name');
             $table->string('address')->nullable();
             $table->integer('customer_state');
-            $table->unsignedInteger('street_id');
+            $table->unsignedInteger('street_id')->nullable();
             $table->unsignedInteger('landing_page_id')->nullable();
+            $table->unsignedInteger('user_id');
             $table->string("phone_number", 24);
             $table->date("birthday")->nullable();
             $table->boolean("public_phone_number");
@@ -28,6 +29,7 @@ class CretateCustomerTable extends Migration
 
             $table->foreign('landing_page_id')->references('id')->on('landing_pages');
             $table->foreign('street_id')->references('id')->on('streets');
+            $table->foreign('user_id')->references('id')->on('users');
 
         });
     }

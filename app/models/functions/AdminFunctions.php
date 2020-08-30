@@ -128,17 +128,21 @@ class AdminFunctions
             if ($user == null) {
                 return ResultCode::FAILED_UNKNOWN;
             }
+            if($user->password != $userInfo->password){
+                $user->password = Hash::make($userInfo->password);
+            }
         } else {
             $condition = [];
             $condition['username'] = $userInfo->username;
             if (User::where($condition)->first() != null) {
                 return ResultCode::FAILED_USER_DUPLICATE_USERNAME;
             }
+            $user->password = Hash::make($userInfo->password);
         }
 
 
         $user->username = $userInfo->username;
-        $user->password = Hash::make($userInfo->password);
+
         $user->alias_name = $userInfo->alias_name;
         $user->department = User::parseDepartmentName($userInfo->department_name);
         $user->is_active = true;

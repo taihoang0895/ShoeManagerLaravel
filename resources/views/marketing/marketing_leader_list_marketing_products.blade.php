@@ -15,6 +15,8 @@
     <script src={{ asset('js/marketing/marketing_leader_list_marketing_products.js' ) }}></script>
     <link rel="stylesheet" type="text/css" href="{{asset('jqueryui/jquery-ui.min.css')}}">
     <script src="{{asset('jqueryui/jquery-ui.min.js')}}" type="text/javascript"></script>
+
+    <script type="text/javascript" charset="UTF-8" src={{ asset("jqueryui/bootstrap-datepicker.vi.js") }}></script>
     <meta name="csrf-token" content="{{ Session::token() }}">
 @endsection
 @section('content')
@@ -26,8 +28,8 @@
         <input type="hidden" id="filter_member_id_selected" value="{{$filter_member_id}}">
         <tr>
             <td>
-                    @include("autocomplete", ["autocomplete_id"=>"search_product_code", "autocomplete_placeholder"=>"Nhập mã sản phẩm",
-                                              "autocomplete_value"=>$search_product_code, "autocomplete_data"=>$list_product_codes])
+                @include("autocomplete", ["autocomplete_id"=>"search_product_code", "autocomplete_placeholder"=>"Nhập mã sản phẩm",
+                                          "autocomplete_value"=>$search_product_code, "autocomplete_data"=>$list_product_codes])
             </td>
             <td class="filter_start_time">
                 <div class="input-group date" id="marketing_product_filter_start_time" data-target-input="nearest">
@@ -184,7 +186,9 @@
     <div id="dialog_edit_marketing_product"></div>
 
     <script>
+
         $(document).ready(function () {
+            //$.fn.datetimepicker.defaults.language = 'nl';
             $("#marketing_product_filter_start_time").datetimepicker({
                 format: 'DD/MM/YYYY',
             });
@@ -193,7 +197,8 @@
             });
             document.title = 'Marketing';
             $('#marketing_menu_item_marketing').addClass('selected');
-        });
+        })
+        ;
     </script>
 @endsection
 

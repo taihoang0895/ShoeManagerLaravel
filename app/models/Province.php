@@ -4,7 +4,7 @@ namespace App\models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Customers extends Model
+class Province extends Model
 {
     //
     public $timestamps = false;

@@ -37,11 +37,11 @@ function handleOkButton(){
         if(validate(name, note)){
             var marketing_source_id = $('#edit_marketing_source_id').val().trim();
             is_waiting_for_request = true;
-            setupCSRF();
             var data = {
                 'marketing_source_id' : marketing_source_id,
                 'name' : name,
-                'note' : note
+                'note' : note,
+                '_token': $('meta[name=csrf-token]').attr('content')
             }
             saveMarketingSource(data);
         }

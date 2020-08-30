@@ -20,14 +20,15 @@ function handleOKButon(){
         var delivery_time = $('#edit_order_delivery_time_text').val();
 
         is_waiting_for_request = true;
-        var order = {};
+        var order = {
+            '_token': $('meta[name=csrf-token]').attr('content'),
+        };
         order['order_id'] = order_id;
         order['order_state_id'] = state_id;
         order['order_fail_id'] = fail_reason_id;
         order['note'] = note;
         order['delivery_time'] = delivery_time;
-        setupCSRF();
-        $.post('/sale/update-order', order, function(response) {
+        $.post('/sale/update-order/', order, function(response) {
                   if(response['status'] == 200){
                         location.reload();
                   }else{

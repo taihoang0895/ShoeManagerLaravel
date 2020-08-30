@@ -4,6 +4,7 @@
 namespace App\Http\Controllers;
 
 
+use App\models\functions\AdminFunctions;
 use App\models\functions\CommonFunctions;
 use App\models\functions\Log;
 use App\models\functions\MarketingFunctions;
@@ -23,7 +24,6 @@ class MarketingController
         return view("marketing.marketing_list_products", [
             "products" => $products,
             "search_product_code" => $productCode
-
         ]);
     }
 
@@ -274,5 +274,271 @@ class MarketingController
             $response['message'] = "Lỗi xoá";
         }
         return response()->json($response);
+    }
+
+    public function marketingSources(Request $request)
+    {
+        $marketingSources = MarketingFunctions::findMarketingSource();
+        $editable = Auth::user()->isLeader();
+        return view("marketing.marketing_list_marketing_sources", [
+            "list_marketing_sources" => $marketingSources,
+            'editable' => $editable
+        ]);
+
+
+    }
+
+    public function formAddMarketingSource(Request $request)
+    {
+        $response = array(
+            "status" => 200,
+            "content" => "",
+            "message" => "Lỗi"
+        );
+        $marketingSource = new \stdClass();
+        $marketingSource->id = -1;
+        $marketingSource->name = "";
+        $marketingSource->note = "";
+        $response['content'] = view("marketing.marketing_edit_marketing_source", [
+            'marketing_source' => $marketingSource
+        ])->render();
+        return response()->json($response);
+    }
+
+    public function formUpdateMarketingSource(Request $request)
+    {
+        $response = array(
+            "status" => 406,
+            "content" => "",
+            "message" => "Lỗi"
+        );
+        $marketingSourceId = $request->get("marketing_source_id");
+        $marketingSource = MarketingFunctions::getMarketingSource($marketingSourceId);
+        if ($marketingSource != null) {
+            $response['status'] = 200;
+            $response['content'] = view("marketing.marketing_edit_marketing_source", [
+                'marketing_source' => $marketingSource
+            ])->render();
+        }
+        Log::log("isnfs", $marketingSourceId);
+        return response()->json($response);
+    }
+
+    public function saveMarketingSource(Request $request)
+    {
+        $response = array(
+            "status" => 406,
+            "content" => "",
+            "message" => "Lỗi lưu"
+        );
+        $id = $request->get("marketing_source_id", "");
+        $name = $request->get("name", "");
+        $note = $request->get("note", "");
+        if ($note == null) {
+            $note = "";
+        }
+        if ($name != "") {
+            $marketingSourceInfo = new \stdClass();
+            $marketingSourceInfo->id = $id;
+            $marketingSourceInfo->name = $name;
+            $marketingSourceInfo->note = $note;
+            $resultCode = MarketingFunctions::saveMarketingSource($marketingSourceInfo);
+            if ($resultCode == ResultCode::SUCCESS) {
+                $response['status'] = 200;
+            }
+        }
+        return response()->json($response);
+    }
+
+    public function deleteMarketingSource(Request $request)
+    {
+        $response = array(
+            "status" => 200,
+            "content" => "",
+            "message" => ""
+        );
+        $marketingSourceId = $request->get('marketing_source_id', "");
+        $resultCode = MarketingFunctions::deleteMarketingSource(Auth::user(), $marketingSourceId);
+        if ($resultCode != ResultCode::SUCCESS) {
+            $response['status'] = 406;
+            $response['message'] = "Lỗi xoá";
+        }
+        return response()->json($response);
+    }
+
+    public function listBankAccounts(Request $request)
+    {
+        $bankAccountName = $request->get('bank_account', '');
+        $bankAccounts = MarketingFunctions::findBankAccount($bankAccountName);
+        return view("marketing.marketing_list_bank_accounts", [
+            "list_bank_accounts" => $bankAccounts,
+            'search_bank_account' => $bankAccountName
+        ]);
+    }
+
+    public function formAddBankAccount(Request $request)
+    {
+        $response = array(
+            "status" => 200,
+            "content" => "",
+            "message" => "Lỗi"
+        );
+        $bankAccount = new \stdClass();
+        $bankAccount->id = -1;
+        $bankAccount->name = "";
+        $response['content'] = view("marketing.marketing_edit_bank_account", [
+            'bank_account' => $bankAccount
+        ])->render();
+        return response()->json($response);
+    }
+
+    public function formUpdateBankAccount(Request $request)
+    {
+        $response = array(
+            "status" => 406,
+            "content" => "",
+            "message" => "Lỗi"
+        );
+        $id = $request->get("bank_account_id", -1);
+        $bankAccount = MarketingFunctions::getBankAccount($id);
+        if ($bankAccount != null) {
+            $response['status'] = 200;
+            $response['content'] = view("marketing.marketing_edit_bank_account", [
+                'bank_account' => $bankAccount
+            ])->render();
+        }
+
+        return response()->json($response);
+    }
+
+    public function saveBankAccount(Request $request)
+    {
+        $response = array(
+            "status" => 406,
+            "content" => "",
+            "message" => "Lỗi lưu"
+        );
+        $id = $request->get("bank_account_id", "");
+        $name = $request->get("name", "");
+        Log::log("id", $id);
+        if ($name != "") {
+            $bankAccountInfo = new \stdClass();
+            $bankAccountInfo->id = $id;
+            $bankAccountInfo->name = $name;
+            $resultCode = MarketingFunctions::saveBankAccount($bankAccountInfo);
+            if ($resultCode == ResultCode::SUCCESS) {
+                $response['status'] = 200;
+            }
+        }
+        return response()->json($response);
+    }
+
+    public function deleteBankAccount(Request $request)
+    {
+        $response = array(
+            "status" => 200,
+            "content" => "",
+            "message" => ""
+        );
+        $id = $request->get('bank_account_id', "");
+        $resultCode = MarketingFunctions::deleteBankAccount($id);
+        if ($resultCode != ResultCode::SUCCESS) {
+            $response['status'] = 406;
+            $response['message'] = "Lỗi xoá";
+        }
+        return response()->json($response);
+    }
+
+    public function revenueReport(Request $request)
+    {
+        $listMembers = [];
+        $listUserIds = [];
+        $filterMemberStr = "";
+        $filterMemberId = Util::parseInt($request->get('filter_member_id', -1));
+        $reportTimeType = Util::parseInt($request->get('report_time_type', 0), 0);
+        $reportTimeStr = $request->get('report_time');
+
+
+
+        if(Auth::user()->isLeader()){
+            $listMembers = MarketingFunctions::findAllMarketing();
+            if($filterMemberId == -1){
+                foreach ($listMembers as $member) {
+                    array_push($listUserIds, $member->id);
+                }
+                $filterMemberStr = "___";
+            }else{
+
+                foreach ($listMembers as $member) {
+                    if ($member->id == $filterMemberId) {
+                        $filterMemberStr = $member->alias_name;
+                    }
+                }
+                array_push($listUserIds, $filterMemberId);
+            }
+        }else{
+            $listMembers= [Auth::user()];
+            $filterMemberId = Auth::user()->id;
+            $listUserIds = [Auth::user()->id];
+            $filterMemberStr = Auth::user()->username;
+        }
+
+
+        $day = null;
+        $month = null;
+        $year = null;
+        if ($reportTimeType == 0) {
+            $reportTime = Util::safeParseDate($reportTimeStr, null);
+            if ($reportTime != null) {
+                $day = $reportTime->day;
+                $month = $reportTime->month;
+                $year = $reportTime->year;
+            } else {
+                $reportTimeStr = "";
+            }
+        }
+        if ($reportTimeType == 1) {
+            $tmp = "1/" . $reportTimeStr;
+            $reportTime = Util::safeParseDate($tmp, null);
+            if ($reportTime != null) {
+                $month = $reportTime->month;
+                $year = $reportTime->year;
+            } else {
+                $reportTimeStr = "";
+            }
+
+        }
+        if ($reportTimeType == 2) {
+            $tmp = "1/1/" . $reportTimeStr;
+            $reportTime = Util::safeParseDate($tmp, null);
+            if ($reportTime != null) {
+                $year = $reportTime->year;
+            } else {
+                $reportTimeStr = "";
+            }
+
+        }
+
+        $revenueReportTimeType = "Ngày";
+        if ($reportTimeType == 1) {
+            $revenueReportTimeType = "Tháng";
+        }
+        if ($reportTimeType == 2) {
+            $revenueReportTimeType = "Năm";
+        }
+
+
+        $revenueReport = MarketingFunctions::reportRevenue($listUserIds, $day, $month, $year);
+        return view("marketing.marketing_revenue_report", [
+            "table" => $revenueReport->dataset,
+            'col_names' => $revenueReport->col_names,
+            'row_names' => $revenueReport->row_names,
+            'report_time_type' => $reportTimeType,
+            'revenue_report_time_type' => $revenueReportTimeType,
+            'report_time_str' => $reportTimeStr,
+            'list_members' => $listMembers,
+            'filter_member_id' => $filterMemberId,
+            'filter_member_str' => $filterMemberStr
+        ]);
     }
 }

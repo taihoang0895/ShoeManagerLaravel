@@ -101,7 +101,8 @@ function handleDeleteButton(){
                var bank_account_id = $('.bank_account_row_selected').find('.bank_account_id').val();
 
                 var data = {
-                        'bank_account_id' : bank_account_id
+                        'bank_account_id' : bank_account_id,
+                        '_token': $('meta[name=csrf-token]').attr('content'),
                 }
                 setupCSRF();
                 is_waiting_for_request = true;

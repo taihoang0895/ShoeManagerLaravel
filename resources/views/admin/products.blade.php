@@ -5,8 +5,6 @@
     <link rel="stylesheet" href={{ asset('css/admin/admin_list_products.css') }}>
     <link rel="stylesheet" href={{ asset('css/admin/admin_main.css') }}>
     <script src={{ asset('js/admin/admin_list_products.js') }}></script>
-
-
     <link rel="stylesheet" type="text/css" href="{{asset('jqueryui/jquery-ui.min.css')}}">
     <script src="{{asset('jqueryui/jquery-ui.min.js')}}" type="text/javascript"></script>
     <meta name="csrf-token" content="{{ Session::token() }}">

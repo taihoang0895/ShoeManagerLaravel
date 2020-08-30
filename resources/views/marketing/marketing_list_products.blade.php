@@ -3,6 +3,8 @@
     <link rel="stylesheet" href={{ asset('css/extra/bootstrap_4_2_1.css') }}>
     <link rel="stylesheet" href={{ asset('css/marketing/marketing_list_products.css' ) }}>
     <link rel="stylesheet" href={{ asset('css/marketing/marketing_main.css' ) }}>
+    <link rel="stylesheet" type="text/css" href="{{asset('jqueryui/jquery-ui.min.css')}}">
+    <script src="{{asset('jqueryui/jquery-ui.min.js')}}" type="text/javascript"></script>
     <script src={{ asset('js/marketing/marketing_list_products.js') }}></script>
 @endsection
 @section('content')
@@ -59,6 +61,29 @@
         $(document).ready(function () {
             $('#marketing_menu_item_product').addClass('selected');
             document.title = 'Sản phẩm';
+        });
+
+        $( "#search_product_code" ).autocomplete({
+            source: function( request, response ) {
+                // Fetch data
+                $.ajax({
+                    url:"/search-product-code/",
+                    type: 'get',
+                    dataType: "json",
+                    data: {
+                        '_token': $('meta[name=csrf-token]').attr('content'),
+                        search: request.term
+                    },
+                    success: function( data ) {
+                        response( data );
+                    }
+                });
+            },
+            select: function (event, ui) {
+                // Set selection
+                $('#search_product_code').val(ui.item.value);
+                return false;
+            }
         });
     </script>
 @endsection

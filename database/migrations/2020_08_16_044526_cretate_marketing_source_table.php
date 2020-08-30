@@ -15,7 +15,6 @@ class CretateMarketingSourceTable extends Migration
     {
         Schema::create('marketing_sources', function (Blueprint $table) {
             $table->increments("id");
-            $table->string("code");
             $table->string("name");
             $table->string("note");
         });

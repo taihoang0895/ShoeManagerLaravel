@@ -43,7 +43,8 @@ function handleOkButton(){
             var data = {
                 'order_fail_reason_id' : order_fail_reason_id,
                 'cause' : cause,
-                'note' : note
+                'note' : note,
+                '_token': $('meta[name=csrf-token]').attr('content')
             }
             saveOrderFailReason(data);
         }

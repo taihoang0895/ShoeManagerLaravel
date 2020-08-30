@@ -23,7 +23,7 @@ class CretateOrderTable extends Migration
             $table->integer("replace_order_id")->nullable();
             $table->string("note");
             $table->boolean("is_test");
-            $table->dateTime("delivery_time");
+            $table->dateTime("delivery_time")->nullable();
             $table->dateTime("created");
 
             $table->foreign('customer_id')->references('id')->on('customers');

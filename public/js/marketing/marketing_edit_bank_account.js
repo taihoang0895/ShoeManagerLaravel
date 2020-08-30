@@ -1,8 +1,5 @@
 var is_waiting_for_request = false;
 
-function validate(time, note){
-}
-
 function saveBankAccount(data){
      $.post('/marketing/save-bank-account/', data, function(response) {
               if(response['status'] == 200){
@@ -37,14 +34,13 @@ function handleOkButton(){
 
         var bank_account = $('#bank_account').val().trim();
 
-        if(validate()){
+        if(validate(bank_account)){
             var bank_account_id = $('#edit_bank_account_id').val().trim();
             is_waiting_for_request = true;
-            setupCSRF();
             var data = {
                 'bank_account_id' : bank_account_id,
                 'name' : bank_account,
-
+                '_token': $('meta[name=csrf-token]').attr('content'),
             }
             saveBankAccount(data);
         }

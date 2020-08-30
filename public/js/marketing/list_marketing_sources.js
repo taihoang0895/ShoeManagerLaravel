@@ -35,7 +35,10 @@ function handleUpdateButton(){
                         return;
                       }
                       is_waiting_for_request = true;
-                      $.get("/marketing/form-update-marketing-source/"+marketing_source_id.toString(), function(response) {
+                      var data = {
+                          'marketing_source_id' : marketing_source_id,
+                      }
+                      $.get("/marketing/form-update-marketing-source/",data, function(response) {
                                 if(response['status'] == 200){
                                        $('#dialog_edit_marketing_source').empty();
                                        $('#dialog_edit_marketing_source').html(response['content']);
@@ -76,9 +79,9 @@ function handleDeleteButton(){
              var marketing_source_id = $('.marketing_source_row_selected').first().find('.marketing_source_id').val().trim();
 
                 var data = {
-                        'marketing_source_id' : marketing_source_id
+                        'marketing_source_id' : marketing_source_id,
+                    '_token': $('meta[name=csrf-token]').attr('content')
                 }
-                setupCSRF();
                 is_waiting_for_request = true;
                   $.post('/marketing/delete-marketing_source/', data, function(response) {
                       if(response['status'] == 200){

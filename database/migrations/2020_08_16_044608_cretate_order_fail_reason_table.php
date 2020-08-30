@@ -15,7 +15,6 @@ class CretateOrderFailReasonTable extends Migration
     {
         Schema::create('order_fail_reasons', function (Blueprint $table) {
             $table->increments("id");
-            $table->string("code");
             $table->string("cause");
             $table->string("note");
         });

@@ -8,9 +8,6 @@
 .tbl{
     margin-top : 15px;
 }
-#add_schedule_dialog{
-    display : none;
-}
 #confirm_dialog_delete_schedule{
     display : none;
 }

@@ -36,10 +36,9 @@ class ProductCategory extends Model
     {
         $productSize = Util::toUpper($productSize);
         $productColor = Util::toUpper($productColor);
-        $condition = [
-            "size" => $productSize,
-            "color" => $productColor
-        ];
+        $condition = [];
+        $condition['size']=$productSize;
+        $condition['color']=$productColor;
         return ProductCategory::where($condition)->first();
     }
 

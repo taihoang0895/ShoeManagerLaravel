@@ -22,37 +22,88 @@
     <select />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="d756baa2-a509-4b40-a085-1b08292d5459" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/app/Http/Controllers/MarketingController.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/models/OrderState.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/models/functions/MarketingFunctions.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/views/marketing/marketing_detail_marketing_product.blade.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/views/marketing/marketing_edit_marketing_product.blade.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/views/marketing/marketing_leader_list_marketing_products.blade.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/views/marketing/marketing_list_marketing_products.blade.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/views/marketing/marketing_list_products.blade.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/views/marketing/menu.blade.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/views/storekeeper/storekeeper_importing_exporting_history.blade.php" afterDir="false" />
+    <list default="true" id="d756baa2-a509-4b40-a085-1b08292d5459" name="Default Changelist" comment="done marketing product">
+      <change afterPath="$PROJECT_DIR$/app/Http/Controllers/SaleController.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/CustomerState.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/Province.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/models/functions/SaleFunctions.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/public/jqueryui/bootstrap-datepicker.vi.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/marketing/marketing_edit_bank_account.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/marketing/marketing_edit_marketing_source.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/marketing/marketing_list_bank_accounts.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/marketing/marketing_list_marketing_sources.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/marketing/marketing_revenue_report.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/sale/menu.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/sale/sale_add_order.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/sale/sale_detail_customer.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/sale/sale_detail_order.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/sale/sale_edit_customer.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/sale/sale_edit_order_fail_reason.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/sale/sale_edit_schedule.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/sale/sale_exporting_product_history.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/sale/sale_list_customers.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/sale/sale_list_discounts.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/sale/sale_list_order_fail_reasons.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/sale/sale_list_orders.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/sale/sale_list_products.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/sale/sale_list_schedules.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/sale/sale_order_history.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/sale/sale_update_order.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/trash/sale_list_orders.blade.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/StorekeeperController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/StorekeeperController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/BankAccounts.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/BankAccount.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/Campaign.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/Campaign.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/HistoryExportingProduct.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/HistoryExportingProduct.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/HistoryFailedProduct.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/HistoryFailedProduct.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/HistoryImportingProduct.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/HistoryImportingProduct.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/HistoryOrder.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/HistoryOrder.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/HistoryReturningProduct.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/HistoryReturningProduct.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/MarketingProduct.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/MarketingProduct.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/models/functions/StoreKeeperFunctions.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/functions/StoreKeeperFunctions.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/migrations/2020_08_16_045619_create_detail_order_table.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/migrations/2020_08_16_045619_create_detail_order_table.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/migrations/2020_08_16_045722_create_marketing_product_table.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/migrations/2020_08_16_045722_create_marketing_product_table.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/css/marketing/marketing_leader_list_marketing_products.css" beforeDir="false" afterPath="$PROJECT_DIR$/public/css/marketing/marketing_leader_list_marketing_products.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/css/marketing/marketing_list_marketing_products.css" beforeDir="false" afterPath="$PROJECT_DIR$/public/css/marketing/marketing_list_marketing_products.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/js/marketing/marketing_edit_marketing_products.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/marketing/marketing_edit_marketing_products.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/js/marketing/marketing_leader_list_marketing_products.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/marketing/marketing_leader_list_marketing_products.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/js/marketing/marketing_list_marketing_products.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/marketing/marketing_list_marketing_products.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Console/Kernel.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Console/Kernel.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/CommonController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/CommonController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/MarketingController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/MarketingController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Kernel.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Kernel.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Middleware/PermissionEditMiddleware.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Middleware/PermissionMiddleware.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/BankAccount.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/BankAccount.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/Customers.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/Customer.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/DetailOrder.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/DetailOrder.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/Inventory.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/Inventory.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/Order.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/Order.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/OrderState.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/OrderState.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/ProductCategory.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/ProductCategory.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/Remind.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/Remind.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/functions/AdminFunctions.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/functions/AdminFunctions.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/functions/CommonFunctions.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/functions/CommonFunctions.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/functions/MarketingFunctions.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/functions/MarketingFunctions.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/functions/ResultCode.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/functions/ResultCode.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/models/functions/Util.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/models/functions/Util.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/migrations/2020_08_16_044526_cretate_marketing_source_table.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/migrations/2020_08_16_044526_cretate_marketing_source_table.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/migrations/2020_08_16_044608_cretate_order_fail_reason_table.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/migrations/2020_08_16_044608_cretate_order_fail_reason_table.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/migrations/2020_08_16_044729_cretate_customer_table.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/migrations/2020_08_16_044729_cretate_customer_table.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/migrations/2020_08_16_045618_cretate_order_table.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/migrations/2020_08_16_045618_cretate_order_table.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/css/marketing/list_marketing_sources.css" beforeDir="false" afterPath="$PROJECT_DIR$/public/css/marketing/list_marketing_sources.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/css/sale/sale_add_schedule.css" beforeDir="false" afterPath="$PROJECT_DIR$/public/css/sale/sale_edit_schedule.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/css/sale/sale_list_order_fail_reasons.css" beforeDir="false" afterPath="$PROJECT_DIR$/public/css/sale/sale_list_order_fail_reasons.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/css/sale/sale_list_products.css" beforeDir="false" afterPath="$PROJECT_DIR$/public/css/sale/sale_list_products.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/css/sale/sale_list_schedules.css" beforeDir="false" afterPath="$PROJECT_DIR$/public/css/sale/sale_list_schedules.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/admin/admin_list_products.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/admin/admin_list_products.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/base.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/base.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/list_notifications.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/list_notifications.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/marketing/list_marketing_sources.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/marketing/list_marketing_sources.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/marketing/marketing_edit_bank_account.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/marketing/marketing_edit_bank_account.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/marketing/marketing_edit_marketing_source.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/marketing/marketing_edit_marketing_source.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/marketing/marketing_list_bank_accounts.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/marketing/marketing_list_bank_accounts.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/public/js/marketing/marketing_list_products.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/marketing/marketing_list_products.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/storekeeper/storekeeper_product_report.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/storekeeper/storekeeper_product_report.blade.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/marketing/marketing_revenue_report.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/marketing/marketing_revenue_report.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/sale/sale_add_order.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/sale/sale_add_order.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/sale/sale_add_schedule.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/sale/sale_edit_schedule.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/sale/sale_edit_customer.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/sale/sale_edit_customer.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/sale/sale_edit_order_fail_reason.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/sale/sale_edit_order_fail_reason.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/sale/sale_leader_list_orders.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/sale/sale_leader_list_orders.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/sale/sale_list_customers.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/sale/sale_list_customers.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/sale/sale_list_order_fail_reasons.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/sale/sale_list_order_fail_reasons.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/sale/sale_list_orders.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/sale/sale_list_orders.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/sale/sale_list_products.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/sale/sale_list_products.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/sale/sale_list_schedules.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/sale/sale_list_schedules.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/js/sale/sale_update_order.js" beforeDir="false" afterPath="$PROJECT_DIR$/public/js/sale/sale_update_order.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/views/admin/admin_list_discounts.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/admin/admin_list_discounts.blade.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/views/admin/products.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/admin/products.blade.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/views/autocomplete.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/autocomplete.blade.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/views/marketing/marketing_leader_list_marketing_products.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/marketing/marketing_leader_list_marketing_products.blade.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/views/marketing/marketing_list_marketing_products.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/marketing/marketing_list_marketing_products.blade.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/views/marketing/marketing_list_products.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/marketing/marketing_list_products.blade.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/web.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/web.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -68,6 +119,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="HTML File" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
@@ -192,7 +244,7 @@
     <property name="DefaultHtmlFileTemplate" value="HTML File" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/resources/views/marketing" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/resources/views/sale" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -203,18 +255,18 @@
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\xampp\htdocs\shoemanager\resources\views\trash" />
+      <recent name="C:\xampp\htdocs\shoemanager\resources\views\sale" />
       <recent name="C:\xampp\htdocs\shoemanager\resources\views\admin" />
       <recent name="C:\xampp\htdocs\shoemanager\resources\views\common" />
       <recent name="C:\xampp\htdocs\shoemanager\app\models\functions" />
-      <recent name="C:\xampp\htdocs\shoemanager" />
-      <recent name="C:\xampp\htdocs\shoemanager\public" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\xampp\htdocs\shoemanager\resources\views\sale" />
+      <recent name="C:\xampp\htdocs\shoemanager\app\models" />
       <recent name="C:\xampp\htdocs\shoemanager\resources\views\marketing" />
-      <recent name="C:\xampp\htdocs\shoemanager\resources\views\storekeeper" />
       <recent name="C:\xampp\htdocs\shoemanager\resources\views" />
-      <recent name="C:\xampp\htdocs\shoemanager\public\js\admin" />
-      <recent name="C:\xampp\htdocs\shoemanager\public\css\admin" />
+      <recent name="C:\xampp\htdocs\shoemanager\resources\views\storekeeper" />
     </key>
   </component>
   <component name="RunManager" selected="PHPUnit.DBAdminFunctionsTest.testExample">
@@ -254,8 +306,23 @@
       <workItem from="1598190518880" duration="9615000" />
       <workItem from="1598200585242" duration="7418000" />
       <workItem from="1598277121609" duration="15932000" />
-      <workItem from="1598369826958" duration="7273000" />
+      <workItem from="1598369826958" duration="7426000" />
+      <workItem from="1598451502732" duration="9839000" />
+      <workItem from="1598537132069" duration="5886000" />
+      <workItem from="1598543816070" duration="6170000" />
+      <workItem from="1598663289178" duration="31287000" />
+      <workItem from="1598709410501" duration="11021000" />
+      <workItem from="1598746763823" duration="19636000" />
+      <workItem from="1598774904854" duration="11293000" />
     </task>
+    <task id="LOCAL-00001" summary="done marketing product">
+      <created>1598377217025</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1598377217025</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -273,6 +340,10 @@
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="done marketing product" />
+    <option name="LAST_COMMIT_MESSAGE" value="done marketing product" />
+  </component>
   <component name="WindowStateProjectService">
     <state x="414" y="174" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1597568644818">
       <screen x="0" y="0" width="1920" height="1040" />
@@ -282,57 +353,61 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="714" y="321" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1597545188914" />
-    <state x="765" y="65" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog" timestamp="1598373372659">
+    <state x="765" y="65" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog" timestamp="1598784397783">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="765" y="65" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598373372659" />
-    <state x="690" y="274" key="#com.jetbrains.php.actions.copyPaste.importReferences.PhpImportReferencesDialog" timestamp="1598374726894">
+    <state x="765" y="65" key="#com.intellij.refactoring.rename.AutomaticRenamingDialog/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598784397783" />
+    <state x="690" y="274" key="#com.jetbrains.php.actions.copyPaste.importReferences.PhpImportReferencesDialog" timestamp="1598673627789">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="690" y="274" key="#com.jetbrains.php.actions.copyPaste.importReferences.PhpImportReferencesDialog/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598374726894" />
+    <state x="690" y="274" key="#com.jetbrains.php.actions.copyPaste.importReferences.PhpImportReferencesDialog/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598673627789" />
     <state x="740" y="274" key="FileChooserDialogImpl" timestamp="1597589944253">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="740" y="274" key="FileChooserDialogImpl/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1597589944253" />
-    <state x="1166" y="136" key="NewPhpClassDialog" timestamp="1598292112262">
+    <state x="1166" y="136" key="NewPhpClassDialog" timestamp="1598692442505">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="1166" y="136" key="NewPhpClassDialog/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598292112262" />
+    <state x="1166" y="136" key="NewPhpClassDialog/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598692442505" />
     <state x="794" y="443" key="NewPhpFileDialog" timestamp="1598191093013">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="794" y="443" key="NewPhpFileDialog/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598191093013" />
-    <state x="92" y="92" width="1736" height="856" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1598020973568">
+    <state x="552" y="252" key="Vcs.Push.Dialog.v2" timestamp="1598377221523">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="92" y="92" width="1736" height="856" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598020973568" />
-    <state x="-1920" y="87" width="1487" height="643" maximized="true" key="dock-window-1" timestamp="1598372595515">
+    <state x="552" y="252" key="Vcs.Push.Dialog.v2/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598377221523" />
+    <state x="92" y="92" width="1736" height="856" key="com.intellij.history.integration.ui.views.FileHistoryDialog" timestamp="1598758278862">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="92" y="92" width="1736" height="856" key="com.intellij.history.integration.ui.views.FileHistoryDialog/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598758278862" />
+    <state x="-1610" y="87" width="1410" height="809" maximized="true" key="dock-window-1" timestamp="1598776727030">
       <screen x="-1920" y="87" width="1920" height="1040" />
     </state>
-    <state x="-1920" y="87" width="1487" height="643" maximized="true" key="dock-window-1/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598372595515" />
-    <state x="-1918" y="87" width="1496" height="651" maximized="true" key="dock-window-2" timestamp="1598282714303">
+    <state x="-1610" y="87" width="1410" height="809" maximized="true" key="dock-window-1/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598776727030" />
+    <state x="-1920" y="87" width="1410" height="809" maximized="true" key="dock-window-2" timestamp="1598776306861">
       <screen x="-1920" y="87" width="1920" height="1040" />
     </state>
-    <state x="-1918" y="87" width="1496" height="651" maximized="true" key="dock-window-2/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598282714303" />
-    <state x="-1920" y="87" width="1496" height="651" key="dock-window-3" timestamp="1598372595515">
+    <state x="-1920" y="87" width="1410" height="809" maximized="true" key="dock-window-2/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598776306861" />
+    <state x="-1698" y="87" width="1410" height="809" maximized="true" key="dock-window-3" timestamp="1598786395292">
       <screen x="-1920" y="87" width="1920" height="1040" />
     </state>
-    <state x="-1920" y="87" width="1496" height="651" key="dock-window-3/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598372595515" />
-    <state x="-1480" y="87" width="1496" height="651" maximized="true" key="dock-window-4" timestamp="1598285880829">
+    <state x="-1698" y="87" width="1410" height="809" maximized="true" key="dock-window-3/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598786395292" />
+    <state x="-1714" y="87" width="1441" height="659" maximized="true" key="dock-window-4" timestamp="1598701093034">
       <screen x="-1920" y="87" width="1920" height="1040" />
     </state>
-    <state x="-1480" y="87" width="1496" height="651" maximized="true" key="dock-window-4/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598285880829" />
+    <state x="-1714" y="87" width="1441" height="659" maximized="true" key="dock-window-4/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598701093034" />
     <state x="-1504" y="87" width="1307" height="848" maximized="true" key="dock-window-5" timestamp="1598280346528">
       <screen x="-1920" y="87" width="1920" height="1040" />
     </state>
     <state x="-1504" y="87" width="1307" height="848" maximized="true" key="dock-window-5/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598280346528" />
-    <state x="616" y="240" key="run.anything.popup" timestamp="1598281493860">
+    <state x="616" y="240" key="run.anything.popup" timestamp="1598756238955">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="616" y="240" key="run.anything.popup/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598281493860" />
-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1598377028424">
+    <state x="616" y="240" key="run.anything.popup/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598756238955" />
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1598786313369">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598377028424" />
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040/-1920.87.1920.1040@0.0.1920.1040" timestamp="1598786313369" />
   </component>
 </project>

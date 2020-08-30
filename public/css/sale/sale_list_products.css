@@ -34,7 +34,7 @@
 #list_products_filter table{
     margin : auto;
 }
-#list_products_filter #search_product_marketing_code{
+#list_products_filter #search_product_code{
     width : 300px;
     margin-left:15px;
     margin-right:15px;

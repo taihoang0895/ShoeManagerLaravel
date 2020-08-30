@@ -1,6 +1,6 @@
 <?php
 return [
-    'per_page' => 1,
+    'per_page' => 15,
     'list_suggest_product_sizes' => [
         "36",
         "37",

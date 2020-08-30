@@ -198,7 +198,8 @@ class CommonController extends Controller
         return response()->json($response);
     }
 
-    public function fakeNotification(Request $request){
+    public function fakeNotification(Request $request)
+    {
         $response = array(
             "status" => 200,
             "content" => "",
@@ -206,6 +207,35 @@ class CommonController extends Controller
         );
 
         CommonFunctions::createNotification(Auth::user(), "fake notificationfak");
+        return response()->json($response);
+    }
+
+
+    public function listDistricts(Request $request)
+    {
+        $response = [
+            'status' => 200,
+            'message' => '',
+            'content' => ''
+        ];
+        $provinceName = $request->get('province_name', '');
+        $response['message'] = $provinceName;
+        $response['content'] = json_encode(CommonFunctions::getDistrictNames($provinceName));
+
+        return response()->json($response);
+    }
+
+    public function listStreets(Request $request)
+    {
+        $response = [
+            'status' => 200,
+            'message' => '',
+            'content' => ''
+        ];
+
+        $provinceName = $request->get('province_name', '');
+        $districtName = $request->get('district_name', '');
+        $response['content'] = json_encode(CommonFunctions::getStreetsNames($provinceName, $districtName));
         return response()->json($response);
     }
 }

@@ -25,7 +25,7 @@ $(document).ready(function () {
                 return;
             }
             data = {}
-            $.get('/get-notifications/', data, function(response) {
+            $.get('common/get-notifications/', data, function(response) {
                           if(response['status'] == 200){
                                 var count_message = response['count_message_unread'];
                                 update_menu_notification(count_message);
@@ -210,7 +210,7 @@ function handleLogout(){
 
 
 function synchronizeNotification(){
-      $.get('/check-notification/', function(response) {
+      $.get('common/check-notification/', function(response) {
               if(response['status'] == 200){
                     var has_notification = response['has_notification'];
                     if(has_notification == 1){
