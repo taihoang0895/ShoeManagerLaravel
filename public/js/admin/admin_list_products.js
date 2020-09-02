@@ -11,6 +11,34 @@ function collectFilterParam() {
     return param;
 }
 
+function handleShowDetailProduct() {
+    $('.show_detail').click(function () {
+        var product_code = $(this).find('input').val();
+        if (is_waiting_for_request) {
+            return;
+        }
+        is_waiting_for_request = true;
+        var data = {
+            "product_code": product_code.toString()
+        }
+        $.get("/common/detail-product/", data, function (response) {
+            if (response['status'] == 200) {
+                $('#dialog_edit_product').empty();
+                $('#dialog_edit_product').html(response['content']);
+            } else {
+                showMessage(response['message']);
+            }
+        })
+            .fail(function () {
+                showMessage("Lỗi mạng");
+            })
+            .always(function () {
+                is_waiting_for_request = false;
+            });
+        return false;
+    });
+}
+
 function handleAddButton() {
     $('#list_products_btn_add').click(function () {
 
@@ -35,35 +63,6 @@ function handleAddButton() {
             });
     });
 }
-
-function handleShowDetailProduct() {
-    $('.show_detail').click(function () {
-        var product_code = $(this).find('input').val();
-        if (is_waiting_for_request) {
-            return;
-        }
-        is_waiting_for_request = true;
-        var data = {
-            "product_code": product_code.toString()
-        }
-        $.get("common/detail-product/", data, function (response) {
-            if (response['status'] == 200) {
-                $('#dialog_edit_product').empty();
-                $('#dialog_edit_product').html(response['content']);
-            } else {
-                showMessage(response['message']);
-            }
-        })
-            .fail(function () {
-                showMessage("Lỗi mạng");
-            })
-            .always(function () {
-                is_waiting_for_request = false;
-            });
-        return false;
-    });
-}
-
 function handleUpdateButton() {
     $('#list_products_btn_update').click(function () {
         if ($('.product_row_selected').length == 0) {

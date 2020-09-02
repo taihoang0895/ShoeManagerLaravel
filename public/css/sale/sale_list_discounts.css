@@ -15,9 +15,12 @@
 
 .tbl .end_time {
     width : 15%;
-}
+}.tbl .discount_value {
+     width : 15%;
+ }
+
 .tbl .note {
-    width : 40%;
+    width : 25%;
 }
 
 .tbl .discount_row_selected{

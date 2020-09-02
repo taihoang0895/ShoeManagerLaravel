@@ -42,15 +42,12 @@
 .tbl_customers .province {
     width : 10%;
 }
-.tbl_customers .district {
-    width : 10%;
-}
-.tbl_customers .street {
+.tbl_customers .customer_name {
     width : 15%;
+}
 
-}
 .tbl_customers .address {
-    width : 15%;
+    width : 25%;
 }
 .tbl_customers .show_detail,.show_detail_header {
     width : 10%;

@@ -4,6 +4,7 @@
 namespace App\Http\Controllers;
 
 use App\models\CustomerState;
+use App\models\functions\AdminFunctions;
 use App\models\functions\CommonFunctions;
 use App\models\functions\Log;
 use App\models\functions\ResultCode;
@@ -332,6 +333,9 @@ class SaleController
         $id = $request->get('customer_id', "");
         $customer = SaleFunctions::getCustomer($id);
         if ($customer != null) {
+            if ($customer->landing_page_id == null) {
+                $customer->landing_page_id = -1;
+            }
             $listOrderStates = SaleFunctions::listCustomerState();
             $listLandingPages = SaleFunctions::listLandingPages();
             $listProvinceNames = CommonFunctions::getListProvinceNames();
@@ -432,6 +436,7 @@ class SaleController
             } else {
                 $customerInfo->street_id = null;
             }
+
             if ($landing_page_id == -1) {
                 $customerInfo->landing_page_id = null;
             } else {
@@ -443,18 +448,25 @@ class SaleController
             $customerInfo->is_public_phone_number = $isPublicPhoneNumber;
             $customerInfo->birthday = $birthday;
 
+            $prevCustomer = SaleFunctions::getCustomer($customerInfo->id);
+
             $resultCode = SaleFunctions::saveCustomer(Auth::user(), $customerInfo);
             if ($resultCode != ResultCode::SUCCESS) {
                 $response['message'] = 'Lỗi lưu';
             } else {
                 $response['status'] = 200;
+                if ($customerInfo->state_id == CustomerState::STATE_CUSTOMER_CUSTOMER_AGREED) {
+                    if ($prevCustomer == null || $prevCustomer->order_state != $customerInfo->state_id) {
+                        $response['status'] = 302;
+                        $response['content'] = $this->createFormAddOrder(Auth::user(), $customerInfo->code)['content'];
+                    }
+                }
+
             }
-            return response()->json($response);
         } catch (\Exception $e) {
             Log::log("error message ", $e->getMessage());
-            return ResultCode::FAILED_UNKNOWN;
         }
-
+        return response()->json($response);
     }
 
     public function deleteCustomer(Request $request)
@@ -535,7 +547,7 @@ class SaleController
         );
         $emptyOrder = new \stdClass();
         $emptyOrder->id = -1;
-        $emptyOrder->customer_code = "";
+        $emptyOrder->customer_code = $customerCode;
         $emptyOrder->order_state_id = OrderState::STATE_CUSTOMER_AGREED;
         $emptyOrder->order_fail_reason_id = -1;
         $emptyOrder->created = Util::now();
@@ -560,20 +572,19 @@ class SaleController
             "list_product_color" => $listColors,
             'list_product_discount' => $listDiscounts,
             'start_time_str' => "",
-
             'user' => Auth::user(),
             'order_state_name' => OrderState::getName(OrderState::STATE_CUSTOMER_AGREED),
             'detailEditable' => $detailEditable,
             'list_fail_reasons' => $listFailReasons,
             'list_suggestion_product_codes' => json_encode($listSuggestionProductCode)
         ])->render();
-        return response()->json($response);
+        return $response;
     }
 
 
     public function formAddOrder(Request $request)
     {
-        return $this->createFormAddOrder(Auth::user());
+        return response()->json($this->createFormAddOrder(Auth::user()));
     }
 
     public function detailOrder(Request $request)
@@ -781,12 +792,21 @@ class SaleController
             $productCode = $request->get('marketing_product_code', '');
             $productSize = $request->get('product_size', '');
             $productColor = $request->get('product_color', '');
+            $discountId = $request->get('discount_id', '');
             $quantity = Util::parseInt($request->get('quantity', ''), 0);
             if ($quantity > 0) {
                 $price = SaleFunctions::getPrice($productCode);
                 if ($price > 0) {
                     if (SaleFunctions::availableQuantity($productCode, $productSize, $productColor, $quantity)) {
-                        $response['content'] = ['price' => $price];
+                        $discountValue = 0;
+                        $discount = AdminFunctions::getDiscount($discountId);
+                        if ($discount != null) {
+                            $discountValue = $discount->discount_value;
+                        }
+                        $response['content'] = [
+                            'price' => $price,
+                            'discount_value' => $discountValue
+                        ];
                     } else {
                         $response['status'] = 406;
                         $response['message'] = "Trong kho không đủ cho số lượng hiện tại";
@@ -834,5 +854,81 @@ class SaleController
             'start_time_str' => $startTimeStr,
             'end_time_str' => $endTimeStr
         ]);
+    }
+
+    public function orderDeliver(Request $request)
+    {
+        $response = array(
+            "status" => 302,
+            "content" => "",
+            "message" => "Permission Denied"
+        );
+        if (Auth::user()->isLeader()) {
+            $listOrders = SaleFunctions::listDeliverOrders();
+            return view("sale.sale_leader_order_deliver", [
+                "list_orders" => $listOrders
+            ]);
+        } else {
+            return response()->json($response);
+        }
+    }
+
+    public function getFormPrepareOrderDeliver(Request $request)
+    {
+        $response = array(
+            "status" => 302,
+            "content" => "",
+            "message" => "Permission Denied"
+        );
+        if (Auth::user()->isLeader()) {
+            $listOrderIds = json_decode($request->get('list_order_ids', '[]'));
+            $listOrders = SaleFunctions::listOrderDelivering($listOrderIds);
+            Log::log("taih", strval(count($listOrders)));
+            $response['status'] = 200;
+            $response['content'] = view("sale.sale_leader_form_prepare_order_deliver", [
+                "list_orders" => $listOrders
+            ])->render();
+            return response()->json($response);
+        } else {
+            return response()->json($response);
+        }
+    }
+
+    public function pushOrderToGHTK(Request $request)
+    {
+        $response = array(
+            'status' => 403,
+            'message' => '',
+            'content' => ''
+        );
+        $url = 'https://services.giaohangtietkiem.vn/services/shipment/order';
+        $ch = null;
+        try {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, "http://example.com/my_url.php" );
+            curl_setopt($ch, CURLOPT_POST, 1 );
+            curl_setopt($ch, CURLOPT_POSTFIELDS, []);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+            // Execute the POST request
+            $result = curl_exec($ch);
+            if (curl_errno($ch)) {
+                Log::log("result", curl_error($ch));
+            }
+            if($result == null){
+                Log::log("result", "null");
+            }
+            Log::log("result", $result);
+        } catch (\Exception $e) {
+            Log::log("error message", $e->getMessage());
+        } finally {
+            if ($ch != null) {
+                curl_close($ch);
+            }
+        }
+
+        return response()->json($response);
     }
 }

@@ -11,6 +11,7 @@ use App\models\functions\ResultCode;
 use App\models\functions\Util;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
@@ -140,7 +141,7 @@ class AdminController extends Controller
         $response = array(
             "status" => 406,
             "content" => "",
-            "message" => ""
+            "message" => "Lỗi sửa sản phẩm đã được tạo trong hóa đơn"
         );
 
         $productCode = trim($request->get("product_code", ''));
@@ -199,7 +200,7 @@ class AdminController extends Controller
     public function users(Request $request)
     {
         $searchUsername = trim($request->get("username", ""));
-        $users = AdminFunctions::findUsers($searchUsername = $searchUsername);
+        $users = AdminFunctions::findUsers(Auth::user(), $searchUsername);
 
         return view("admin.admin_list_users", [
             "list_users" => $users,
@@ -329,6 +330,7 @@ class AdminController extends Controller
         $emptyDiscount->start_time_str = "";
         $emptyDiscount->end_time_str = "";
         $emptyDiscount->note = "";
+        $emptyDiscount->discount_value = 20000;
 
         $response['content'] = view("admin.admin_edit_discount", [
             "discount" => $emptyDiscount
@@ -365,17 +367,23 @@ class AdminController extends Controller
         $response = array(
             "status" => 406,
             "content" => "",
-            "message" => ""
+            "message" => "Lỗi lưu"
         );
         $discountId = $request->get('discount_id', null);
         $name = trim($request->get('name', ''));
-        $startTimeStr = trim($request->get('start_time', ''));
-        $endTimeStr = trim($request->get('end_time', ''));
-        $note = trim($request->get('note', ''));
+        $startTimeStr = $request->get('start_time', '');
+        $endTimeStr = $request->get('end_time', '');
+        $note = $request->get('note', '');
+        $discountValue = Util::parseInt($request->get('discount_value', -1), 0);
+        if ($discountValue <= 0) {
+            return response()->json($response);
+        }
         if ($discountId == "-1") {
             $discountId = null;
         }
-
+        if ($note == null) {
+            $note = "";
+        }
         $startTime = Util::safeParseDate($startTimeStr);
         $endTime = Util::safeParseDate($endTimeStr);
         $discountInfo = new \stdClass();
@@ -383,7 +391,9 @@ class AdminController extends Controller
         $discountInfo->name = $name;
         $discountInfo->start_time = $startTime;
         $discountInfo->end_time = $endTime;
+        $discountInfo->end_time = $endTime;
         $discountInfo->note = $note;
+        $discountInfo->discount_value = $discountValue;
         $resultCode = AdminFunctions::saveDiscount($discountInfo);
         if ($resultCode == ResultCode::SUCCESS) {
             $response['status'] = 200;
@@ -553,7 +563,8 @@ class AdminController extends Controller
         ]);
     }
 
-    public function saveLandingPage(Request $request){
+    public function saveLandingPage(Request $request)
+    {
         $response = array(
             "status" => 200,
             "content" => "",
@@ -573,7 +584,9 @@ class AdminController extends Controller
         }
         return response()->json($response);
     }
-    public function formUpdateLandingPage(Request $request){
+
+    public function formUpdateLandingPage(Request $request)
+    {
         $response = array(
             "status" => 200,
             "content" => "",
@@ -582,7 +595,7 @@ class AdminController extends Controller
         $landingPageId = $request->get("landing_page_id", "");
         $landingPage = AdminFunctions::getLandingPage($landingPageId);
         if ($landingPage != null) {
-            $response['content'] =view("admin.admin_edit_landing_page", [
+            $response['content'] = view("admin.admin_edit_landing_page", [
                 "landing_page" => $landingPage
             ])->render();
         } else {
@@ -592,7 +605,9 @@ class AdminController extends Controller
 
         return response()->json($response);
     }
-    public function deleteLandingPage(Request $request){
+
+    public function deleteLandingPage(Request $request)
+    {
         $response = array(
             "status" => 200,
             "content" => "",

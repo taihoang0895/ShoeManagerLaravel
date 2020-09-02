@@ -96,7 +96,7 @@
             <td class="order_customer_phone_number">SĐT</td>
             <td class="order_state">Trạng thái</td>
             <td class="order_fail_reason">Lý do lỗi</td>
-            <td class="order_note">Ghi chú</td>
+            <td class="order_note">Sản phẩm</td>
             <td class="detail"></td>
         </tr>
         @foreach ($list_orders as $order)
@@ -118,7 +118,7 @@
                     <div>{{$order->order_fail_cause}}</div>
                 </td>
                 <td class="order_note">
-                    <div>{{$order->note}}</div>
+                    <div>{{$order->list_order_codes}}</div>
                 </td>
                 <td class="show_detail_order" id="order_id_{{$order->id}}">xem chi tiết</td>
             </tr>

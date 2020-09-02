@@ -4,6 +4,9 @@
 <div class="menu_item" id="marketing_menu_item_marketing">
     Marketing
 </div>
+<div class="menu_item" id="marketing_menu_item_inventory_report">
+    Tồn Kho
+</div>
 @if (Auth::user()->isLeader())
     <div class="menu_item" id="marketing_menu_item_marketing_source">
         Nguồn Marketing
@@ -35,6 +38,10 @@
     #marketing_menu_item_bank_account:hover {
         cursor: pointer;
     }
+
+    #marketing_menu_item_inventory_report:hover {
+        cursor: pointer;
+    }
 </style>
 <script>
     $(document).ready(function () {
@@ -46,6 +53,9 @@
         });
         $('#marketing_menu_item_report').click(function () {
             location.href = "/marketing/revenue-report/";
+        });
+        $('#marketing_menu_item_inventory_report').click(function () {
+            location.href = "/marketing/inventory-report/";
         });
         @if (Auth::user()->isLeader())
         $('#marketing_menu_item_marketing_source').click(function () {

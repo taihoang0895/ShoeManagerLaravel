@@ -18,6 +18,8 @@ class CretateDiscountTable extends Migration
             $table->string("code");
             $table->string("name");
             $table->string("note");
+            $table->integer("discount_value");
+            $table->boolean("is_active")->default(true);
             $table->dateTime("start_time");
             $table->dateTime("end_time");
         });

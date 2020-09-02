@@ -35,6 +35,7 @@
                         </div>
                     </td>
                 </tr>
+
                 <tr class="discount_field_row">
                     <td class="lbl_name">Đến Ngày</td>
                     <td class="value">
@@ -46,6 +47,18 @@
                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                             </div>
                         </div>
+                    </td>
+                </tr>
+                <tr class="discount_field_row">
+                    <td class="lbl_name">Chiết Khấu</td>
+                    <td class="value">
+                        @if($discount->id == -1)
+                        <input class="form-control" type="number" placeholder="Nhập giá bán"
+                                                  id="discount_value" value="{{$discount->discount_value}}">
+                        @else
+                            <input class="form-control" type="number" placeholder="Nhập giá bán"
+                                   id="discount_value" value="{{$discount->discount_value}}" disabled>
+                        @endif
                     </td>
                 </tr>
                 <tr class="discount_field_row">

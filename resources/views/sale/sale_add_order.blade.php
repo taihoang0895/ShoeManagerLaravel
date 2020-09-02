@@ -179,6 +179,7 @@
 
                             </td>
                             <td style="text-align:center;">
+                                <input type="hidden" id="detail_order_additional_discount_id" value="-1">
                                 <div class="dropdown" id="detail_order_additional_discount">
                                     <button class="btn btn-secondary dropdown-toggle" type="button"
                                             id="detail_order_additional_discount_text"
@@ -187,9 +188,13 @@
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton"
                                          style="max-height:200px;overflow-y: auto;">
-                                        <a class="dropdown-item" id="-1">___</a>
+                                        <a class="dropdown-item" id="-1"><input type="hidden" value="-1"
+                                                                                class="option_detail_order_discount_id">___</a>
                                         @foreach ($list_product_discount as $discount)
-                                            <a class="dropdown-item" id="{{$discount->id}}">{{$discount->name}}</a>
+                                            <a class="dropdown-item" id="{{$discount->id}}"><input type="hidden"
+                                                                                                   value="{{$discount->id}}"
+                                                                                                   class="option_detail_order_discount_id">{{$discount->name}}
+                                            </a>
                                         @endforeach
 
                                     </div>
@@ -246,6 +251,7 @@
             '{{$detail_order->product_size}}',
             '{{$detail_order->product_color}}',
             '{{$detail_order->quantity}}',
+            '{{$detail_order->discount_id}}',
             '{{$detail_order->discount_name}}',
             '{{$detail_order->actually_collected}}',
             '{{$detail_order->price}}',

@@ -27,7 +27,7 @@ class MarketingFunctions
             $filterOptions[] = ["code", "like", '%' . $productCode . '%'];
         }
         $perPage = config('settings.per_page');
-        return Product::where($filterOptions)->paginate($perPage);
+        return Product::where($filterOptions)->where("is_active", true)->paginate($perPage);
     }
 
     public static function listMarketingProductCodes()
@@ -50,7 +50,7 @@ class MarketingFunctions
             $filterOptions[] = ['created', '<=', $endTime];
         }
         if ($searchProductCode != "") {
-            $filterOptions[] = ['code', 'like', '%' . $searchProductCode . '%'];
+            $filterOptions[] = ['product_code', 'like', '%' . $searchProductCode . '%'];
         }
         $perPage = config('settings.per_page');
         $marketingProducts = MarketingProduct::whereIn('user_id', $listUserIds)->where($filterOptions)->paginate($perPage);

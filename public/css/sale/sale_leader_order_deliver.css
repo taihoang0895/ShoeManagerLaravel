@@ -47,27 +47,28 @@
       text-align : center;
 }
 .tbl_order_deliver .product_name{
-     min-width :  210px;
+     min-width :  250px;
       text-align : center;
 }
 
 .tbl_order_deliver .customer_province {
-    min-width : 150px;
+    min-width : 250px;
      text-align : center;
 }
 
 .tbl_order_deliver .customer_district {
-    min-width : 150px;
+    min-width : 250px;
      text-align : center;
+
 }
 
 .tbl_order_deliver .customer_street {
-    min-width : 150px;
+    min-width : 250px;
      text-align : center;
 }
 
 .tbl_order_deliver .customer_address {
-    min-width : 200px;
+    min-width : 250px;
      text-align : center;
 }
 

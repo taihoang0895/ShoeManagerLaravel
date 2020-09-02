@@ -504,6 +504,12 @@ class StorekeeperController
         foreach ($group_data as $group_key => $group) {
             $total_remaining_quantity = 0;
             foreach ($group as $size => $record) {
+                for ($i = 0; $i <= 4; ++$i) {
+                    if ($record[$i] == null) {
+                        $record[$i] = 0;
+                    }
+                }
+
                 $sum_remaining_quantity += $record[0];
                 $sum_importing_quantity += $record[1];
                 $sum_exporting_quantity += $record[2];
@@ -518,7 +524,6 @@ class StorekeeperController
                 $returning_quantity_cell = new TableCell($record[3]);
                 $failed_quantity_cell = new TableCell($record[4]);
                 $size_cell = new TableCell($size);
-
                 array_push($remaining_quantity_cells, $remaining_quantity_cell);
                 array_push($importing_quantity_cells, $importing_quantity_cell);
                 array_push($exporting_quantity_cells, $exporting_quantity_cell);

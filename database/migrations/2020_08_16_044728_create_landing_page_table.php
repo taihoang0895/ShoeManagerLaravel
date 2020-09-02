@@ -16,7 +16,7 @@ class CreateLandingPageTable extends Migration
         Schema::create('landing_pages', function (Blueprint $table) {
             $table->increments("id");
             $table->string("name");
-            $table->string("note");
+            $table->string("note")->nullable();
             $table->boolean('is_active')->default(true);
             $table->dateTime("created");
         });

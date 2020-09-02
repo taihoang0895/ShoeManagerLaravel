@@ -6,16 +6,19 @@
     <link rel="stylesheet" type="text/css" href="{{asset('jqueryui/jquery-ui.min.css')}}">
     <script src="{{asset('jqueryui/jquery-ui.min.js')}}" type="text/javascript"></script>
     <script src={{ asset('js/marketing/marketing_list_products.js') }}></script>
+    <meta name="csrf-token" content="{{ Session::token() }}">
 @endsection
 @section('content')
+    @include("confirm_dialog", ["confirm_dialog_id"=>"confirm_dialog_delete_product", "confirm_dialog_btn_positive_id"=>"product_delete_dialog_btn_ok","confirm_dialog_btn_negative_id"=>"product_delete_dialog_btn_cancel", "confirm_dialog_message"=>"Bạn có chắc chắn muốn xóa không?"])
+    @csrf
     <div class="title">Danh Sách Sản Phẩm</div>
-
 
     <div id="list_products_filter">
         <table>
             <tr>
                 <td><input class="form-control" type="text" name="search_text" class="search_text"
-                           placeholder="Nhập mã sản phẩm" value="{{$search_product_code}}" id="search_product_code"></td>
+                           placeholder="Nhập mã sản phẩm" value="{{$search_product_code}}" id="search_product_code">
+                </td>
                 <td style="text-align:center;">
                     <button type="button" class="btn btn-warning btn_search_text" id="list_product_btn_search">Tìm Kiếm
                     </button>
@@ -24,7 +27,21 @@
             </tr>
         </table>
     </div>
-
+    <table width="40%" style="margin-left:auto;margin-right:auto;margin-top : 15px;">
+        <tr>
+            <td style="text-align:center;">
+                <button type="button" class="btn btn-secondary btn_add item" id="list_products_btn_add">Thêm</button>
+            </td>
+            <td style="text-align:center;">
+                <button type="button" class="btn btn-secondary btn_update item" id="list_products_btn_update">Sửa
+                </button>
+            </td>
+            <td style="text-align:center;">
+                <button type="button" class="btn btn-secondary btn_delete item" id="list_products_btn_delete">Xóa
+                </button>
+            </td>
+        </tr>
+    </table>
     <table class="tbl">
         <tr class="tbl_header_item">
             <td class="product_code">Mã SP</td>
@@ -63,19 +80,19 @@
             document.title = 'Sản phẩm';
         });
 
-        $( "#search_product_code" ).autocomplete({
-            source: function( request, response ) {
+        $("#search_product_code").autocomplete({
+            source: function (request, response) {
                 // Fetch data
                 $.ajax({
-                    url:"/search-product-code/",
+                    url: "/search-product-code/",
                     type: 'get',
                     dataType: "json",
                     data: {
                         '_token': $('meta[name=csrf-token]').attr('content'),
                         search: request.term
                     },
-                    success: function( data ) {
-                        response( data );
+                    success: function (data) {
+                        response(data);
                     }
                 });
             },

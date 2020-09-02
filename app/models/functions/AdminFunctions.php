@@ -104,10 +104,12 @@ class AdminFunctions
 
         return ResultCode::FAILED_UNKNOWN;
     }
+
     public static function getLandingPage($id)
     {
         return LandingPage::where("id", $id)->first();
     }
+
     public static function deleteLandingPage($id)
     {
         $landingPage = LandingPage::where('id', $id)->first();
@@ -128,7 +130,7 @@ class AdminFunctions
             if ($user == null) {
                 return ResultCode::FAILED_UNKNOWN;
             }
-            if($user->password != $userInfo->password){
+            if ($user->password != $userInfo->password) {
                 $user->password = Hash::make($userInfo->password);
             }
         } else {
@@ -153,8 +155,9 @@ class AdminFunctions
         return ResultCode::FAILED_UNKNOWN;
     }
 
-    public static function findUsers($searchUsername = "", $excludeUser = [])
+    public static function findUsers($user, $searchUsername = "", $excludeUser = [])
     {
+        array_push($excludeUser, $user->id);
         $perPage = config('settings.per_page');
         $condition = [];
         $condition[] = ['is_active', true];
@@ -162,7 +165,12 @@ class AdminFunctions
             $condition[] = ['username', 'like', '%' . $searchUsername . '%'];
         }
 
-        return User::where($condition)->whereNotIn('id', $excludeUser)->paginate($perPage);
+        $listUsers = User::where($condition)->whereNotIn('id', $excludeUser)->paginate($perPage);
+        foreach ($listUsers as $user) {
+            $user->department_name = User::getDepartmentName($user->department);
+            $user->role_name = User::getRoleName($user->role);
+        }
+        return $listUsers;
     }
 
     public static function getUser($userId)
@@ -202,7 +210,11 @@ class AdminFunctions
             $product->price = $productInfo->price;
             $product->historical_cost = $productInfo->historical_cost;
             $product->created = Util::now();
-
+            if (count($listDetailProductInfo) == 0) {
+                $product->is_test = true;
+            } else {
+                $product->is_test = false;
+            }
             if ($product->save()) {
                 foreach ($listDetailProductInfo as $detailProductInfo) {
                     $productCat = ProductCategory::getOrNew($detailProductInfo->size, $detailProductInfo->color);
@@ -225,6 +237,25 @@ class AdminFunctions
         }
     }
 
+    private static function inListDetailProduct($listDetailProduct, $size, $color)
+    {
+        foreach ($listDetailProduct as $detailProduct) {
+            if (strcmp($detailProduct->size, $size) == 0 and strcmp($detailProduct->color, $color) == 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static function attachExtraPropertyDetailProduct($detailProduct)
+    {
+        $productCat = ProductCategory::where("id", $detailProduct->product_category_id)->first();
+        if ($productCat != null) {
+            $detailProduct->size = $productCat->size;
+            $detailProduct->color = $productCat->color;
+        }
+    }
+
     public static function updateProduct($productInfo, $listDetailProductInfo)
     {
         $product = Product::where("code", $productInfo->code)->first();
@@ -233,22 +264,39 @@ class AdminFunctions
         }
         DB::beginTransaction();
         try {
+
             $product->name = $productInfo->name;
             $product->price = $productInfo->price;
             $product->historical_cost = $productInfo->historical_cost;
+            Log::log("taih", "-$product");
             if ($product->save()) {
-                if (DetailProduct::where("product_code", $product->code)->delete() == 0) {
-                    throw new \Exception("updateProduct -> delete detail product failed");
-                }
-                foreach ($listDetailProductInfo as $detailProductInfo) {
-                    $productCat = ProductCategory::getOrNew($detailProductInfo->size, $detailProductInfo->color);
-                    $detailProduct = new DetailProduct();
-                    $detailProduct->product_code = $product->code;
-                    $detailProduct->product_category_id = $productCat->id;
-                    if (!$detailProduct->save()) {
-                        throw new \Exception("updateProduct -> add detail product failed");
+                $listOldDetailProducts = DetailProduct::where("product_code", $product->code)->get();
+                foreach ($listOldDetailProducts as $oldDetailProduct) {
+                    self::attachExtraPropertyDetailProduct($oldDetailProduct);
+                    if (!self::inListDetailProduct($listDetailProductInfo, $oldDetailProduct->size, $oldDetailProduct->color)) {
+                        if (!$oldDetailProduct->delete()) {
+                            throw new \Exception("updateProduct -> delete detail product failed");
+                        }
                     }
                 }
+                foreach ($listDetailProductInfo as $detailProductInfo) {
+                    if (!self::inListDetailProduct($listOldDetailProducts, $detailProductInfo->size, $detailProductInfo->color)) {
+                        $productCat = ProductCategory::getOrNew($detailProductInfo->size, $detailProductInfo->color);
+                        $detailProduct = new DetailProduct();
+                        $detailProduct->product_code = $product->code;
+                        $detailProduct->product_category_id = $productCat->id;
+                        if (!$detailProduct->save()) {
+                            throw new \Exception("updateProduct -> add detail product failed");
+                        }
+                    }
+                }
+                if (DetailProduct::where("product_code", $product->code)->count() == 0) {
+                    $product->is_test = true;
+                } else {
+                    $product->is_test = false;
+                }
+                $product->save();
+
             } else {
                 throw new \Exception("updateProduct -> add product failed");
             }
@@ -264,14 +312,17 @@ class AdminFunctions
     public static function deleteProduct($productCode)
     {
         try {
-            DetailProduct::where("product_code", $productCode)->delete();
-            Product::where("code", $productCode)->delete();
-            return ResultCode::SUCCESS;
-
+            $product = Product::where("code", $productCode)->first();
+            if ($product != null) {
+                $product->is_active = false;
+                if ($product->save()) {
+                    return ResultCode::SUCCESS;
+                }
+            }
         } catch (\Exception $e) {
             Log::log("error message ", $e->getMessage());
-            return ResultCode::FAILED_UNKNOWN;
         }
+        return ResultCode::FAILED_UNKNOWN;
     }
 
     public static function getProduct($productCode)
@@ -291,7 +342,7 @@ class AdminFunctions
             $condition[] = ['code', 'like', '%' . $productCode . '%'];
         }
         $perPage = config('settings.per_page');
-        return Product::where($condition)->paginate($perPage);
+        return Product::where($condition)->where("is_active", true)->paginate($perPage);
     }
 
     public static function saveDiscount($discountRow)
@@ -299,12 +350,14 @@ class AdminFunctions
         $discount = Discount::where("id", $discountRow->id)->first();
         if ($discount == null) {
             $discount = new Discount();
+            $discount->discount_value = $discountRow->discount_value;
         }
         $discount->name = $discountRow->name;
         $discount->code = "";
         $discount->note = $discountRow->note;
         $discount->start_time = $discountRow->start_time;
         $discount->end_time = $discountRow->end_time;
+
         if ($discount->save()) {
             $discount->code = "MKM" . Util::formatLeadingZeros($discount->id, 4);
             if ($discount->save()) {
@@ -323,7 +376,9 @@ class AdminFunctions
 
     public static function findDiscount($discountCode = "")
     {
-        $condition = [];
+        $condition = [
+            "is_active" => true
+        ];
         if ($discountCode != "") {
             $condition[] = ['code', 'like', '%' . $discountCode . '%'];
         }
@@ -335,8 +390,12 @@ class AdminFunctions
     public static function deleteDiscount($discountId)
     {
         try {
-            if (Discount::where("id", $discountId)->delete()) {
-                return ResultCode::SUCCESS;
+            $discount = Discount::where("id", $discountId)->first();
+            if ($discount != null) {
+                $discount->is_active = false;
+                if ($discount->save()) {
+                    return ResultCode::SUCCESS;
+                }
             }
         } catch (\Exception $e) {
             Log::log("error message ", $e->getMessage());

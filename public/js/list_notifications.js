@@ -13,7 +13,7 @@ function handleCBMark(){
                 "list_unread" : JSON.stringify([unread]),
                 '_token': $('meta[name=csrf-token]').attr('content'),
             }
-             $.post('common/update-notification/', data, function(response) {
+             $.post('/common/update-notification/', data, function(response) {
                   if(response['status'] == 200){
                         var count_message = response['count_message_unread'];
                         update_menu_notification(count_message);

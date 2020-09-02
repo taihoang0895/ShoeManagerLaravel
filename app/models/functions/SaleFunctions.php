@@ -9,6 +9,7 @@ use App\models\CustomerState;
 use App\models\DetailOrder;
 use App\models\DetailProduct;
 use App\models\Discount;
+use App\models\District;
 use App\models\HistoryExportingProduct;
 use App\models\HistoryOrder;
 use App\models\Inventory;
@@ -19,7 +20,9 @@ use App\models\OrderFailReason;
 use App\models\OrderState;
 use App\models\Product;
 use App\models\ProductCategory;
+use App\models\Province;
 use App\models\Remind;
+use App\models\Street;
 use App\User;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\DB;
@@ -92,7 +95,7 @@ class SaleFunctions
 
     public static function findListProducts($productCode)
     {
-        $query = Product::where([]);
+        $query = Product::where("is_active", true)->where("is_test", false);
         if ($productCode != "") {
             $listMarketingProducts = MarketingProduct::where("code", "like", '%' . $productCode . '%')->get();
             $productCodeList = [];
@@ -111,7 +114,7 @@ class SaleFunctions
     public static function searchProductCode($productCode)
     {
         $listProductCode = [];
-        $listProducts = Product::where("code", 'like', '%' . $productCode . '%')->limit(5)->get();
+        $listProducts = Product::where("code", 'like', '%' . $productCode . '%')->where("is_active", true)->where("is_test", false)->limit(5)->get();
         foreach ($listProducts as $product) {
             array_push($listProductCode, $product->code);
         }
@@ -127,7 +130,9 @@ class SaleFunctions
 
     public static function findDiscounts($discountCode)
     {
-        $filterOptions = [];
+        $filterOptions = [
+            "is_active" => true
+        ];
         if ($discountCode != "") {
             $filterOptions[] = ["code", "like", "%" . $discountCode . "%"];
         }
@@ -226,6 +231,13 @@ class SaleFunctions
         $listCustomers = Customer::where($filterOptions)->paginate($perPage);
         foreach ($listCustomers as $customer) {
             self::attachExtraCustomerProperty($customer);
+            $customer->customer_state_color = "";
+            if ($customer->customer_state == CustomerState::STATE_CUSTOMER_WAITING_FOR_CONFIRMING_CUSTOMER) {
+                $customer->customer_state_color = "#F7DC6F";
+            }
+            if ($customer->customer_state == CustomerState::STATE_CUSTOMER_CUSTOMER_AGREED) {
+                $customer->customer_state_color = "#2ECC71";
+            }
 
         }
         return $listCustomers;
@@ -278,9 +290,11 @@ class SaleFunctions
                 if ($customer->code == "") {
                     $customer->code = 'MKH_' . Util::formatLeadingZeros($customer->id, 4);
                     if ($customer->save()) {
+                        $customerInfo->code = $customer->code;
                         return ResultCode::SUCCESS;
                     }
                 } else {
+                    $customerInfo->code = $customer->code;
                     return ResultCode::SUCCESS;
                 }
 
@@ -344,7 +358,7 @@ class SaleFunctions
         $detailProduct = DetailProduct::where("id", $detailOrder->detail_product_id)->first();
         $product = null;
         if ($detailProduct != null) {
-            $product = Product::where("code", $detailProduct->product_code)->first();
+            $product = Product::where("code", $detailProduct->product_code)->where("is_active", true)->where("is_test", false)->first();
         }
         if ($productCat != null) {
             $detailOrder->product_size = $productCat->size;
@@ -372,6 +386,14 @@ class SaleFunctions
         $order->order_fail_cause = "";
         $order->replace_order_code = "";
         $order->delivery_time_str = "";
+
+
+        $order->product_name = "";
+        $order->customer_province_name = "";
+        $order->customer_district_name = "";
+        $order->customer_street_name = "";
+        $order->customer_address = "";
+
         $user = User::where("id", $order->user_id)->first();
         $customer = Customer::where("id", $order->customer_id)->first();
         if ($user != null) {
@@ -381,6 +403,21 @@ class SaleFunctions
             $order->customer_phone = $customer->phone_number;
             $order->customer_code = $customer->code;
             $order->customer_name = $customer->name;
+            $order->customer_address = $customer->address;
+            $street = Street::where("id", $customer->street_id)->first();
+            if ($street != null) {
+                $order->customer_street_name = $street->name;
+                $district = District::where("id", $street->district_id)->first();
+                if ($district != null) {
+                    $order->customer_district_name = $district->name;
+                    $province = Province::where("id", $district->province_id)->first();
+                    if ($province != null) {
+                        $order->customer_province_name = $province->name;
+                    }
+                }
+            }
+
+
         }
         if ($order->order_fail_reason_id != null) {
             $orderFailReason = OrderFailReason::where("id", $order->order_fail_reason_id)->first();
@@ -419,6 +456,18 @@ class SaleFunctions
 
         foreach ($orders as $order) {
             self::attachExtraOrderProperty($order);
+            $order->list_order_codes = "";
+            $listDetailOrders = DetailOrder::where("order_id", $order->id)->get();
+            if ($listDetailOrders != null) {
+                foreach ($listDetailOrders as $detailOrder) {
+                    $detailProduct = DetailProduct::where("id", $detailOrder->detail_product_id)->first();
+                    $productCat = ProductCategory::where("id", $detailProduct->product_category_id)->first();
+                    $order->list_order_codes = $order->list_order_codes . '<br>' . $detailProduct->product_code . '-' . $productCat->color . '-' . $productCat->size;
+                }
+            }
+            if ($order->list_order_codes != "") {
+                $order->list_order_codes = substr($order->list_order_codes, 4);
+            }
         }
 
         return $orders;
@@ -449,7 +498,7 @@ class SaleFunctions
     public static function listSuggestionProductCodes()
     {
         $productCodeList = [];
-        $listProduct = Product::all();
+        $listProduct = Product::where("is_active", true)->where("is_test", false)->get();
         foreach ($listProduct as $product) {
             if (!in_array($product->code, $productCodeList)) {
                 array_push($productCodeList, $product->code);
@@ -755,17 +804,19 @@ class SaleFunctions
         }
         return false;
     }
-    public static function listOrderHistories($startTime=null, $endTime=null){
+
+    public static function listOrderHistories($startTime = null, $endTime = null)
+    {
         $filterOptions = [];
-        if($startTime != null && $endTime != null){
+        if ($startTime != null && $endTime != null) {
             $filterOptions[] = ['created', ">=", $startTime];
             $filterOptions[] = ['created', "<=", $endTime];
         }
         $perPage = config('settings.per_page');
         $listHistories = HistoryOrder::where($filterOptions)->paginate($perPage);
-        foreach ($listHistories as $history){
+        foreach ($listHistories as $history) {
             $user = User::where("id", $history->user_id)->first();
-            if($user != null){
+            if ($user != null) {
                 $history->username = $user->username;
             }
             $history->action = ActionCode::getName($history->action);
@@ -776,10 +827,71 @@ class SaleFunctions
                 $history->note = $order->note;
                 $history->code = $order->code;
                 $history->sale_name = $order->sale_name;
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 Log::log("error message", $e->getMessage());
             }
         }
         return $listHistories;
+    }
+
+    private static function attachExtraDeliverOrder($order)
+    {
+        $order->product_name = "";
+        $order->total_quantity = "";
+        $order->kg = "";
+        $order->actually_collected = "";
+        $order->pick_money = "";
+        $listDetailOrders = DetailOrder::where("order_id", $order->id)->get();
+        if ($listDetailOrders != null) {
+            foreach ($listDetailOrders as $detailOrder) {
+                $detailProduct = DetailProduct::where("id", $detailOrder->detail_product_id)->first();
+                $productCat = ProductCategory::where("id", $detailProduct->product_category_id)->first();
+                $order->product_name = $order->product_name . '<br>' . $detailProduct->product_code . '-' . $productCat->color . '-' . $productCat->size;
+                $order->total_quantity = $order->total_quantity . '<br>' . strval($detailOrder->quantity);
+                $order->kg = $order->kg . '<br>' . strval($detailOrder->kg);
+                $order->actually_collected = $order->actually_collected . '<br>' . Util::formatMoney($detailOrder->actually_collected) . "&nbsp;&#8363;";
+                $order->pick_money = $order->pick_money . '<br>' . Util::formatMoney($detailOrder->pick_money) . "&nbsp;&#8363;";
+            }
+        }
+        if ($order->product_name != "") {
+            $order->product_name = substr($order->product_name, 4);
+        }
+        if ($order->total_quantity != "") {
+            $order->total_quantity = substr($order->total_quantity, 4);
+        }
+        if ($order->kg != "") {
+            $order->kg = substr($order->kg, 4);
+        }
+        if ($order->actually_collected != "") {
+            $order->actually_collected = substr($order->actually_collected, 4);
+        }
+        if ($order->pick_money != "") {
+            $order->pick_money = substr($order->pick_money, 4);
+        }
+
+    }
+
+    public static function listDeliverOrders()
+    {
+        $listOrders = Order::where("order_state", OrderState::STATE_CUSTOMER_AGREED)
+            ->where(function ($query) {
+                $query->whereNull('delivery_time');
+                $query->orWhere('delivery_time', '<=', Util::now());
+            })->get();
+        foreach ($listOrders as $order) {
+            self::attachExtraOrderProperty($order);
+            self::attachExtraDeliverOrder($order);
+        }
+        return $listOrders;
+    }
+
+    public static function listOrderDelivering($listOrderIds)
+    {
+        $listOrders = Order::whereIn("id", $listOrderIds)-> get();
+        foreach ($listOrders as $order) {
+            self::attachExtraOrderProperty($order);
+            self::attachExtraDeliverOrder($order);
+        }
+        return $listOrders;
     }
 }

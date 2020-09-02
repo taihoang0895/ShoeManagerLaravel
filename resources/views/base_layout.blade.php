@@ -24,29 +24,42 @@
 
 <div id="header">
     @yield('header')
-    <form method="get" action="/logout/" id="form_logout">
-        <div id="menu_btn_logout">Đăng Xuất</div>
-    </form>
-    <div id="menu_btn_notification">
-        <div class="icon">
-            @if (Auth::user()->notification_unread_count > 0)
-                <img class="active" alt="Thông báo"/>
-            @else
-                <img alt="Thông báo"/>
-            @endif
+    <table id="menu_item_right">
+        <tr>
+            <td>
+                <div class="avatar">
+                    <img alt="avatar"/>
+                </div>
+            </td>
+            <td>
+                <div id="menu_alias_user">{{Auth::user()->alias_name}}</div>
+            </td>
+            <td>
+                <div id="menu_btn_notification">
+                    <div class="icon">
+                        @if (Auth::user()->notification_unread_count > 0)
+                            <img class="active" alt="Thông báo"/>
+                        @else
+                            <img alt="Thông báo"/>
+                        @endif
 
-        </div>
-        @if  (Auth::user()->notification_unread_count > 0)
-            <table class="total_message">
-        @else
-                    <table class="total_message no_message">
-        @endif
-                        <tr>
-                            <td style="text-align:center;">{{Auth::user()->notification_unread_count}}</td>
-                        </tr>
-                    </table>
-    </div>
-
+                    </div>
+                    @if  (Auth::user()->notification_unread_count > 0)
+                        <table class="total_message">
+                            @else
+                                <table class="total_message no_message">
+                                    @endif
+                                    <tr>
+                                        <td style="text-align:center;">{{Auth::user()->notification_unread_count}}</td>
+                                    </tr>
+                                </table>
+                </div>
+            </td>
+            <td>
+                <div id="menu_btn_logout">Đăng Xuất</div>
+            </td>
+        </tr>
+    </table>
 </div>
 <div id="menu">
     @yield('menu')

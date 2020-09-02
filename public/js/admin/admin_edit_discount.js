@@ -1,4 +1,4 @@
-function validate(name, start_time, end_time, note){
+function validate(name, start_time, end_time, note, discount_value){
     if(name === ""){
         showMessage("Tên chương trình không được để rỗng");
         return false;
@@ -9,6 +9,10 @@ function validate(name, start_time, end_time, note){
     }
     if(end_time === ""){
          showMessage("Thời gian kết thúc không được để rỗng");
+        return false;
+    }
+    if(!isInteger(discount_value) || discount_value <= 0){
+        showMessage("Chiết khấu phải là số nguyên lớn hơn không");
         return false;
     }
     return true;
@@ -41,8 +45,9 @@ function handleOkButton(){
         var start_time = $('#discount_start_time').val().trim();
         var end_time = $('#discount_end_time').val().trim();
         var note = $('#discount_note').val().trim();
+        var discount_value = $('#discount_value').val().trim();
 
-        if(validate(name, start_time, end_time,note )){
+        if(validate(name, start_time, end_time,note,discount_value )){
             is_waiting_for_request = true;
             setupCSRF();
              var discount_id = $('#edit_discount_id').val();
@@ -52,6 +57,7 @@ function handleOkButton(){
                 'start_time' : start_time,
                 'end_time' : end_time,
                 'note' :note,
+                'discount_value' : discount_value,
                 '_token': $('meta[name=csrf-token]').attr('content'),
             }
             saveDiscount(data);

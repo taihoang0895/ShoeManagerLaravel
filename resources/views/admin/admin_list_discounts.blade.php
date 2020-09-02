@@ -48,8 +48,10 @@
         <tr class="tbl_header_item">
             <td class="discount_code">Mã Chương Trình</td>
             <td class="name">Tên Chương Trình</td>
+            <td class="discount_value">Chiết Khấu</td>
             <td class="start_time">Từ Ngày</td>
             <td class="end_time">Đến Ngày</td>
+
             <td class="note">Ghi Chú</td>
 
         </tr>
@@ -59,6 +61,7 @@
                     <input type="hidden" value="{{$discount_row->id}}" class="discount_id">
                     <td class="discount_code">{{$discount_row->code}}</td>
                     <td class="name">{{$discount_row->name}}</td>
+                    <td class="discount_value">{{$discount_row->discount_value}}</td>
                     <td class="start_time">{{$discount_row->getStartTimeStr()}}</td>
                     <td class="end_time">{{$discount_row->getEndTimeStr()}}</td>
                     <td class="note">{{$discount_row->note}}</td>

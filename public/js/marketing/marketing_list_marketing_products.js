@@ -4,7 +4,7 @@ var is_waiting_for_request = false;
 function handelShowDetailMarketingProduct() {
     $('.tbl .show_detail_markting_product').click(function () {
         var marketing_product_id = $(this).find('input').val();
-        data = {
+        var data = {
             "marketing_product_id": marketing_product_id
         }
         $.get('/marketing/detail-marketing-product/', data, function (response) {
@@ -16,7 +16,7 @@ function handelShowDetailMarketingProduct() {
             }
         })
             .fail(function () {
-                showMessage("Lỗi mạng");
+                showMessage("Lỗi mạng 12");
             })
             .always(function () {
                 is_waiting_for_request = false;

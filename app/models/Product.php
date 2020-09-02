@@ -9,7 +9,8 @@ class Product extends Model
 {
     //
     public $timestamps = false;
-
+    public $incrementing = false;
+    protected $primaryKey = 'code';
     public function getPriceStr(){
         return Util::formatMoney($this->price);
     }

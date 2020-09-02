@@ -4,6 +4,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Http\Controllers\objects\TableCell;
 use App\models\functions\AdminFunctions;
 use App\models\functions\CommonFunctions;
 use App\models\functions\Log;
@@ -26,6 +27,178 @@ class MarketingController
             "search_product_code" => $productCode
         ]);
     }
+
+    public function formUpdateProduct(Request $request)
+    {
+        $response = array(
+            "status" => 200,
+            "content" => "",
+            "message" => ""
+        );
+        $productCode = trim($request->get("product_code", ""));
+        $product = AdminFunctions::getProduct($productCode);
+        if ($product != null) {
+            $list_suggest_product_sizes = config("settings.list_suggest_product_sizes");
+            $list_suggest_product_colors = config("settings.list_suggest_product_color");
+
+            $list_suggest_product_sizes = json_encode($list_suggest_product_sizes);
+            $list_suggest_product_colors = json_encode($list_suggest_product_colors);
+            $list_detail_products = CommonFunctions::findDetailProducts($product->code);
+            $response['content'] = view("marketing.marketing_edit_product", [
+                "product" => $product,
+                "list_suggest_product_sizes" => $list_suggest_product_sizes,
+                "list_suggest_product_colors" => $list_suggest_product_colors,
+                'list_detail_products' => $list_detail_products
+            ])->render();
+        } else {
+            $response['status'] = 406;
+        }
+        return response()->json($response);
+    }
+
+
+    public function formAddProduct(Request $request)
+    {
+        $response = array(
+            "status" => 200,
+            "content" => "",
+            "message" => ""
+        );
+
+
+        $emptyProduct = new \stdClass();
+        $emptyProduct->code = "";
+        $emptyProduct->name = "";
+        $emptyProduct->price = "";
+        $emptyProduct->historical_cost = "";
+        $list_suggest_product_sizes = config("settings.list_suggest_product_sizes");
+        $list_suggest_product_colors = config("settings.list_suggest_product_color");
+
+        $list_suggest_product_sizes = json_encode($list_suggest_product_sizes);
+        $list_suggest_product_colors = json_encode($list_suggest_product_colors);
+
+        $response['content'] = view("marketing.marketing_edit_product", [
+            "product" => $emptyProduct,
+            "list_suggest_product_sizes" => $list_suggest_product_sizes,
+            "list_suggest_product_colors" => $list_suggest_product_colors,
+            "list_detail_products" => []
+        ])->render();
+        return response()->json($response);
+    }
+
+    public function addProduct(Request $request)
+    {
+        $response = array(
+            "status" => 406,
+            "content" => "",
+            "message" => ""
+        );
+
+        $productCode = trim($request->get("product_code", ''));
+        $productName = trim($request->get("product_name", ''));
+        $price = Util::parseInt($request->get("product_price", ''));
+        $historical_cost = Util::parseInt($request->get("product_historical_cost", ''));
+
+        $listDetailProductJson = json_decode($request->get("list_detail_products", '[]'), true);
+
+
+        if ($productCode != '' && $productName != '' && $price != null && $price >= 0 && $historical_cost != null &&
+            $historical_cost >= 0) {
+
+            $product = new \stdClass();
+            $product->code = $productCode;
+            $product->name = $productName;
+            $product->price = $price;
+            $product->historical_cost = $historical_cost;
+            $listProductDetails = array();
+            foreach ($listDetailProductJson as $detailProductJson) {
+                $productSize = trim($detailProductJson['product_size']);
+                $productColor = trim($detailProductJson['product_color']);
+                if ($productSize == "" || $productColor == "") {
+                    $listProductDetails = array();
+                    break;
+                }
+                $detailProduct = new \stdClass();
+                $detailProduct->size = $productSize;
+                $detailProduct->color = $productColor;
+                array_push($listProductDetails, $detailProduct);
+            }
+
+            //if (count($listProductDetails) != 0) {
+                $resultCode = AdminFunctions::addProduct($product, $listProductDetails);
+                if ($resultCode == ResultCode::SUCCESS) {
+                    $response['status'] = 200;
+                } else {
+                    if ($resultCode == ResultCode::FAILED_PRODUCT_DUPLICATE_CODE) {
+                        $response['message'] = "Trùng mã sản phẩm";
+                    }
+                }
+            //}
+        }
+        return response()->json($response);
+    }
+
+    public function updateProduct(Request $request)
+    {
+        $response = array(
+            "status" => 406,
+            "content" => "",
+            "message" => "Lỗi sửa sản phẩm đã được tạo trong hóa đơn"
+        );
+
+        $productCode = trim($request->get("product_code", ''));
+        $productName = trim($request->get("product_name", ''));
+        $price = Util::parseInt($request->get("product_price", ''));
+        $historical_cost = Util::parseInt($request->get("product_historical_cost", ''));
+
+        $listDetailProductJson = json_decode($request->get("list_detail_products", '[]'), true);
+
+
+        if ($productCode != '' && $productName != '' && $price != null && $price >= 0 && $historical_cost != null &&
+            $historical_cost >= 0) {
+
+            $product = new \stdClass();
+            $product->code = $productCode;
+            $product->name = $productName;
+            $product->price = $price;
+            $product->historical_cost = $historical_cost;
+            $listProductDetails = array();
+            foreach ($listDetailProductJson as $detailProductJson) {
+                $productSize = trim($detailProductJson['product_size']);
+                $productColor = trim($detailProductJson['product_color']);
+                if ($productSize == "" || $productColor == "") {
+                    $listProductDetails = array();
+                    break;
+                }
+                $detailProduct = new \stdClass();
+                $detailProduct->size = $productSize;
+                $detailProduct->color = $productColor;
+                array_push($listProductDetails, $detailProduct);
+            }
+
+            //if (count($listProductDetails) != 0) {
+                if (AdminFunctions::updateProduct($product, $listProductDetails) == ResultCode::SUCCESS) {
+                    $response['status'] = 200;
+                }
+            //}
+        }
+        return response()->json($response);
+    }
+
+    public function deleteProduct(Request $request)
+    {
+        $response = array(
+            "status" => 406,
+            "content" => "",
+            "message" => ""
+        );
+        $productCode = trim($request->get("product_code", ''));
+        if (AdminFunctions::deleteProduct($productCode) == ResultCode::SUCCESS) {
+            $response['status'] = 200;
+        }
+        return response()->json($response);
+    }
+
 
 
     private function listMarketingProductsForLeader(Request $request)
@@ -56,7 +229,7 @@ class MarketingController
         $marketingProducts = MarketingFunctions::findMarketingProduct($listUserIds, $marketingSourceId, $startTime, $endTime, $searchProductCode);
         $listMarketingSource = MarketingFunctions::listMarketingSource();
         $filterMarketingSourceStr = "";
-        $listProductCodes = json_encode(MarketingFunctions::listMarketingProductCodes());
+        $listProductCodes =  json_encode(CommonFunctions::listProductCodes());
         foreach ($listMarketingSource as $marketingSource) {
             if ($marketingSourceId == $marketingSource->id) {
                 $filterMarketingSourceStr = $marketingSource->name;
@@ -88,7 +261,7 @@ class MarketingController
         $endTime = Util::safeParseDate($endTimeStr);
 
         $marketingProducts = MarketingFunctions::findMarketingProduct([Auth::user()->id], $marketingSourceId, $startTime, $endTime, $searchProductCode);
-        $listProductCodes = json_encode(MarketingFunctions::listMarketingProductCodes());
+        $listProductCodes = json_encode(CommonFunctions::listProductCodes());
         $listMarketingSource = MarketingFunctions::listMarketingSource();
         $filterMarketingSourceStr = "";
         foreach ($listMarketingSource as $marketingSource) {
@@ -541,4 +714,95 @@ class MarketingController
             'filter_member_str' => $filterMemberStr
         ]);
     }
+
+
+    public function inventoryReport(Request $request)
+    {
+        $importing_quantity_cells = [];
+        $exporting_quantity_cells = [];
+        $returning_quantity_cells = [];
+        $failed_quantity_cells = [];
+        $remaining_quantity_cells = [];
+        $size_cells = [];
+        $code_color_cells = [];
+        $total_remaining_quantity_cells = [];
+        $group_data = [];
+
+        $sum_importing_quantity = 0;
+        $sum_exporting_quantity = 0;
+        $sum_returning_quantity = 0;
+        $sum_failed_quantity = 0;
+        $sum_remaining_quantity = 0;
+
+        $listInventoryReports = StoreKeeperFunctions::reportInventory();
+
+        foreach ($listInventoryReports as $inventoryReport) {
+            $key = json_encode([$inventoryReport->product_code, $inventoryReport->product_color]);
+            if (!array_key_exists($key, $group_data)) {
+                $group_data[$key] = [];
+            }
+
+            $group_data[$key][$inventoryReport->product_size] = [$inventoryReport->remaining_quantity,
+                $inventoryReport->importing_quantity,
+                $inventoryReport->exporting_quantity,
+                $inventoryReport->returning_quantity,
+                $inventoryReport->failed_quantity];
+        }
+        foreach ($group_data as $group_key => $group) {
+            $total_remaining_quantity = 0;
+            foreach ($group as $size => $record) {
+                for ($i = 0; $i <= 4; ++$i) {
+                    if ($record[$i] == null) {
+                        $record[$i] = 0;
+                    }
+                }
+
+                $sum_remaining_quantity += $record[0];
+                $sum_importing_quantity += $record[1];
+                $sum_exporting_quantity += $record[2];
+                $sum_returning_quantity += $record[3];
+                $sum_failed_quantity += $record[4];
+
+                $total_remaining_quantity += $record[0];
+
+                $remaining_quantity_cell = new TableCell($record[0]);
+                $importing_quantity_cell = new TableCell($record[1]);
+                $exporting_quantity_cell = new TableCell($record[2]);
+                $returning_quantity_cell = new TableCell($record[3]);
+                $failed_quantity_cell = new TableCell($record[4]);
+                $size_cell = new TableCell($size);
+                array_push($remaining_quantity_cells, $remaining_quantity_cell);
+                array_push($importing_quantity_cells, $importing_quantity_cell);
+                array_push($exporting_quantity_cells, $exporting_quantity_cell);
+                array_push($returning_quantity_cells, $returning_quantity_cell);
+                array_push($failed_quantity_cells, $failed_quantity_cell);
+                array_push($size_cells, $size_cell);
+            }
+            $total_remaining_quantity_cell = new TableCell($total_remaining_quantity, count($group));
+            $group_key = json_decode($group_key);
+            $code_color_cell = new TableCell(($group_key[0] . " " . $group_key[1]), count($group));
+
+            array_push($code_color_cells, $code_color_cell);
+            array_push($total_remaining_quantity_cells, $total_remaining_quantity_cell);
+
+        }
+
+        return view("marketing.marketing_inventory_report", [
+            "importing_quantity_cells" => $importing_quantity_cells,
+            'exporting_quantity_cells' => $exporting_quantity_cells,
+            'returning_quantity_cells' => $returning_quantity_cells,
+            'failed_quantity_cells' => $failed_quantity_cells,
+            'remaining_quantity_cells' => $remaining_quantity_cells,
+            'size_cells' => $size_cells,
+            'code_color_cells' => $code_color_cells,
+            'total_remaining_quantity_cells' => $total_remaining_quantity_cells,
+            'sum_importing_quantity' => $sum_importing_quantity,
+            'sum_exporting_quantity' => $sum_exporting_quantity,
+            'sum_returning_quantity' => $sum_returning_quantity,
+            'sum_failed_quantity' => $sum_failed_quantity,
+            'sum_remaining_quantity' => $sum_remaining_quantity
+        ]);
+
+    }
+
 }

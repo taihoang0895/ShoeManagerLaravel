@@ -181,21 +181,27 @@ class CommonController extends Controller
 
     public function checkNotification(Request $request)
     {
-        $response = array(
-            "status" => 200,
-            "content" => "",
-            "message" => "",
-            'has_notification' => 0,
-            'unread_message' => 0
-        );
+        try {
 
-        $notificationManager = NotificationManager::getOrNew(Auth::user());
-        $response['unread_message'] = $notificationManager->unread_count;
-        if ($notificationManager->has_notification) {
-            $response['has_notification'] = 1;
+            $response = array(
+                "status" => 200,
+                "content" => "",
+                "message" => "",
+                'has_notification' => 0,
+                'unread_message' => 0
+            );
+            CommonFunctions::checkReminds(Auth::user());
+
+            $notificationManager = NotificationManager::getOrNew(Auth::user());
+            $response['unread_message'] = $notificationManager->unread_count;
+            if ($notificationManager->has_notification) {
+                $response['has_notification'] = 1;
+            }
+            CommonFunctions::updateHasNotification(Auth::user(), false);
+            return response()->json($response);
+        }catch (\Exception $e){
+            Log::log("error messgae",$e->getMessage());
         }
-        CommonFunctions::updateHasNotification(Auth::user(), false);
-        return response()->json($response);
     }
 
     public function fakeNotification(Request $request)

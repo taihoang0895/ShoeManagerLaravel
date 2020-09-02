@@ -22,7 +22,7 @@ class CretateCustomerTable extends Migration
             $table->unsignedInteger('street_id')->nullable();
             $table->unsignedInteger('landing_page_id')->nullable();
             $table->unsignedInteger('user_id');
-            $table->string("phone_number", 24);
+            $table->string("phone_number", 24)->nullable();;
             $table->date("birthday")->nullable();
             $table->boolean("public_phone_number");
             $table->dateTime("created");

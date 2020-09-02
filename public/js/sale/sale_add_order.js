@@ -74,32 +74,33 @@ function genColumnProductColor(productColor, index) {
     return colStr;
 }
 
-function genColumnDiscount(discount, index) {
+function genColumnDiscount(discount_id, discount, index) {
     var view_text = discount;
     var edit_text = discount;
-    if (discount == dropdownDefaultDiscountText) {
+  /*  if (discount == dropdownDefaultDiscountText) {
         edit_text = dropdownDefaultDiscountText;
         view_text = "";
-    }
+    }*/
 
 
     var colStr = '<td style="text-align:center;">';
-    colStr += '<input type="hidden" id="detail_order_view_discount_id_' + index.toString() + '" value=-1>';
-    colStr += '<div class="dropdown tbl_detail_order_item_updating detail_order_updating_discount"';
-    colStr += ' id="detail_order_updating_product_discount_' + index.toString() + '">';
-    colStr += '<button class="btn btn-secondary dropdown-toggle" type="button"';
-    colStr += ' id="dropdown_discount_code_' + index.toString() + '"';
-    colStr += ' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">';
-    colStr += edit_text;
-    colStr += '</button>';
-    colStr += '<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
-    for (product_discount_index in list_product_discount) {
-        var id = "detail_order_options_discount_id_" + index.toString();
-        var discount_id_value_tag = '<input type="hidden" id="discount_id" value="' + list_product_id[product_discount_index].toString() + '">';
-        colStr += '<a class="dropdown-item tbl_detail_order_item_view" id="' + id + '">' + discount_id_value_tag + list_product_discount[product_discount_index] + '</a>';
-    }
-    colStr += '</div>';
-    colStr += ' </div>';
+    /*  colStr += '<input type="hidden" id="detail_order_view_discount_id_' + index.toString() + '" value=-1>';
+      colStr += '<div class="dropdown tbl_detail_order_item_updating detail_order_updating_discount"';
+      colStr += ' id="detail_order_updating_product_discount_' + index.toString() + '">';
+      colStr += '<button class="btn btn-secondary dropdown-toggle" type="button"';
+      colStr += ' id="dropdown_discount_code_' + index.toString() + '"';
+      colStr += ' data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">';
+      colStr += edit_text;
+      colStr += '</button>';
+      colStr += '<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">';
+      for (product_discount_index in list_product_discount) {
+          var id = "detail_order_options_discount_id_" + index.toString();
+          var discount_id_value_tag = '<input type="hidden" id="discount_id" value="' + list_product_id[product_discount_index].toString() + '">';
+          colStr += '<a class="dropdown-item tbl_detail_order_item_view" id="' + id + '">' + discount_id_value_tag + list_product_discount[product_discount_index] + '</a>';
+      }
+      colStr += '</div>';
+      colStr += ' </div>';*/
+    colStr += '<input type="hidden" id="detail_order_view_discount_id" value=' + discount_id + '>';
     colStr += ' <div class="tbl_detail_order_item_view"';
     colStr += ' id="detail_order_view_product_discount_' + index.toString() + '">' + view_text;
     colStr += '</div>';
@@ -153,13 +154,13 @@ function genColumnUpdateDeleteButton(index) {
     return colStr;
 }
 
-function genRow(productCode, productSize, productColor, quantity, productDiscount, actuallyCollected, price, pickMoney, index) {
+function genRow(productCode, productSize, productColor, quantity, discountId, productDiscount, actuallyCollected, price, pickMoney, index) {
     var rowStr = '<tr class="tbl_detail_order_item" id="tbl_detail_order_item_' + index.toString() + '">'
     rowStr += genColumnProductCode(productCode, index);
     rowStr += genColumnProductSize(productSize, index);
     rowStr += genColumnProductColor(productColor, index);
     rowStr += genColumnQuantity(quantity, index);
-    rowStr += genColumnDiscount(productDiscount, index);
+    rowStr += genColumnDiscount(discountId, productDiscount, index);
     rowStr += genColumnPrice(price, index);
     rowStr += genColumnActuallyCollected(actuallyCollected, index);
     rowStr += genColumnPickMoney(pickMoney, index);
@@ -234,6 +235,7 @@ function addNewDetailOrder() {
     var productColor = $('#detail_order_additional_product_color_text').text().trim();
     var quantity = $('#detail_order_additional_product_quantity').val().trim();
     var productDiscount = $('#detail_order_additional_discount_text').text().trim();
+    var discountId = $('#detail_order_additional_discount_id').val().trim();
 
     if (!validate_detail_order(productCode, productSize, productColor, quantity, 0, 0)) {
         return;
@@ -243,13 +245,15 @@ function addNewDetailOrder() {
         'product_size': productSize,
         'product_color': productColor,
         'quantity': quantity,
+        'discount_id' : discountId
     }
     $.get('/product/price', param, function (response) {
         if (response['status'] == 200) {
 
             var price = response['content']['price'];
+            var discountValue = response['content']['discount_value'];
             var row_index = $('.tbl_detail_order_item').length;
-            $('#row_additional_detail_order').after(genRow(productCode, productSize, productColor, quantity, productDiscount, price, price, price, row_index));
+            $('#row_additional_detail_order').after(genRow(productCode, productSize, productColor, quantity, discountId, productDiscount, quantity * price - discountValue, price, quantity * price - discountValue, row_index));
             $('.detail_order_btn_update').first().click(handleUpdateBtnClicked);
             $('.detail_order_btn_delete').first().click(handleDeleteBtnClicked);
             $('.detail_order_updating_product_size').first().find('a').click(updatingRowProductSizeSelected);
@@ -295,7 +299,7 @@ function showRowInUpdateMode(id) {
       var product_size_id_selected = "detail_order_updating_product_size_" + id;
       var product_color_id_selected = "detail_order_updating_product_color_" + id;*/
     var product_quantity_id_selected = "detail_order_updating_product_quantity_" + id;
-    var product_discount_id_selected = "detail_order_updating_product_discount_" + id;
+    //var product_discount_id_selected = "detail_order_updating_product_discount_" + id;
     var product_out_of_quantity_id_selected = "detail_order_updating_product_out_of_quantity_" + id;
     var product_pick_money_id_selected = "detail_order_updating_pick_money_" + id;
     var actually_collected_id_selected = "detail_order_updating_actually_collected_" + id;
@@ -304,13 +308,13 @@ function showRowInUpdateMode(id) {
         var view_product_size_id_selected = "detail_order_view_product_size_" + id;
         var view_product_color_id_selected = "detail_order_view_product_color_" + id;*/
     var view_product_quantity_id_selected = "detail_order_view_product_quantity_" + id;
-    var view_product_discount_id_selected = "detail_order_view_product_discount_" + id;
+    //var view_product_discount_id_selected = "detail_order_view_product_discount_" + id;
     var view_product_out_of_quantity_id_selected = "detail_order_view_product_out_of_quantity_" + id;
     var view_product_pick_money_id_selected = "detail_order_view_pick_money_" + id;
     var view_actually_collected_id_selected = "detail_order_view_actually_collected_" + id;
 
     $('.tbl_detail_order_item_updating').each(function () {
-        if ([product_quantity_id_selected, product_discount_id_selected, product_out_of_quantity_id_selected, product_pick_money_id_selected, actually_collected_id_selected].indexOf($(this).attr('id')) >= 0) {
+        if ([product_quantity_id_selected, product_out_of_quantity_id_selected, product_pick_money_id_selected, actually_collected_id_selected].indexOf($(this).attr('id')) >= 0) {
             $(this).css('display', 'block');
             /* if($(this).attr('id') === product_code_id_selected){
                  $(this).val($('#'+view_product_code_id_selected).text());
@@ -327,11 +331,11 @@ function showRowInUpdateMode(id) {
             if ($(this).attr('id') === actually_collected_id_selected) {
                 $(this).val($('#' + view_actually_collected_id_selected).text());
             }
-            if ($(this).attr('id') === product_discount_id_selected) {
-                if ($('#' + view_product_discount_id_selected).text() != '') {
-                    $('#dropdown_discount_code_' + id.toString()).text($('#' + view_product_discount_id_selected).text());
-                }
-            }
+            /*   if ($(this).attr('id') === product_discount_id_selected) {
+                   if ($('#' + view_product_discount_id_selected).text() != '') {
+                       $('#dropdown_discount_code_' + id.toString()).text($('#' + view_product_discount_id_selected).text());
+                   }
+               }*/
 
             if ($(this).attr('id') === product_pick_money_id_selected) {
                 $(this).val($('#' + view_product_pick_money_id_selected).text());
@@ -351,7 +355,7 @@ function showRowInUpdateMode(id) {
     });
 
     $('.tbl_detail_order_item_view').each(function () {
-        if ([view_product_quantity_id_selected, view_product_discount_id_selected, view_product_out_of_quantity_id_selected,
+        if ([view_product_quantity_id_selected, view_product_out_of_quantity_id_selected,
             view_product_pick_money_id_selected, view_actually_collected_id_selected].indexOf($(this).attr('id')) >= 0) {
             $(this).css('display', 'none');
         }
@@ -363,7 +367,7 @@ function updateRow(id) {
       var product_size_id_selected = "detail_order_updating_product_size_" + id;
       var product_color_id_selected = "detail_order_updating_product_color_" + id;*/
     var product_quantity_id_selected = "detail_order_updating_product_quantity_" + id;
-    var product_discount_id_selected = "detail_order_updating_product_discount_" + id;
+    //var product_discount_id_selected = "detail_order_updating_product_discount_" + id;
     var product_out_of_quantity_id_selected = "detail_order_updating_product_out_of_quantity_" + id;
     var product_pick_money_id_selected = "detail_order_updating_pick_money_" + id;
     var actually_collected_id_selected = "detail_order_updating_actually_collected_" + id;
@@ -372,13 +376,13 @@ function updateRow(id) {
       var view_product_size_id_selected = "detail_order_view_product_size_" + id;
       var view_product_color_id_selected = "detail_order_view_product_color_" + id;*/
     var view_product_quantity_id_selected = "detail_order_view_product_quantity_" + id;
-    var view_product_discount_id_selected = "detail_order_view_product_discount_" + id;
+    //var view_product_discount_id_selected = "detail_order_view_product_discount_" + id;
     var view_product_out_of_quantity_id_selected = "detail_order_view_product_out_of_quantity_" + id;
     var view_product_pick_money_id_selected = "detail_order_view_pick_money_" + id;
     var view_actually_collected_id_selected = "detail_order_view_actually_collected_" + id;
 
     $('.tbl_detail_order_item_updating').each(function () {
-        if ([product_quantity_id_selected, product_discount_id_selected, product_out_of_quantity_id_selected, product_pick_money_id_selected, actually_collected_id_selected].indexOf($(this).attr('id')) >= 0) {
+        if ([product_quantity_id_selected, product_out_of_quantity_id_selected, product_pick_money_id_selected, actually_collected_id_selected].indexOf($(this).attr('id')) >= 0) {
 
             /*if($(this).attr('id') === product_code_id_selected){
                 $('#'+view_product_code_id_selected).text( $(this).val());
@@ -395,15 +399,15 @@ function updateRow(id) {
             if ($(this).attr('id') === actually_collected_id_selected) {
                 $('#' + view_actually_collected_id_selected).text($(this).val());
             }
-            if ($(this).attr('id') === product_discount_id_selected) {
+            /* if ($(this).attr('id') === product_discount_id_selected) {
 
-                if ($('#dropdown_discount_code_' + id.toString()).text().trim() != dropdownDefaultDiscountText) {
-                    $('#' + view_product_discount_id_selected).text($('#dropdown_discount_code_' + id.toString()).text());
-                } else {
-                    $('#' + view_product_discount_id_selected).text("");
-                }
+                 if ($('#dropdown_discount_code_' + id.toString()).text().trim() != dropdownDefaultDiscountText) {
+                     $('#' + view_product_discount_id_selected).text($('#dropdown_discount_code_' + id.toString()).text());
+                 } else {
+                     $('#' + view_product_discount_id_selected).text("");
+                 }
 
-            }
+             }*/
 
             if ($(this).attr('id') === product_out_of_quantity_id_selected) {
                 if ($(this).is(":checked")) {
@@ -547,7 +551,7 @@ function collect_detail_order() {
             detail_order['product_size'] = $('#detail_order_view_product_size_' + id).text().trim();
             detail_order['product_color'] = $('#detail_order_view_product_color_' + id).text().trim();
             detail_order['quantity'] = $('#detail_order_view_product_quantity_' + id).text().trim();
-            detail_order['discount_id'] = $('#detail_order_view_discount_id_' + id).val().trim();
+            detail_order['discount_id'] = $(this).find("#detail_order_view_discount_id").val().trim();
 
             detail_order['pick_money'] = $('#detail_order_view_pick_money_' + id).text().trim();
             detail_order['actually_collected'] = $('#detail_order_view_actually_collected_' + id).text().trim();
@@ -618,8 +622,9 @@ $(document).ready(function () {
         $('#detail_order_additional_product_color_text').text($(this).text());
     });
 
-    $('#detail_order_updating_discount a').click(function () {
-        $('#detail_order_updating_discount_text').text($(this).text());
+    $('#detail_order_additional_discount a').click(function () {
+        $('#detail_order_additional_discount_text').text($(this).text());
+        $('#detail_order_additional_discount_id').val($(this).find(".option_detail_order_discount_id").val())
     });
 
     $('#detail_order_btn_add').click(function () {

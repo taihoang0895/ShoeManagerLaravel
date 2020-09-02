@@ -4,8 +4,10 @@ var is_waiting_for_request = false;
 function handelShowDetailMarketingProduct(){
      $('.tbl .show_detail_markting_product').click(function(){
            var marketing_product_id = $(this).find('input').val();
-             data = {}
-          $.get('/marketing/detail-marketing-product/'+marketing_product_id+"/", data, function(response) {
+         data = {
+             "marketing_product_id": marketing_product_id
+         }
+          $.get('/marketing/detail-marketing-product/', data, function(response) {
                           if(response['status'] == 200){
                                 $('#dialog_edit_marketing_product').empty();
                                 $('#dialog_edit_marketing_product').html(response['content']);

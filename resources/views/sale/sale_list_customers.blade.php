@@ -52,11 +52,12 @@
     <table class="tbl_customers">
         <tr class="tbl_header_item">
             <td class="code">MKH</td>
+            <td class="customer_name">Tên Khách</td>
             <td class="phone_number">Số Điện Thoại</td>
             <td class="state">Trạng Thái</td>
             <td class="province">Thành Phố</td>
-            <td class="district">Quận Huyện</td>
-            <td class="street">Đường/Phố</td>
+           {{-- <td class="district">Quận Huyện</td>
+            <td class="street">Đường/Phố</td>--}}
             <td class="address">Địa Chỉ</td>
             <td class="show_detail_header"></td>
 
@@ -65,11 +66,12 @@
         @foreach ($list_customers as $customer)
             <tr class="tbl_item customer_row" id="customer_{{$customer->id}}">
                 <td class="code">{{$customer->code}}</td>
+                <td class="customer_name">{{$customer->name}}</td>
                 <td class="phone_number">{{$customer->phone_number}}</td>
-                <td class="state">{{$customer->state_name}}</td>
+                <td class="state" style="background-color: {{$customer->customer_state_color}}">{{$customer->state_name}}</td>
                 <td class="province">{{$customer->province_name}}</td>
-                <td class="district">{{$customer->district_name}}</td>
-                <td class="street">{{$customer->street_name}}</td>
+            {{--    <td class="district">{{$customer->district_name}}</td>
+                <td class="street">{{$customer->street_name}}</td>--}}
                 <td class="address">{{$customer->address}}</td>
                 <td class="show_detail"><input type="hidden" value="{{$customer->id}}">Xem chi tiết</td>
             </tr>

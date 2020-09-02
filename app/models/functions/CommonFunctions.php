@@ -13,13 +13,14 @@ use App\models\Notification;
 use App\models\NotificationManager;
 use App\models\Product;
 use App\models\Province;
+use App\models\Remind;
 use Illuminate\Support\Facades\DB;
 
 class CommonFunctions
 {
     public static function searchProduct($productCode)
     {
-        return Product::where("code", 'like', '%' . $productCode . '%')->limit(5)->get();
+        return Product::where("code", 'like', '%' . $productCode . '%')->where("is_active", true)->where("is_test", false)->limit(5)->get();
     }
 
     public static function findDetailProducts($productCode)
@@ -176,7 +177,7 @@ class CommonFunctions
     public static function listProductCodes()
     {
         $listProductCodes = [];
-        foreach (DB::table('products')->distinct()->get(['code']) as $productCat) {
+        foreach (DB::table('products')->where("is_active", true)->where("is_test", false)->distinct()->get(['code']) as $productCat) {
             array_push($listProductCodes, $productCat->code);
         }
         return $listProductCodes;
@@ -247,7 +248,9 @@ class CommonFunctions
 
     public static function listDiscounts()
     {
-        $filterOptions = [];
+        $filterOptions = [
+            "is_active" => true
+        ];
         $filterOptions[] = ["start_time", "<=", Util::now()];
         $filterOptions[] = ["end_time", ">=", Util::now()];
         return Discount::where($filterOptions)->get();
@@ -260,6 +263,27 @@ class CommonFunctions
             return $inventory->importing_quantity - $inventory->exporting_quantity;
         }
         return 0;
+    }
+
+    public static function checkReminds($user){
+        $filterOptions = [
+            "active" => true,
+        ];
+        $filterOptions[] = ["time", "<=", Util::now()];
+        $listReminds = Remind::where($filterOptions)->get();
+        try {
+            DB::beginTransaction();
+            foreach ($listReminds as $remind){
+                self::createNotification($user, $remind->note);
+                $remind->active = false;
+                $remind->save();
+            }
+            DB::commit();
+        }catch (\Exception $e){
+            DB::rollBack();
+            Log::log("error message", $e->getMessage());
+        }
+
     }
 
 }

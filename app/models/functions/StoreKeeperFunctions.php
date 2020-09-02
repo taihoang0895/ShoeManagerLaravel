@@ -544,8 +544,11 @@ class StoreKeeperFunctions
             "         inventories.exporting_quantity as exporting_quantity," .
             "         inventories.returning_quantity as returning_quantity," .
             "         inventories.failed_quantity as failed_quantity" .
-            " FROM detail_products INNER JOIN product_categories ON detail_products.product_category_id=product_categories.id" .
-            " LEFT JOIN inventories ON detail_products.id=inventories.detail_product_id";
+            " FROM detail_products" .
+            " INNER JOIN product_categories ON detail_products.product_category_id=product_categories.id" .
+            " INNER JOIN products ON detail_products.product_code=products.code" .
+            " LEFT JOIN inventories ON detail_products.id=inventories.detail_product_id" .
+            " WHERE products.is_active=1 and products.is_test=0";
 
         $listInventoryReports = array();
         $results = DB::select(DB::raw($sql));
@@ -560,6 +563,9 @@ class StoreKeeperFunctions
     {
         return DB::table('detail_products')
             ->join('product_categories', 'product_categories.id', "=", "detail_products.product_category_id")
+            ->join('products', 'detail_products.product_code', "=", "products.code")
+            ->where("products.is_active", true)
+            ->where("products.is_test", false)
             ->select("detail_products.id as id", "detail_products.product_code as product_code", "product_categories.size as size", "product_categories.color as color")
             ->get();
     }
@@ -590,9 +596,17 @@ class StoreKeeperFunctions
             $query->join("orders", 'detail_orders.order_id', "=", "orders.id")
                 ->select(DB::raw("detail_orders.detail_product_id as detail_product_id"),
                     DB::raw('SUM(detail_orders.quantity) as total_quantity'),
-                    DB::raw('DATE(orders.created) as day'));
+                    DB::raw('DATE(orders.created) as day'))
+                ->join('detail_products', "detail_orders.detail_product_id", "=", "detail_products.id")
+                ->join('products', "detail_products.product_code", "=", "products.code")
+                ->where("products.is_active", true)
+                ->where("products.is_test", false);
         } else {
-            $query->select("detail_product_id", DB::raw('SUM(quantity) as total_quantity'), DB::raw('DATE(created) as day'));
+            $query->select("detail_product_id", DB::raw('SUM(' . $tableName . '.quantity) as total_quantity'), DB::raw('DATE(' . $tableName . '.created) as day'))
+                ->join('detail_products', $tableName . ".detail_product_id", "=", "detail_products.id")
+                ->join('products', "detail_products.product_code", "=", "products.code")
+                ->where("products.is_active", true)
+                ->where("products.is_test", false);
         }
         $results = $query->where($filterOptions)
             ->groupBy('detail_product_id', 'day')

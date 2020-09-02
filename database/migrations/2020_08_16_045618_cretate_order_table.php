@@ -18,7 +18,7 @@ class CretateOrderTable extends Migration
             $table->string("code");
             $table->unsignedBigInteger('customer_id');
             $table->integer("order_state");
-            $table->unsignedInteger('order_fail_reason_id');
+            $table->unsignedInteger('order_fail_reason_id')->nullable();
             $table->unsignedInteger('user_id');
             $table->integer("replace_order_id")->nullable();
             $table->string("note");

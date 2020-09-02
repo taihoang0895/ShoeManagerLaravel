@@ -63,7 +63,7 @@ function handleShowDetailProduct(){
                     return;
               }
               is_waiting_for_request = true;
-               $.get("common/detail-product/?product_code=" + product_code.toString(), function(response) {
+               $.get("/common/detail-product/?product_code=" + product_code.toString(), function(response) {
                         if(response['status'] == 200){
                                $('#dialog_edit_product').empty();
                                $('#dialog_edit_product').html(response['content']);

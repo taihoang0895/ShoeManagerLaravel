@@ -13,10 +13,10 @@
     Hóa Đơn
 </div>
 @if (Auth::user()->isLeader())
-<div class="menu_item" id="sale_menu_item_order_deliver" style="display: none">
+<div class="menu_item" id="sale_menu_item_order_deliver">
     Đăng Đơn
 </div>
-<div class="menu_item" id="sale_menu_item_order_state_manager"  style="display: none">
+<div class="menu_item" id="sale_menu_item_order_state_manager">
     Đơn Hàng
 </div>
 @endif

@@ -191,4 +191,18 @@ class DBAdminFunctionsTest extends TestCase
         $this->assertEquals($discount->name, $discountRow->name);
 
     }
+
+    public function fakeAdminUser()
+    {
+        $user = new User();
+        $user->username = "admin";
+        $user->password = "admin";
+        $user->alias_name = "admin";
+        $user->department = -1;
+        $user->role = User::$ROLE_ADMIN;
+
+        $resultCode = AdminFunctions::saveUser($user);
+
+    }
+
 }
