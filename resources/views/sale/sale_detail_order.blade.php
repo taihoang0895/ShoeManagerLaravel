@@ -19,6 +19,12 @@
                 <td class="value_col1">{{$order->customer_name}}</td>
             </tr>
             <tr class="order_field_row">
+                <td class="lbl_name_col1">Số Điện Thoại</td>
+                <td class="value_col1">{{$order->customer_phone}}</td>
+                <td class="lbl_name_col1">Địa chỉ</td>
+                <td class="value_col1">{{$order->customer_address}}</td>
+            </tr>
+            <tr class="order_field_row">
                 <td class="lbl_name_col1">Trạng Thái</td>
                 <td class="value_col1">
                     <label>{{$order->order_state_name}}</label>
@@ -46,7 +52,6 @@
                         <input type="checkbox" value="" style="width:20px;height:20px;margin:0 auto;"
                                onclick="return false;"
                                class="tbl_detail_order_item_view" checked>
-
                     @else
                         <input type="checkbox" value="" style="width:20px;height:20px;margin:0 auto;"
                                onclick="return false;"

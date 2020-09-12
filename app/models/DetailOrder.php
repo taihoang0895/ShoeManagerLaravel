@@ -14,6 +14,10 @@ class DetailOrder extends Model
     {
         $marketingProductId = "";
         $marketingProductCode = "";
+        $productSize = "";
+        $productColor = "";
+        $productCode = "";
+        $detailProductId = "";
         if ($this->marketing_product_id != null) {
             $marketingProduct = MarketingProduct::where("id", $this->marketing_product_id)->first();
             if ($marketingProduct != null) {
@@ -22,10 +26,16 @@ class DetailOrder extends Model
             }
         }
         $detailProduct = DetailProduct::where("id", $this->detail_product_id)->first();
-        if($detailProduct == null){
-            return "";
+        if($detailProduct != null){
+            $productCode = $detailProduct->product_code;
+            $detailProductId = $detailProduct->id;
+            $productCategory = ProductCategory::where("id", $detailProduct->product_category_id)->first();
+            if($productCategory != null){
+                $productSize = $productCategory->size;
+                $productColor = $productCategory->color;
+            }
         }
-        $productCategory = ProductCategory::where("id", $detailProduct->product_category_id)->first();
+
 
         return json_encode([
             "order_id" => $this->id,
@@ -33,13 +43,13 @@ class DetailOrder extends Model
             "marketing_product_id" => $marketingProductId,
             "marketing_product_code" => $marketingProductCode,
             "quantity" => $this->quantity,
-            "detail_product_id" => $detailProduct->id,
+            "detail_product_id" =>$detailProductId,
             "actually_collected" => $this->actually_collected,
             "pick_money" => $this->pick_money,
             "discount_id" => strval($this->discount_id),
-            "product_code"=> $detailProduct->product_code,
-            "product_size"=> $productCategory->size,
-            "product_color"=> $productCategory->color
+            "product_code"=> $productCode,
+            "product_size"=> $productSize,
+            "product_color"=> $productColor
         ]);
     }
 }

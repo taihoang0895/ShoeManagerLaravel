@@ -68,9 +68,14 @@
         $(document).ready(function () {
             document.title = 'Đăng Đơn';
             $('#sale_menu_item_order_deliver').addClass('selected');
+            @if (count($list_orders) != 0)
             $('.tbl_order_deliver tbody').css('width', $('.tbl_order_deliver thead').width() + 17);
             $('.tbl_order_deliver').css('height', $(window).height() - $('.tbl_order_deliver thead').offset().top);
             $('.tbl_order_deliver tbody').css('height', $(window).height() - $('.tbl_order_deliver thead').offset().top - $('.tbl_order_deliver thead').height() - 20);
+            @else
+            $('.tbl_order_deliver tbody').css('height', '0px');
+            @endif
+
         });
 
     </script>

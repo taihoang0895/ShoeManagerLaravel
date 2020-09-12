@@ -29,7 +29,7 @@
         </li>
     </ul>
     @if($tab_index == 0)
-        <div class="title">Lịch Sử Nhập Hàngg</div>
+        <div class="title">Lịch Sử Nhập Hàng</div>
     @endif
     @if($tab_index == 1)
         <div class="title">Lịch Sử Xuất Hàng</div>

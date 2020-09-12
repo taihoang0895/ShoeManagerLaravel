@@ -2,32 +2,33 @@
     margin-top : 15px;
 }
 
-.tbl .marketing_product_code {
-    width : 13.1%;
+
+.tbl .marketing_code {
+    width : 15%;
 
 }
-.tbl .marketing_product_owner {
-    width : 11.1%;
-}
-.tbl .marketing_product_bill_cost {
-    width : 13.1%;
-}
-.tbl .marketing_product_cmt_cost {
-    width : 13.1%;
+.tbl .marketing_product_code {
+    width : 15%;
+
 }
 .tbl .marketing_product_created {
-    width : 13.1%;
+    width : 15%;
 }
 
 .tbl .marketing_product_source {
-    width : 13.1%;
+    width : 15%;
 }
 .tbl .marketing_product_price {
-    width : 13.1%;
+    width : 10%;
+}
+.tbl .marketing_product_bill_cost {
+    width : 10%;
+}
+.tbl .marketing_product_cmt_cost {
+    width : 10%;
 }
 .tbl .detail{
-     width : 10%;
-
+    width : 10%;
 }
 .tbl .show_detail_markting_product{
      color : #007bff;

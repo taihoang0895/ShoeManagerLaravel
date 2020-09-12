@@ -1,4 +1,4 @@
-<link rel="stylesheet" href={{ asset('css/admin/admin_edit_campaign_name.css') }}>
+<link rel="stylesheet" href={{ asset('css/marketing/marketing_edit_campaign_name.css') }}>
 <meta name="csrf-token" content="{{ Session::token() }}">
 <form method="post">
     @csrf
@@ -31,4 +31,4 @@
     </div>
 
 </form>
-<script src={{ asset('js/admin/admin_edit_campaign_name.js' ) }}></script>
+<script src={{ asset('js/marketing/marketing_edit_campaign_name.js' ) }}></script>

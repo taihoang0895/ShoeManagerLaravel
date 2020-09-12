@@ -26,7 +26,7 @@
   100% { transform: rotate(360deg); }
 }
 
-#order_state_synchronizer_dialog{
+#cancel_order_dialog{
       position: fixed; /* Stay in place */
       z-index: 1; /* Sit on top */
        padding-top : 70px;
@@ -39,7 +39,7 @@
       background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
 }
 
-#order_state_synchronizer_dialog_content{
+#cancel_order_dialog_content{
      background-color: #fefefe;
       margin: auto;
       border: 1px solid #888;
@@ -48,7 +48,7 @@
       border-radius:10px;
 }
 
-#order_state_synchronizer_dialog .tbl_order_state_synchronizer{
+#cancel_order_dialog .tbl_cancel_order{
      margin-top : 15px;
      margin : auto;
      background-color: #ffffff;
@@ -58,19 +58,19 @@
      margin-left : 20px;
 }
 
-#order_state_synchronizer_dialog .tbl_order_state_synchronizer thead {
+#cancel_order_dialog .tbl_cancel_order thead {
   display: table; /* to take the same width as tr */
  width: calc(100% - 17px); /* - 17px because of the scrollbar width */
 }
 
-#order_state_synchronizer_dialog_content .tbl_order_state_synchronizer tbody{
+#cancel_order_dialog_content .tbl_cancel_order tbody{
   display: block; /* to enable vertical scrolling */
   overflow-x : hidden;
   overflow-y: auto; /* keeps the scrollbar even if it doesn't need it; display purpose */
 
   width: calc(100% - 17px); /* - 17px because of the scrollbar width */
 }
-#order_state_synchronizer_dialog .tbl_order_state_synchronizer .tbl_header_item {
+#cancel_order_dialog .tbl_cancel_order .tbl_header_item {
     background-color : #778F9B;
     text-align : center;
     font-family : 'roboto_bold';
@@ -82,28 +82,28 @@
     margin: 0;
 }
 
-#order_state_synchronizer_dialog #tbl_order_state_synchronizer .col_mark {
+#cancel_order_dialog #tbl_cancel_order .col_mark {
     text-align : center;
      width : 5%;
     min-width : 70px;
 
 
 }
-#order_state_synchronizer_dialog #tbl_order_state_synchronizer .ghtk_code {
+#cancel_order_dialog #tbl_cancel_order .ghtk_code {
       text-align : center;
     min-width: 150px;
 
 }
-#order_state_synchronizer_dialog #tbl_order_state_synchronizer .created{
+#cancel_order_dialog #tbl_cancel_order .created{
       text-align : center;
 }
 
-#order_state_synchronizer_dialog #tbl_order_state_synchronizer .order_state {
+#cancel_order_dialog #tbl_cancel_order .order_state {
        text-align : center;
 
 }
 
-#order_state_synchronizer_dialog #tbl_order_state_synchronizer .new_order_state {
+#cancel_order_dialog #tbl_cancel_order .new_order_state {
       text-align : center;
 }
 
@@ -111,7 +111,7 @@
 
 
 
-#order_state_synchronizer_dialog #tbl_order_state_synchronizer .tbl_item {
+#cancel_order_dialog #tbl_cancel_order .tbl_item {
     background-color : #ffffff;
     text-align : center;
     font-family : 'roboto_regular';
@@ -123,7 +123,7 @@
 }
 
 
-#order_state_synchronizer_dialog .btn_ok{
+#cancel_order_dialog .btn_ok{
     width :200px;
     height:48px;
     margin-left:auto;
@@ -131,7 +131,7 @@
     margin-top : 15px;
     background-color : #1CC487;
 }
-#order_state_synchronizer_dialog .btn_cancel{
+#cancel_order_dialog .btn_cancel{
     width : 200px;
     height:48px;
     margin-left:auto;
@@ -139,10 +139,10 @@
     margin-top : 15px;
     background-color : #00B6DE;
 }
-#order_state_synchronizer_dialog .btn_ok:hover {
+#cancel_order_dialog .btn_ok:hover {
      background-color : #1CC487;
 }
-#order_state_synchronizer_dialog .btn_cancel:hover {
+#cancel_order_dialog .btn_cancel:hover {
       background-color : #00B6DE;
 }
 

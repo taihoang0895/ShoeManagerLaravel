@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Auth;
 */
 Route::get('/', "CommonController@login");
 Route::get('/login/', "CommonController@login")->name("login");
-Route::get('logout/', "CommonController@logout")->name("logout");
+Route::get('/logout/', "CommonController@logout")->name("logout");
 Route::post('/login/', "CommonController@login");
 
 
@@ -34,16 +34,19 @@ Route::get("fake-notification/", "CommonController@fakeNotification")->middlewar
 
 
 Route::get('common/detail-product/', "CommonController@detailProduct")->name("detail-product");
-Route::get('/search-product-code/', "CommonController@searchProductCode");
+Route::get('/search-product-code/', "CommonController@searchProductCode")->name("search-product-code");
+Route::get('/sale/search-ghtk-code/', "CommonController@searchGHTKCode")->name("search-ghtk-code");
 
-Route::get('/admin/', "AdminController@products")->middleware("auth", 'permission', 'notification')->name("admin-main");
+
+/*Route::get('/admin/', "AdminController@products")->middleware("auth", 'permission', 'notification')->name("admin-main");
 Route::get('/admin/products/', "AdminController@products")->middleware("auth", 'permission', 'notification')->name("admin-products");
 Route::get("/admin/form-update-product/", "AdminController@formUpdateProduct")->middleware("auth", 'permission')->name("admin-update-product");
 Route::get('/admin/form-add-product/', "AdminController@formAddProduct")->middleware("auth", 'permission')->name("admin-form-add-product");
 Route::post("/admin/add-product/", "AdminController@addProduct")->middleware("auth", 'permission')->name("admin-add-product");
 Route::post("/admin/update-product/", "AdminController@updateProduct")->middleware("auth", 'permission')->name("admin-update-product");
-Route::post("/admin/delete-product/", "AdminController@deleteProduct")->middleware("auth", 'permission')->name("admin-delete-product");
+Route::post("/admin/delete-product/", "AdminController@deleteProduct")->middleware("auth", 'permission')->name("admin-delete-product");*/
 
+Route::get('/admin/', "AdminController@users")->middleware("auth", 'permission', 'notification')->name("admin-main");
 Route::get('/admin/users/', "AdminController@users")->middleware("auth", 'permission', 'notification')->name("admin-users");
 Route::get('/admin/form-add-user/', "AdminController@formAddUser")->middleware("auth", 'permission')->name("admin-form-add-user");
 Route::get('/admin/form-update-user/', "AdminController@formUpdateUser")->middleware("auth", 'permission')->name("admin-form-update-user");
@@ -55,14 +58,6 @@ Route::get("admin/form-add-discount/", "AdminController@formAddDiscount")->middl
 Route::get("admin/form-update-discount/", "AdminController@formUpdateDiscount")->middleware("auth", 'permission')->name("admin-form-update-discount");
 Route::post("admin/save-discount/", "AdminController@saveDiscount")->middleware("auth", 'permission')->name("admin-save-discount");
 Route::post("admin/delete-discount/", "AdminController@deleteDiscount")->middleware("auth", 'permission')->name("admin-delete-discount");
-
-
-Route::get("admin/campaign_names/", "AdminController@listCampaignNames")->middleware("auth", 'permission', 'notification')->name("admin-list-campaign-names");
-Route::get("admin/form-add-campaign_name/", "AdminController@formAddCampaignName")->middleware("auth", 'permission')->name("admin-form-add-campaign_name");
-Route::get("admin/form-update-campaign_name/", "AdminController@formUpdateCampaignName")->middleware("auth", 'permission')->name("admin-form-update-campaign_name");
-Route::post("admin/delete-campaign-name/", "AdminController@deleteCampaignName")->middleware("auth", 'permission')->name("admin-delete-campaign-name");
-Route::post("admin/save-campaign-name/", "AdminController@saveCampaignName")->middleware("auth", 'permission')->name("admin-save-campaign-name");
-
 
 Route::get("admin/landing-pages/", "AdminController@listLandingPages")->middleware("auth", 'permission', 'notification')->name("admin-list-landing-pages");
 Route::get("admin/form-add-landing-page/", "AdminController@formAddLandingPage")->middleware("auth", 'permission')->name("admin-form-add-landing-page");
@@ -129,6 +124,13 @@ Route::post("marketing/save-marketing-source/", "MarketingController@saveMarketi
 Route::post("marketing/delete-marketing_source/", "MarketingController@deleteMarketingSource")->middleware("auth", 'permission')->name("marketing-save-marketing-source");
 
 
+Route::get("marketing/campaign_names/", "MarketingController@listCampaignNames")->middleware("auth", 'permission', 'notification')->name("marketing-list-campaign-names");
+Route::get("marketing/form-add-campaign_name/", "MarketingController@formAddCampaignName")->middleware("auth", 'permission')->name("marketing-form-add-campaign_name");
+Route::get("marketing/form-update-campaign_name/", "MarketingController@formUpdateCampaignName")->middleware("auth", 'permission')->name("marketing-form-update-campaign_name");
+Route::post("marketing/delete-campaign-name/", "MarketingController@deleteCampaignName")->middleware("auth", 'permission')->name("marketing-delete-campaign-name");
+Route::post("marketing/save-campaign-name/", "MarketingController@saveCampaignName")->middleware("auth", 'permission')->name("marketing-save-campaign-name");
+
+
 Route::get("marketing/bank-accounts/", "MarketingController@listBankAccounts")->middleware("auth", 'permission', 'notification')->name("marketing-list-bank-accounts");
 Route::get("marketing/form-add-bank_account/", "MarketingController@formAddBankAccount")->middleware("auth", 'permission')->name("marketing-form-add-bank_account");
 Route::get("marketing/form-update-bank_account/", "MarketingController@formUpdateBankAccount")->middleware("auth", 'permission')->name("marketing-form-update-bank_account");
@@ -179,5 +181,14 @@ Route::get("sale/exporting-product-history/", "SaleController@exportingProductHi
 Route::get("sale/order-history/", "SaleController@orderHistory")->middleware("auth", 'permission', 'notification')->name("sale-order-history");
 
 Route::get("sale/order-deliver/", "SaleController@orderDeliver")->middleware("auth", 'permission', 'notification')->name("sale-leader-order-deliver");
-Route::get("sale/form-prepare-order-deliver/", "SaleController@getFormPrepareOrderDeliver")->middleware("auth")->name("sale-form-prepare-order-deliver");
-Route::get("sale/push-order-to-deliver/", "SaleController@pushOrderToGHTK")->middleware("auth")->name("sale-push-order-to-deliver");
+Route::get("sale/form-prepare-order-deliver/", "SaleController@getFormPrepareOrderDeliver")->middleware("auth", 'permission')->name("sale-form-prepare-order-deliver");
+Route::post("sale/push-order-to-deliver/", "SaleController@pushOrderToGHTK")->middleware("auth", 'permission')->name("sale-push-order-to-deliver");
+
+Route::get("sale/order-state-manager/", "SaleController@orderStateManager")->middleware("auth", 'permission', 'notification')->name("sale-leader-order-state-manager");
+Route::get("sale/form-prepare-order-state-synchronizer/", "SaleController@getFormPrepareOrderStateSynchronizer")->middleware("auth", 'permission')->name("sale-form-prepare-order-state-synchronizer");
+Route::post("sale/synchronize-order-state/", "SaleController@synchronizeOrderState")->middleware("auth", 'permission')->name("sale-synchronize-order-state");
+
+Route::get("sale/form-prepare-cancel-order/", "SaleController@getFormPrepareCancelOrder")->middleware("auth", 'permission')->name("sale-form-prepare-cancel-order");
+Route::post("sale/cancel-order/", "SaleController@cancelOrder")->middleware("auth", 'permission')->name("sale-cancel-order");
+Route::get("sale/form-prepare-update-order-state/","SaleController@prepareUpdateOrderState")->middleware("auth", 'permission')->name("sale-form-prepare-update-order-state");
+Route::post("sale/update-order-state/","SaleController@updateOrderState")->middleware("auth", 'permission')->name("sale-update-order-state");

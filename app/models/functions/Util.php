@@ -24,6 +24,7 @@ class Util
     {
         return mb_strtoupper($string, "UTF-8");
     }
+
     public static function toLower($string)
     {
         return mb_strtolower($string, "UTF-8");
@@ -31,6 +32,9 @@ class Util
 
     public static function parseInt($number, $default = null)
     {
+        if ($number == '') {
+            return $default;
+        }
         try {
             return (int)($number);
         } catch (\Exception $e) {
@@ -82,7 +86,7 @@ class Util
         return "";
     }
 
-    public static function safeParseDate($dateStr, $default=null)
+    public static function safeParseDate($dateStr, $default = null)
     {
         $dateSegments = explode("/", $dateStr);
         if (count($dateSegments) != 3) {
@@ -100,10 +104,10 @@ class Util
         }
     }
 
-    public static function safeParseDateTime($dateStr, $default=null)
+    public static function safeParseDateTime($dateStr, $default = null)
     {
-        $dateTimeSegments =  $dateSegments = explode(" ", $dateStr);
-        if(count($dateTimeSegments) != 2){
+        $dateTimeSegments = $dateSegments = explode(" ", $dateStr);
+        if (count($dateTimeSegments) != 2) {
             return $default;
         }
         $dateSegments = explode("/", $dateTimeSegments[0]);
@@ -129,6 +133,13 @@ class Util
             Log::log("error", $e->getMessage());
             return $default;
         }
+    }
+
+    public static function currentTime()
+    {
+        list($usec, $sec) = explode(" ", microtime());
+        return ((float)$usec + (float)$sec);
+
     }
 
 }

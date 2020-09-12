@@ -4,6 +4,7 @@
 namespace App\models\functions;
 
 
+use App\models\Config;
 use App\models\Customer;
 use App\models\CustomerState;
 use App\models\DetailOrder;
@@ -24,6 +25,7 @@ use App\models\Province;
 use App\models\Remind;
 use App\models\Street;
 use App\User;
+use Dotenv\Result\Result;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\DB;
 
@@ -194,6 +196,11 @@ class SaleFunctions
         } else {
             $customer->birthday_str = "";
         }
+        if ($customer->created != null) {
+            $customer->created_str = Util::formatDate($customer->created);
+        } else {
+            $customer->created_str = "";
+        }
         $customer->state_name = CustomerState::getName($customer->customer_state);
         $landingPage = LandingPage::where("id", $customer->landing_page_id)->first();
         if ($landingPage != null) {
@@ -218,6 +225,17 @@ class SaleFunctions
             $customer->district_name = $street->district_name;
             $customer->street_name = $street->street_name;
         }
+    }
+
+    public static function countCustomer($user, $searchPhoneNumber = "")
+    {
+        $filterOptions = [];
+        $filterOptions['user_id'] = $user->id;
+        if ($searchPhoneNumber != "") {
+            $filterOptions[] = ["phone_number", "like", "%" . $searchPhoneNumber . "%"];
+        }
+
+        return Customer::where($filterOptions)->count();
     }
 
     public static function findCustomers($user, $searchPhoneNumber = "")
@@ -340,6 +358,7 @@ class SaleFunctions
         $detailOrder->price_str = "";
         $detailOrder->pick_money_str = "";
         $detailOrder->actually_collected_str = "";
+        $detailOrder->product_code = "";
         if ($detailOrder->marketing_product_id != null) {
             $marketingProduct = MarketingProduct::where("id", $detailOrder->marketing_product_id)->first();
             if ($marketingProduct != null) {
@@ -440,7 +459,7 @@ class SaleFunctions
 
     }
 
-    public static function findOrders($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1)
+    public static function countOrder($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $filterOrderType = -1)
     {
         $filterOptions = [];
         if ($orderStateId != -1) {
@@ -450,9 +469,37 @@ class SaleFunctions
             $filterOptions[] = ["created", ">=", $startTime];
             $filterOptions[] = ["created", "<=", $endTime];
         }
+        if ($filterOrderType != -1) {
+            if ($filterOrderType == 1) {
+                $filterOptions['is_test'] = true;
+            } else {
+                $filterOptions['is_test'] = false;
+            }
+        }
+
+        return Order::where($filterOptions)->whereIn("user_id", $listUserIds)->count();
+    }
+
+    public static function findOrders($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $filterOrderType = -1)
+    {
+        $filterOptions = [];
+        if ($orderStateId != -1) {
+            $filterOptions['order_state'] = $orderStateId;
+        }
+        if ($startTime != null && $endTime != null) {
+            $filterOptions[] = ["created", ">=", $startTime];
+            $filterOptions[] = ["created", "<=", $endTime];
+        }
+        if ($filterOrderType != -1) {
+            if ($filterOrderType == 1) {
+                $filterOptions['is_test'] = true;
+            } else {
+                $filterOptions['is_test'] = false;
+            }
+        }
 
         $perPage = config('settings.per_page');
-        $orders = Order::where($filterOptions)->whereIn("user_id", $listUserIds)->paginate($perPage);
+        $orders = Order::where($filterOptions)->whereIn("user_id", $listUserIds)->orderBy('created', 'DESC')->paginate($perPage);
 
         foreach ($orders as $order) {
             self::attachExtraOrderProperty($order);
@@ -461,8 +508,12 @@ class SaleFunctions
             if ($listDetailOrders != null) {
                 foreach ($listDetailOrders as $detailOrder) {
                     $detailProduct = DetailProduct::where("id", $detailOrder->detail_product_id)->first();
-                    $productCat = ProductCategory::where("id", $detailProduct->product_category_id)->first();
-                    $order->list_order_codes = $order->list_order_codes . '<br>' . $detailProduct->product_code . '-' . $productCat->color . '-' . $productCat->size;
+                    if ($detailProduct != null) {
+                        $productCat = ProductCategory::where("id", $detailProduct->product_category_id)->first();
+                        $order->list_order_codes = $order->list_order_codes . '<br>' . $detailProduct->product_code . '-' . $productCat->color . '-' . $productCat->size;
+                    } else {
+                        $order->list_order_codes = "";
+                    }
                 }
             }
             if ($order->list_order_codes != "") {
@@ -498,7 +549,7 @@ class SaleFunctions
     public static function listSuggestionProductCodes()
     {
         $productCodeList = [];
-        $listProduct = Product::where("is_active", true)->where("is_test", false)->get();
+        $listProduct = Product::where("is_active", true)->get();
         foreach ($listProduct as $product) {
             if (!in_array($product->code, $productCodeList)) {
                 array_push($productCodeList, $product->code);
@@ -537,11 +588,16 @@ class SaleFunctions
             $order = new Order();
             $order->user_id = $user->id;
             $order->created = Util::now();
+            $order->order_state_updated = Util::now();
             $order->code = "";
+            $order->is_test = $orderInfo->is_test;
             $isInsertAction = true;
             $customer = Customer::where("code", $orderInfo->customer_code)->first();
         } else {
             $customer = Customer::where("id", $order->customer_id)->first();
+            if ($order->order_state != $orderInfo->order_state_id) {
+                $order->order_state_updated = Util::now();
+            }
         }
         if ($customer == null) {
             return ResultCode::FAILED_SAVE_ORDER_CUSTOMER_NOT_FOUND;
@@ -558,12 +614,13 @@ class SaleFunctions
         if ($orderInfo->note == null) {
             $orderInfo->note = "";
         }
-        $order->is_test = $orderInfo->is_test;
         $order->note = $orderInfo->note;
         $order->delivery_time = $orderInfo->delivery_time;
         $order->customer_id = $customer->id;
         $order->order_fail_reason_id = $orderInfo->order_fail_reason_id;
-        $order->order_state = $orderInfo->order_state_id;
+        if ($orderInfo->order_state_id != null) {
+            $order->order_state = $orderInfo->order_state_id;
+        }
         if (!$order->save()) {
             return ResultCode::FAILED_UNKNOWN;
         }
@@ -603,25 +660,48 @@ class SaleFunctions
         }
 
         $product = Product::where("code", $productCode)->first();
+
         if ($marketingProduct == null && $product == null) {
             return ResultCode::FAILED_SAVE_DETAIL_ORDER_NOT_FOUND_PRODUCT;
         }
-        $productCat = ProductCategory::get($detailOrderInfo->product_size, $detailOrderInfo->product_color);
-        $detailProduct = DetailProduct::where("product_code", $product->code)->where("product_category_id", $productCat->id)->first();
 
-        if (CommonFunctions::getRemainingQuantity($detailProduct->id) < $detailOrderInfo->quantity) {
-            return ResultCode::FAILED_SAVE_DETAIL_ORDER_OUT_OF_PRODUCT;
+
+        if (!$order->is_test) {
+
+            $productCat = ProductCategory::get($detailOrderInfo->product_size, $detailOrderInfo->product_color);
+            if ($productCat == null) {
+                return ResultCode::FAILED_SAVE_DETAIL_ORDER_OUT_OF_PRODUCT;
+            }
+            $detailProduct = DetailProduct::where("product_code", $product->code)->where("product_category_id", $productCat->id)->first();
+            if ($detailProduct == null) {
+                return ResultCode::FAILED_SAVE_DETAIL_ORDER_OUT_OF_PRODUCT;
+            }
+            if (CommonFunctions::getRemainingQuantity($detailProduct->id) < $detailOrderInfo->quantity) {
+                return ResultCode::FAILED_SAVE_DETAIL_ORDER_OUT_OF_PRODUCT;
+            }
+            $detailOrder->product_category_id = $productCat->id;
+            $detailOrder->detail_product_id = $detailProduct->id;
+        } else {
+            $detailOrder->product_category_id = ProductCategory::getOrNew($detailOrderInfo->product_size, $detailOrderInfo->product_color)->id;
+            $detailProduct = DetailProduct::where("product_code", $product->code)->where("product_category_id", $detailOrder->product_category_id)->first();;
+
+            if ($detailProduct != null) {
+                $detailOrder->detail_product_id = $detailProduct->id;
+            } else {
+                $detailOrder->detail_product_id = null;
+            }
+
         }
 
         $detailOrder->order_id = $order->id;
-        $detailOrder->product_category_id = $productCat->id;
+
         if ($marketingProduct == null) {
             $detailOrder->marketing_product_id = null;
         } else {
             $detailOrder->marketing_product_id = $marketingProduct->id;
         }
 
-        $detailOrder->detail_product_id = $detailProduct->id;
+
         $detailOrder->quantity = $detailOrderInfo->quantity;
         $detailOrder->actually_collected = $detailOrderInfo->actually_collected;
         $detailOrder->pick_money = $detailOrderInfo->pick_money;
@@ -631,11 +711,15 @@ class SaleFunctions
         if (!$detailOrder->save()) {
             return ResultCode::FAILED_UNKNOWN;
         }
-        $inventory = Inventory::getOrNew($detailProduct->id);
-        $inventory->exporting_quantity += $detailOrder->quantity;
-        if (!$inventory->save()) {
-            return ResultCode::FAILED_UNKNOWN;
+
+        if (!$order->is_test) {
+            $inventory = Inventory::getOrNew($detailProduct->id);
+            $inventory->exporting_quantity += $detailOrder->quantity;
+            if (!$inventory->save()) {
+                return ResultCode::FAILED_UNKNOWN;
+            }
         }
+
         $historyExportingProduct = new HistoryExportingProduct();
         $historyExportingProduct->user_id = $user->id;
         $historyExportingProduct->action = ActionCode::INSERT;
@@ -647,30 +731,34 @@ class SaleFunctions
         return ResultCode::SUCCESS;
     }
 
-    private static function deleteDetailOrder($user, $detailOrder)
+    private static function deleteDetailOrder($user, $order, $detailOrder)
     {
         if (!DetailOrder::where("id", $detailOrder->id)->delete()) {
             return ResultCode::FAILED_UNKNOWN;
         }
-        $detailProduct = DetailProduct::where("id", $detailOrder->detail_product_id)->first();
-        $inventory = Inventory::getOrNew($detailProduct->id);
-        $inventory->exporting_quantity -= $detailOrder->quantity;
-        if (!$inventory->save()) {
-            return ResultCode::FAILED_UNKNOWN;
-        }
-        $historyExportingProduct = new HistoryExportingProduct();
-        $historyExportingProduct->user_id = $user->id;
-        $historyExportingProduct->action = ActionCode::DELETE;
-        $historyExportingProduct->created = Util::now();
-        $historyExportingProduct->exporting_product = $detailOrder->encode();
-        if (!$historyExportingProduct->save()) {
-            return ResultCode::FAILED_UNKNOWN;
+        if (!$order->is_test) {
+            $detailProduct = DetailProduct::where("id", $detailOrder->detail_product_id)->first();
+
+            $inventory = Inventory::getOrNew($detailProduct->id);
+            Log::log("taih", "dssds");
+            $inventory->exporting_quantity -= $detailOrder->quantity;
+            if (!$inventory->save()) {
+                return ResultCode::FAILED_UNKNOWN;
+            }
+            $historyExportingProduct = new HistoryExportingProduct();
+            $historyExportingProduct->user_id = $user->id;
+            $historyExportingProduct->action = ActionCode::DELETE;
+            $historyExportingProduct->created = Util::now();
+            $historyExportingProduct->exporting_product = $detailOrder->encode();
+            if (!$historyExportingProduct->save()) {
+                return ResultCode::FAILED_UNKNOWN;
+            }
+
         }
 
 
         return ResultCode::SUCCESS;
     }
-
 
     public static function addOrder($user, $orderInfo)
     {
@@ -678,6 +766,12 @@ class SaleFunctions
         DB::beginTransaction();
         try {
             $orderInfo->id = null;
+            if ($orderInfo->is_test) {
+                Log::log("taih", "sdmsmdms ");
+            } else {
+                Log::log("taih", "sdmsmdms 11");
+            }
+
             $resultCode = self::saveOnlyOrder($user, $orderInfo);
             if ($resultCode == ResultCode::SUCCESS) {
 
@@ -686,7 +780,7 @@ class SaleFunctions
                 foreach ($orderInfo->detail_orders as $detailOrder) {
                     $resultCode = self::addDetailOrder($user, $detailOrder, $order);
                     if ($resultCode != ResultCode::SUCCESS) {
-                        throw new \Exception("save detail order failed");
+                        throw new \Exception("save detail order failed " . $resultCode);
                     }
                 }
                 DB::commit();
@@ -696,8 +790,9 @@ class SaleFunctions
 
         } catch (\Exception $e) {
             Log::log("error message ", $e->getMessage());
-            DB::rollBack();
-            return ResultCode::FAILED_UNKNOWN;
+            if ($resultCode == ResultCode::SUCCESS) {
+                $resultCode = ResultCode::FAILED_UNKNOWN;
+            }
         }
         DB::rollBack();
         return $resultCode;
@@ -734,9 +829,12 @@ class SaleFunctions
         try {
             $order = Order::where("id", $orderId)->first();
             if ($order != null) {
+                if ($order->order_state != OrderState::STATE_ORDER_PENDING) {
+                    return ResultCode::FAILED_DELETE_ORDER_STATE_MORE_THAN_STATE_ORDER_CREATED;
+                }
                 $listDetailOrders = DetailOrder::where("order_id", $order->id)->get();
                 foreach ($listDetailOrders as $detailOrder) {
-                    $resultCode = self::deleteDetailOrder($user, $detailOrder);
+                    $resultCode = self::deleteDetailOrder($user, $order, $detailOrder);
                     if ($resultCode != ResultCode::SUCCESS) {
                         throw new \Exception("delete detail order failed");
                     }
@@ -792,6 +890,9 @@ class SaleFunctions
             $productCode = $marketingProduct->product_code;
         }
         $product = Product::where("code", $productCode)->first();
+        if ($product->is_test) {
+            return true;
+        }
         $productCat = ProductCategory::get($productSize, $productColor);
         if ($product != null && $productCat != null) {
             $detailProduct = DetailProduct::where("product_code", $product->code)->where("product_category_id", $productCat->id)->first();
@@ -873,7 +974,8 @@ class SaleFunctions
 
     public static function listDeliverOrders()
     {
-        $listOrders = Order::where("order_state", OrderState::STATE_CUSTOMER_AGREED)
+        $listOrders = Order::where("order_state", OrderState::STATE_ORDER_PENDING)
+            ->where("is_test", false)
             ->where(function ($query) {
                 $query->whereNull('delivery_time');
                 $query->orWhere('delivery_time', '<=', Util::now());
@@ -885,13 +987,453 @@ class SaleFunctions
         return $listOrders;
     }
 
-    public static function listOrderDelivering($listOrderIds)
+    public static function countOrderStateManager($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $searchGHTKCode = "")
     {
-        $listOrders = Order::whereIn("id", $listOrderIds)-> get();
+        $filterOptions = [];
+        if ($orderStateId != -1) {
+            $filterOptions['order_state'] = $orderStateId;
+        }
+        if ($searchGHTKCode != '') {
+            $filterOptions[] = ['ghtk_label', "like", "%" . $searchGHTKCode . "%"];
+        }
+        if ($startTime != null && $endTime != null) {
+            $filterOptions[] = ["created", ">=", $startTime];
+            $filterOptions[] = ["created", "<=", $endTime];
+        }
+
+        $perPage = config('settings.per_page');
+        return Order::where($filterOptions)->whereIn("user_id", $listUserIds)->count();
+    }
+
+    public static function listOrderStateManager($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $searchGHTKCode = "")
+    {
+
+        $filterOptions = [
+            "is_test" => false
+        ];
+        if ($orderStateId != -1) {
+            $filterOptions['order_state'] = $orderStateId;
+        }
+        if ($searchGHTKCode != '') {
+            $filterOptions[] = ['ghtk_label', "like", "%" . $searchGHTKCode . "%"];
+        }
+        if ($startTime != null && $endTime != null) {
+            $filterOptions[] = ["created", ">=", $startTime];
+            $filterOptions[] = ["created", "<=", $endTime];
+        }
+
+        $perPage = config('settings.per_page');
+        $listOrders = Order::where($filterOptions)->whereIn("user_id", $listUserIds)->orderBy('created', 'DESC')->paginate($perPage);
+
         foreach ($listOrders as $order) {
             self::attachExtraOrderProperty($order);
             self::attachExtraDeliverOrder($order);
         }
         return $listOrders;
+    }
+
+    public static function listOrderDelivering($listOrderIds)
+    {
+        $listOrders = Order::whereIn("id", $listOrderIds)->get();
+        foreach ($listOrders as $order) {
+            self::attachExtraOrderProperty($order);
+            self::attachExtraDeliverOrder($order);
+        }
+        return $listOrders;
+    }
+
+    public static function filterOrderByIds($listOrderIds)
+    {
+        $listOrders = Order::whereIn("id", $listOrderIds)->get();
+        foreach ($listOrders as $order) {
+            self::attachExtraOrderProperty($order);
+        }
+        return $listOrders;
+    }
+
+    private static function cancelOrderFromGHTK($ghtkLabel)
+    {
+        $url = 'https://services.giaohangtietkiem.vn/services/shipment/cancel/' . $ghtkLabel;
+        $ch = null;
+        try {
+            $config = Config::getOrNew();
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                    'Content-Type: application/json',
+                    'Token:' . $config->ghtk_token)
+            );
+
+            curl_setopt($ch, CURLOPT_POSTFIELDS, []);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+            // Execute the POST request
+            $result = curl_exec($ch);
+            $result = json_decode($result, true);
+            if ($result['success']) {
+                return ResultCode::SUCCESS;
+            }
+
+        } catch (\Exception $e) {
+            Log::log("error message", $e->getMessage());
+        } finally {
+            if ($ch != null) {
+                curl_close($ch);
+            }
+        }
+        return ResultCode::FAILED_UNKNOWN;
+    }
+
+    public static function pushOrderToGHTK($orderId)
+    {
+        $order = self::getOrder($orderId);
+        $ghtkLabel = null;
+        if ($order != null) {
+            if ($order->is_test) {
+                return ResultCode::FAILED_UNKNOWN;
+            }
+            $sumPickMoney = 0;
+            $sumActuallyCollected = 0;
+            foreach ($order->list_detail_orders as $detailOrder) {
+                $extraText = "";
+                if ($detailOrder->quantity > 1) {
+                    $extraText = " x" . $detailOrder->quantity;
+                }
+
+                $detailOrder->code_color_size_str = $detailOrder->product_code . '-' . $detailOrder->product_color . '-' . $detailOrder->product_size . $extraText;
+                $sumPickMoney += $detailOrder->pick_money;
+                $sumActuallyCollected += $detailOrder->actually_collected;
+            }
+            $order->sum_pick_money = $sumPickMoney;
+            $order->sum_actually_collected = $sumActuallyCollected;
+            if ($order->order_state = OrderState::STATE_ORDER_PENDING) {
+                $url = 'https://services.giaohangtietkiem.vn/services/shipment/order';
+                $ch = null;
+                try {
+                    $config = Config::getOrNew();
+                    $listProducts = [];
+                    foreach ($order->list_detail_orders as $detailOrder) {
+                        $product = [
+                            "name" => $detailOrder->code_color_size_str,
+                            "weight" => $detailOrder->kg,
+                            "quantity" => $detailOrder->quantity
+                        ];
+                        array_push($listProducts, $product);
+                    }
+                    $time = Util::currentTime();
+                    $data = [
+                        "products" => $listProducts,
+                        "order" => [
+                            "id" => "ms." . $time,
+                            "pick_name" => $config->pick_name,
+                            "pick_tel" => $config->pick_tel,
+                            "pick_province" => $config->pick_province,
+                            "pick_district" => $config->pick_district,
+                            "pick_address" => $config->pick_address,
+                            "pick_money" => $order->sum_pick_money,
+                            "tel" => $order->customer_phone,
+                            "name" => $order->customer_name,
+                            "address" => $order->customer_address,
+                            "province" => $order->customer_province_name,
+                            "district" => $order->customer_district_name,
+                            "ward" => $order->customer_street_name,
+                            "hamlet" => "Khác",
+                            "is_freeship" => "1",
+                            "note" => $order->note,
+                            "value" => $order->sum_actually_collected,
+                            "transport" => $config->transport
+                        ]
+                    ];
+
+                    $data = json_encode($data);
+
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $url);
+                    curl_setopt($ch, CURLOPT_POST, 1);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                            'Content-Type: application/json',
+                            'Token:' . $config->ghtk_token)
+                    );
+
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+                    // Execute the POST request
+                    $result = curl_exec($ch);
+                    Log::log("result", $result);
+                    $result = json_decode($result, true);
+
+                    if ($result['success']) {
+                        $ghtkLabel = $result['order']['label'];
+                        $order = Order::where("id", $orderId)->first();
+                        $order->ghtk_label = $ghtkLabel;
+                        $order->order_state = OrderState::STATE_ORDER_CREATED;
+                        if ($order->save()) {
+                            return ResultCode::SUCCESS;
+                        } else {
+                            Log::log("pushOrderToGHTK", "save order failed");
+                            self::cancelOrderFromGHTK($ghtkLabel);
+                        }
+                    } else {
+                        Log::log("pushOrderToGHTK", " failed " . $result['message']);
+                    }
+
+                } catch (\Exception $e) {
+                    Log::log("error message", $e->getMessage());
+                    if ($ghtkLabel != null) {
+                        self::cancelOrderFromGHTK($ghtkLabel);
+                    }
+                } finally {
+                    if ($ch != null) {
+                        curl_close($ch);
+                    }
+                }
+            }
+        }
+        return ResultCode::FAILED_UNKNOWN;
+    }
+
+    private static function mapOrderStateOfGHTK($ghtk_order_state)
+    {
+        switch ($ghtk_order_state) {
+            case -1:
+                return OrderState::STATE_ORDER_CANCEL;
+            case 2:
+                return OrderState::STATE_ORDER_CREATED;
+            case 12:
+            case 128:
+            case 8:
+                return OrderState::STATE_ORDER_TAKING;
+            case 3:
+            case 123:
+                return OrderState::STATE_ORDER_TAKEN;
+            case 127:
+            case 7:
+                return OrderState::STATE_ORDER_FAILED_TAKING;
+            case 4:
+            case 45:
+            case 410:
+            case 10:
+                return OrderState::STATE_ORDER_DELIVERING;
+            case 5:
+                return OrderState::STATE_ORDER_DELIVERED;
+            case 49:
+            case 9:
+                return OrderState::STATE_ORDER_FAILED_DELIVERING;
+            case 20:
+                return OrderState::STATE_ORDER_IS_RETURNING;
+            case 21:
+                return OrderState::STATE_ORDER_IS_RETURNED;
+            case 6:
+            case 11:
+                return OrderState::STATE_PAYMENT_SUCCESSFUL;
+        }
+        return -1;
+    }
+
+    public static function syncOrderState($orderId)
+    {
+        $result = new \stdClass();
+        $result->result_code = ResultCode::FAILED_UNKNOWN;
+        $result->new_order_state = "";
+        $result->is_change = false;
+        $order = Order::where("id", $orderId)->first();
+        if ($order != null) {
+            if ($order->order_state != OrderState::STATE_ORDER_IS_RETURNED_AND_NO_BROKEN && $order->order_state != OrderState::STATE_ORDER_IS_RETURNED_AND_BROKEN) {
+                if ($order->ghtk_label != null) {
+                    $url = 'https://services.giaohangtietkiem.vn/services/shipment/v2/' . $order->ghtk_label;
+                    $ch = null;
+                    try {
+                        $config = Config::getOrNew();
+                        $ch = curl_init();
+                        curl_setopt($ch, CURLOPT_URL, $url);
+                        curl_setopt($ch, CURLOPT_POST, 1);
+                        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                                'Content-Type: application/json',
+                                'Token:' . $config->ghtk_token)
+                        );
+
+                        curl_setopt($ch, CURLOPT_POSTFIELDS, []);
+                        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+                        // Execute the POST request
+                        $response = curl_exec($ch);
+                        $response = json_decode($response, true);
+                        if ($response['success']) {
+                            $ghtk_order_state = Util::parseInt($response['order']['status']);
+                            $order_state = self::mapOrderStateOfGHTK($ghtk_order_state);
+                            Log::log("order_satte", $order_state);
+                            if ($order_state != -1) {
+                                if ($order->order_state != $order_state) {
+                                    $result->is_change = true;
+                                    $result->new_order_state = OrderState::getName($order_state);
+                                    $order->order_state = $order_state;
+                                    if ($order->save()) {
+
+                                        $result->result_code = ResultCode::SUCCESS;
+                                    }
+                                } else {
+                                    $result->new_order_state = OrderState::getName($order_state);
+                                    $result->result_code = ResultCode::SUCCESS;
+                                }
+                            }
+                        }
+
+                    } catch (\Exception $e) {
+                        Log::log("error message", $e->getMessage());
+                        $result->result_code = ResultCode::FAILED_UNKNOWN;
+                    } finally {
+                        if ($ch != null) {
+                            curl_close($ch);
+                        }
+                    }
+                } else {
+                    $result->result_code = ResultCode::SUCCESS;
+                    $result->new_order_state = OrderState::getName($order->order_state);
+                    $result->is_change = false;
+                }
+            }
+
+        }
+        return $result;
+    }
+
+    private static function changeOrderState($user, $order, $newState)
+    {
+        if ($order->order_state == $newState) {
+            return ResultCode::SUCCESS;
+        }
+        switch ($newState) {
+            case OrderState::STATE_ORDER_CANCEL:
+                $order->order_state = OrderState::STATE_ORDER_CANCEL;
+                if ($order->save()) {
+                    $order = self::getOrder($order->id);
+                    foreach ($order->list_detail_orders as $detailOrder) {
+                        $importingProductInfo = new \stdClass();
+                        $importingProductInfo->id = -1;
+                        $importingProductInfo->size = $detailOrder->product_size;
+                        $importingProductInfo->color = $detailOrder->product_color;
+                        $importingProductInfo->product_code = $detailOrder->product_code;
+                        $importingProductInfo->note = "sale cancel order automatically";
+                        $importingProductInfo->quantity = $detailOrder->quantity;
+                        StoreKeeperFunctions::saveImportingProduct($user, $importingProductInfo, false);
+                    }
+                    return ResultCode::SUCCESS;
+                }
+                break;
+            case OrderState::STATE_ORDER_IS_RETURNED_AND_BROKEN:
+                $order->order_state = OrderState::STATE_ORDER_IS_RETURNED_AND_BROKEN;
+                if ($order->save()) {
+                    $order = self::getOrder($order->id);
+                    foreach ($order->list_detail_orders as $detailOrder) {
+                        $importingProductInfo = new \stdClass();
+                        $importingProductInfo->id = -1;
+                        $importingProductInfo->size = $detailOrder->product_size;
+                        $importingProductInfo->color = $detailOrder->product_color;
+                        $importingProductInfo->product_code = $detailOrder->product_code;
+                        $importingProductInfo->note = "sale cancel order automatically";
+                        $importingProductInfo->quantity = $detailOrder->quantity;
+                        StoreKeeperFunctions::saveFailedProduct($user, $importingProductInfo, false);
+                    }
+                    return ResultCode::SUCCESS;
+                }
+                break;
+            case OrderState::STATE_ORDER_IS_RETURNED_AND_NO_BROKEN:
+                $order->order_state = OrderState::STATE_ORDER_IS_RETURNED_AND_NO_BROKEN;
+                if ($order->save()) {
+                    $order = self::getOrder($order->id);
+                    foreach ($order->list_detail_orders as $detailOrder) {
+                        $importingProductInfo = new \stdClass();
+                        $importingProductInfo->id = -1;
+                        $importingProductInfo->size = $detailOrder->product_size;
+                        $importingProductInfo->color = $detailOrder->product_color;
+                        $importingProductInfo->product_code = $detailOrder->product_code;
+                        $importingProductInfo->note = "sale cancel order automatically";
+                        $importingProductInfo->quantity = $detailOrder->quantity;
+                        StoreKeeperFunctions::saveReturningProduct($user, $importingProductInfo, false);
+                    }
+                    return ResultCode::SUCCESS;
+                }
+                break;
+            default:
+                $order->order_state = $newState;
+                if ($order->save()) {
+                    return ResultCode::SUCCESS;
+                }
+        }
+        return ResultCode::FAILED_UNKNOWN;
+    }
+
+    public static function cancelOrder($user, $orderId)
+    {
+
+        $result = new \stdClass();
+        $result->result_code = ResultCode::FAILED_UNKNOWN;
+        $result->new_order_state = "";
+        $result->is_change = false;
+        $order = Order::where("id", $orderId)->first();
+        if ($order != null) {
+            if ($order->ghtk_label != null) {
+                DB::beginTransaction();
+                try {
+                    if ($order->order_state != OrderState::STATE_ORDER_CANCEL) {
+                        $result->result_code = self::changeOrderState($user, $order, OrderState::STATE_ORDER_CANCEL);
+                        if ($result->result_code == ResultCode::SUCCESS) {
+                            if (self::cancelOrderFromGHTK($order->ghtk_label)) {
+                                $result->new_order_state = OrderState::getName(OrderState::STATE_ORDER_CANCEL);
+                                $result->is_change = true;
+                                DB::commit();
+                                return $result;
+                            } else {
+                                $result->result_code = ResultCode::FAILED_UNKNOWN;
+                            }
+                        }
+                    } else {
+                        $result->result_code = ResultCode::SUCCESS;
+                        $result->new_order_state = OrderState::getName($order->order_state);
+                        $result->is_change = false;
+                    }
+                } catch (\Exception $e) {
+                    $result->result_code = ResultCode::FAILED_UNKNOWN;
+                }
+                DB::rollBack();
+            } else {
+                $result->result_code = ResultCode::SUCCESS;
+                $result->new_order_state = OrderState::getName($order->order_state);
+                $result->is_change = false;
+            }
+        }
+
+        return $result;
+    }
+
+    public static function orderStateManagerUpdateState($user, $orderId, $newOrderState)
+    {
+        $result = new \stdClass();
+        $result->result_code = ResultCode::FAILED_UNKNOWN;
+        $order = Order::where("id", $orderId)->first();
+        if ($order != null &&
+            in_array($newOrderState, [OrderState::STATE_ORDER_IS_RETURNED_AND_NO_BROKEN, OrderState::STATE_ORDER_IS_RETURNED_AND_BROKEN]) &&
+            $order->order_state == OrderState::STATE_ORDER_IS_RETURNED) {
+            if ($order->order_state >= OrderState::STATE_ORDER_CREATED) {
+                DB::beginTransaction();
+                try {
+                    $result->result_code = self::changeOrderState($user, $order, $newOrderState);
+                    if ($result->result_code == ResultCode::SUCCESS) {
+                        DB::commit();
+                    }
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                }
+            }
+        }
+        return $result;
     }
 }

@@ -81,10 +81,11 @@ class StoreKeeperFunctions
         return $importingProduct;
     }
 
-    public static function saveImportingProduct($user, $importingProductInfo)
+    public static function saveImportingProduct($user, $importingProductInfo, $createTransaction = true)
     {
-
-        DB::beginTransaction();
+        if ($createTransaction) {
+            DB::beginTransaction();
+        }
         try {
             $productCat = ProductCategory::get($importingProductInfo->size, $importingProductInfo->color);
             if ($productCat == null) {
@@ -135,7 +136,12 @@ class StoreKeeperFunctions
 
             } else {
                 $inventory = Inventory::getOrNew($detailProduct->id);
-                $inventory->importing_quantity = $importingProductInfo->quantity;
+                $result = DB::table("importing_products")
+                    ->where("detail_product_id", $detailProduct->id)
+                    ->select([DB::raw("SUM(importing_products.quantity) as total_quantity")])
+                    ->groupBy("detail_product_id")
+                    ->first();
+                $inventory->importing_quantity = $result->total_quantity;
                 $inventory->save();
             }
             $historyImportingProduct = new HistoryImportingProduct();
@@ -148,11 +154,15 @@ class StoreKeeperFunctions
                 $historyImportingProduct->Action = ActionCode::INSERT;
             }
             $historyImportingProduct->save();
-            DB::commit();
+            if ($createTransaction) {
+                DB::commit();
+            }
             return ResultCode::SUCCESS;
         } catch (\Exception $e) {
             Log::log("error mesage", $e->getMessage());
-            DB::rollBack();
+            if ($createTransaction) {
+                DB::rollBack();
+            }
         }
         return ResultCode::FAILED_UNKNOWN;
     }
@@ -170,7 +180,7 @@ class StoreKeeperFunctions
                 return ResultCode::FAILED_PERMISSION_DENY;
             }
             $inventory = Inventory::getOrNew($importingProduct->detail_product_id);
-            $inventory->importing_quantity -= $inventory->quantity;
+            $inventory->importing_quantity -= $importingProduct->quantity;
             $inventory->save();
             $importingProduct->delete();
 
@@ -254,10 +264,12 @@ class StoreKeeperFunctions
         return $returningProduct;
     }
 
-    public static function saveReturningProduct($user, $returningProductInfo)
+    public static function saveReturningProduct($user, $returningProductInfo, $createTransaction = true)
     {
+        if ($createTransaction) {
+            DB::beginTransaction();
+        }
 
-        DB::beginTransaction();
         try {
             $productCat = ProductCategory::get($returningProductInfo->size, $returningProductInfo->color);
             if ($productCat == null) {
@@ -308,7 +320,13 @@ class StoreKeeperFunctions
 
             } else {
                 $inventory = Inventory::getOrNew($detailProduct->id);
-                $inventory->returning_quantity = $returningProductInfo->quantity;
+
+                $result = DB::table("returning_products")
+                    ->where("detail_product_id", $detailProduct->id)
+                    ->select([DB::raw("SUM(returning_products.quantity) as total_quantity")])
+                    ->groupBy("detail_product_id")
+                    ->first();
+                $inventory->returning_quantity = $result->total_quantity;
                 $inventory->save();
             }
             $historyReturningProduct = new HistoryReturningProduct();
@@ -321,11 +339,15 @@ class StoreKeeperFunctions
                 $historyReturningProduct->Action = ActionCode::INSERT;
             }
             $historyReturningProduct->save();
-            DB::commit();
+            if ($createTransaction) {
+                DB::commit();
+            }
             return ResultCode::SUCCESS;
         } catch (\Exception $e) {
             Log::log("error mesage", $e->getMessage());
-            DB::rollBack();
+            if ($createTransaction) {
+                DB::rollBack();
+            }
         }
         return ResultCode::FAILED_UNKNOWN;
     }
@@ -343,7 +365,7 @@ class StoreKeeperFunctions
                 return ResultCode::FAILED_PERMISSION_DENY;
             }
             $inventory = Inventory::getOrNew($returningProduct->detail_product_id);
-            $inventory->returning_quantity -= $inventory->quantity;
+            $inventory->returning_quantity -= $returningProduct->quantity;
             $inventory->save();
             $returningProduct->delete();
 
@@ -426,10 +448,11 @@ class StoreKeeperFunctions
         return $failedProduct;
     }
 
-    public static function saveFailedProduct($user, $failedProductInfo)
+    public static function saveFailedProduct($user, $failedProductInfo, $createTransaction = true)
     {
-
-        DB::beginTransaction();
+        if ($createTransaction) {
+            DB::beginTransaction();
+        }
         try {
             $productCat = ProductCategory::get($failedProductInfo->size, $failedProductInfo->color);
             if ($productCat == null) {
@@ -480,7 +503,13 @@ class StoreKeeperFunctions
 
             } else {
                 $inventory = Inventory::getOrNew($detailProduct->id);
-                $inventory->failed_quantity = $failedProductInfo->quantity;
+
+                $result = DB::table("failed_products")
+                    ->where("detail_product_id", $detailProduct->id)
+                    ->select([DB::raw("SUM(failed_products.quantity) as total_quantity")])
+                    ->groupBy("detail_product_id")
+                    ->first();
+                $inventory->failed_quantity = $result->total_quantity;
                 $inventory->save();
             }
             $historyFailedProduct = new HistoryFailedProduct();
@@ -493,11 +522,15 @@ class StoreKeeperFunctions
                 $historyFailedProduct->action = ActionCode::INSERT;
             }
             $historyFailedProduct->save();
-            DB::commit();
+            if ($createTransaction) {
+                DB::commit();
+            }
             return ResultCode::SUCCESS;
         } catch (\Exception $e) {
             Log::log("error mesage", $e->getMessage());
-            DB::rollBack();
+            if ($createTransaction) {
+                DB::rollBack();
+            }
         }
         return ResultCode::FAILED_UNKNOWN;
     }
@@ -515,7 +548,7 @@ class StoreKeeperFunctions
                 return ResultCode::FAILED_PERMISSION_DENY;
             }
             $inventory = Inventory::getOrNew($failedProduct->detail_product_id);
-            $inventory->failed_quantity -= $inventory->quantity;
+            $inventory->failed_quantity -= $failedProduct->quantity;
             $inventory->save();
             $failedProduct->delete();
 
@@ -536,7 +569,7 @@ class StoreKeeperFunctions
 
     public static function reportInventory()
     {
-        $sql = "SELECT   detail_products.id," .
+        $sql = "SELECT " .
             "         detail_products.product_code as product_code," .
             "         product_categories.size as product_size," .
             "         product_categories.color as product_color," .
@@ -548,7 +581,8 @@ class StoreKeeperFunctions
             " INNER JOIN product_categories ON detail_products.product_category_id=product_categories.id" .
             " INNER JOIN products ON detail_products.product_code=products.code" .
             " LEFT JOIN inventories ON detail_products.id=inventories.detail_product_id" .
-            " WHERE products.is_active=1 and products.is_test=0";
+            " WHERE products.is_active=1 and products.is_test=0 " .
+            " ORDER BY product_size";
 
         $listInventoryReports = array();
         $results = DB::select(DB::raw($sql));
@@ -600,7 +634,8 @@ class StoreKeeperFunctions
                 ->join('detail_products', "detail_orders.detail_product_id", "=", "detail_products.id")
                 ->join('products', "detail_products.product_code", "=", "products.code")
                 ->where("products.is_active", true)
-                ->where("products.is_test", false);
+                ->where("products.is_test", false)
+                ->where("orders.is_test", false);
         } else {
             $query->select("detail_product_id", DB::raw('SUM(' . $tableName . '.quantity) as total_quantity'), DB::raw('DATE(' . $tableName . '.created) as day'))
                 ->join('detail_products', $tableName . ".detail_product_id", "=", "detail_products.id")

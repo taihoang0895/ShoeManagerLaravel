@@ -12,6 +12,22 @@
             <div class="title" style="margin-top:15px;margin-bottom:30px;">Nhập Thông Tin Marketing</div>
             <table width="90%">
                 <tr class="marketing_product_field_row">
+                    <td class="name_col">Mã Marketing</td>
+                    <td class="value_col">
+                        @if( $marketing_product_id == -1 )
+                            <input class="form-control" type="text" placeholder="Nhập mã marketing"
+                                   id="edit_marketing_product_marketing_code"
+                                   value="{{$marketing_code}}"></td>
+
+                        @else
+                            <input class="form-control" type="text" placeholder="Nhập mã marketing"
+                                   id="edit_marketing_product_marketing_code"
+                                   value="{{$marketing_code}}" disabled></td>
+                    @endif
+                    </td>
+                </tr>
+
+                <tr class="marketing_product_field_row">
                     <td class="name_col">Mã Sản Phẩm</td>
                     <td class="value_col">
                         @if( $marketing_product_id == -1 )

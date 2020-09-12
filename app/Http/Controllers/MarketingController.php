@@ -305,6 +305,7 @@ class MarketingController
         $emptyMarketingProduct->id = -1;
         $emptyMarketingProduct->marketing_source_id = -1;
         $emptyMarketingProduct->product_code = "";
+        $emptyMarketingProduct->code = "";
         $listMarketingSource = MarketingFunctions::listMarketingSource();
         $listCampaignName = MarketingFunctions::listCampaignName();
         $listBankAccounts = MarketingFunctions::listBankAccounts();
@@ -312,6 +313,7 @@ class MarketingController
         $response['content'] = view("marketing.marketing_edit_marketing_product", [
             'marketing_source' => $emptyMarketingProduct->marketing_source,
             'marketing_product_id' => $emptyMarketingProduct->id,
+            'marketing_code' => $emptyMarketingProduct->code,
             'marketing_product_source_id' => $emptyMarketingProduct->marketing_source_id,
             'detail_campaign_additional_campaign_name_selected_id' => -1,
             'detail_campaign_additional_bank_account_selected_id' => -1,
@@ -344,6 +346,7 @@ class MarketingController
             $response['content'] = view("marketing.marketing_edit_marketing_product", [
                 'marketing_source' => $marketingProduct->sourceName(),
                 'marketing_product_id' => $marketingProduct->id,
+                'marketing_code' => $marketingProduct->code,
                 'marketing_product_source_id' => $marketingProduct->marketing_source_id,
                 'detail_campaign_additional_campaign_name_selected_id' => -1,
                 'detail_campaign_additional_bank_account_selected_id' => -1,
@@ -374,8 +377,13 @@ class MarketingController
             $marketingProductId = $request->get('marketing_product_id', -1);
             Log::log("sjdbsbds", $marketingProductId);
             $productCode = $request->get('product_code', "");
+            $marketingCode= $request->get('marketing_code', "");
             $marketingSourceId = Util::parseInt($request->get("marketing_source_id"));
             $created = Util::safeParseDate($request->get('marketing_product_created'));
+            if($marketingCode == ""){
+                $response['message'] = "Mã marketing không được để rỗng";
+                return response()->json($response);
+            }
             if ($created != null) {
                 $listCampaigns = json_decode($request->get('list_campaigns', '{}'));
                 if (count($listCampaigns) > 0) {
@@ -384,6 +392,7 @@ class MarketingController
                     $marketingProductInfo->source_id = $marketingSourceId;
                     $marketingProductInfo->created = $created;
                     $marketingProductInfo->product_code = $productCode;
+                    $marketingProductInfo->code = $marketingCode;
 
                     $listCampaignInfo = [];
                     foreach ($listCampaigns as $item) {
@@ -406,6 +415,10 @@ class MarketingController
                     $resultCode = MarketingFunctions::saveMarketingProduct(Auth::user(), $marketingProductInfo);
                     if ($resultCode == ResultCode::SUCCESS) {
                         $response['status'] = 200;
+                    }else{
+                        if($resultCode == ResultCode::FAILED_MARKETING_PRODUCT_DUPLICATE_CODE){
+                        $response['message'] = "Lỗi trùng mã marketing";
+                        }
                     }
                 }
             }
@@ -803,6 +816,95 @@ class MarketingController
             'sum_remaining_quantity' => $sum_remaining_quantity
         ]);
 
+    }
+
+
+    public function listCampaignNames(Request $request)
+    {
+        $campaignName = $request->get('campaign_name', "");
+        $listCampaignNames = MarketingFunctions::findCampaignName($campaignName);
+
+        return view("marketing.marketing_list_campaign_names", [
+            "list_campaign_names" => $listCampaignNames,
+            "search_campaign_name" => $campaignName
+        ]);
+    }
+
+    public function saveCampaignName(Request $request)
+    {
+        $response = array(
+            "status" => 200,
+            "content" => "",
+            "message" => ""
+        );
+        $CampaignNameId = $request->get("campaign_name_id", "");
+        $CampaignName = $request->get("name", "");
+        $campaignNameInfo = new \stdClass();
+        $campaignNameInfo->id = $CampaignNameId;
+        $campaignNameInfo->name = $CampaignName;
+        $resultCode = MarketingFunctions::saveCampaignName($campaignNameInfo);
+        if ($resultCode != ResultCode::SUCCESS) {
+            $response['status'] = 406;
+            $response['message'] = 'Lỗi thêm';
+            if($resultCode == ResultCode::FAILED_CAMPAIGN_NAME_DUPLICATE_NAME){
+                $response['message'] = 'Lỗi trùng tên chiến dịch';
+            }
+        }
+        return response()->json($response);
+    }
+
+    public function formAddCampaignName(Request $request)
+    {
+        $response = array(
+            "status" => 200,
+            "content" => "",
+            "message" => ""
+        );
+        $emptyCampaignName = new \stdClass();
+        $emptyCampaignName->id = -1;
+        $emptyCampaignName->name = "";
+
+        $response['content'] = view("marketing.marketing_edit_campaign_name", [
+            "campaign_name" => $emptyCampaignName
+        ])->render();
+        return response()->json($response);
+    }
+
+    public function formUpdateCampaignName(Request $request)
+    {
+        $response = array(
+            "status" => 200,
+            "content" => "",
+            "message" => ""
+        );
+        $CampaignNameId = $request->get("campaign_name_id", "");
+        $campaignName = MarketingFunctions::getCampaignName($CampaignNameId);
+        if ($campaignName != null) {
+            $response['content'] = view("marketing.marketing_edit_campaign_name", [
+                "campaign_name" => $campaignName
+            ])->render();
+        } else {
+            $response['status'] = 406;
+        }
+
+
+        return response()->json($response);
+    }
+
+    public function deleteCampaignName(Request $request)
+    {
+        $response = array(
+            "status" => 200,
+            "content" => "",
+            "message" => ""
+        );
+        $campaignNameId = $request->get("campaign_name_id", "");
+        $resultCode = MarketingFunctions::deleteCampaignName($campaignNameId);
+        if ($resultCode != ResultCode::SUCCESS) {
+            $response['status'] = 406;
+            $response['message'] = 'Lỗi xóa khuyến mại';
+        }
+        return response()->json($response);
     }
 
 }

@@ -18,7 +18,7 @@
 @section('content')
     @include("confirm_dialog", ["confirm_dialog_id"=>"confirm_dialog_delete_customer", "confirm_dialog_btn_positive_id"=>"customer_delete_dialog_btn_ok","confirm_dialog_btn_negative_id"=>"customer_delete_dialog_btn_cancel", "confirm_dialog_message"=>"Bạn có chắc chắn muốn xóa không?"])
     @csrf
-    <div class="title">Danh Sách Khách Hàng</div>
+    <div class="title">Danh Sách Khách Hàng <span style="font-size : 0.9em;">({{$total_customer}})</span></div>
     <div id="list_customer_filter">
         <table>
             <tr>
@@ -52,13 +52,14 @@
     <table class="tbl_customers">
         <tr class="tbl_header_item">
             <td class="code">MKH</td>
+            <td class="created">Ngày Tạo</td>
             <td class="customer_name">Tên Khách</td>
             <td class="phone_number">Số Điện Thoại</td>
             <td class="state">Trạng Thái</td>
             <td class="province">Thành Phố</td>
            {{-- <td class="district">Quận Huyện</td>
             <td class="street">Đường/Phố</td>--}}
-            <td class="address">Địa Chỉ</td>
+
             <td class="show_detail_header"></td>
 
 
@@ -66,13 +67,14 @@
         @foreach ($list_customers as $customer)
             <tr class="tbl_item customer_row" id="customer_{{$customer->id}}">
                 <td class="code">{{$customer->code}}</td>
+                <td class="created">{{$customer->created_str}}</td>
                 <td class="customer_name">{{$customer->name}}</td>
                 <td class="phone_number">{{$customer->phone_number}}</td>
                 <td class="state" style="background-color: {{$customer->customer_state_color}}">{{$customer->state_name}}</td>
                 <td class="province">{{$customer->province_name}}</td>
             {{--    <td class="district">{{$customer->district_name}}</td>
                 <td class="street">{{$customer->street_name}}</td>--}}
-                <td class="address">{{$customer->address}}</td>
+
                 <td class="show_detail"><input type="hidden" value="{{$customer->id}}">Xem chi tiết</td>
             </tr>
         @endforeach

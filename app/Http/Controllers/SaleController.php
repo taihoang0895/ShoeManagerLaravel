@@ -3,6 +3,7 @@
 
 namespace App\Http\Controllers;
 
+use App\models\Config;
 use App\models\CustomerState;
 use App\models\functions\AdminFunctions;
 use App\models\functions\CommonFunctions;
@@ -252,7 +253,8 @@ class SaleController
         $listCustomer = SaleFunctions::findCustomers(Auth::user(), $searchPhoneNumber);
         return view("sale.sale_list_customers", [
             "list_customers" => $listCustomer,
-            'search_phone_number' => $searchPhoneNumber
+            'search_phone_number' => $searchPhoneNumber,
+            'total_customer' => SaleFunctions::countCustomer(Auth::user(), $searchPhoneNumber)
         ]);
 
     }
@@ -489,6 +491,9 @@ class SaleController
         $orderStateId = Util::parseInt($request->get('order_state_id', -1));
         $startTimeStr = $request->get('start_time', '');
         $endTimeStr = $request->get('end_time', '');
+        $filterOrderType = Util::parseInt($request->get('filter_order_type', -1));
+        $filterCustomerName =  $request->get('search_customer_name', '');
+        $filterOrderTypeStr = "";
         $orderStateStr = "Chọn trạng thái";
         $filterMemberStr = "Chọn Người Tạo";
         $orderStateIdStr = "-1";
@@ -496,6 +501,13 @@ class SaleController
 
         $startTime = Util::safeParseDate($startTimeStr);
         $endTime = Util::safeParseDate($endTimeStr);
+
+        if ($filterOrderType == 1) {
+            $filterOrderTypeStr = "Đơn Test";
+        }
+        if ($filterOrderType == 0) {
+            $filterOrderTypeStr = "Đơn Thực";
+        }
 
         $listMembers = SaleFunctions::findAllSales();
         $listUserIds = [];
@@ -524,7 +536,7 @@ class SaleController
         }
 
         $listStates = SaleFunctions::getListOrderStates();
-        $listOrders = SaleFunctions::findOrders($listUserIds, $startTime, $endTime, $orderStateId);
+        $listOrders = SaleFunctions::findOrders($listUserIds, $startTime, $endTime, $orderStateId, $filterOrderType);
         return view("sale.sale_list_orders", [
             "list_orders" => $listOrders,
             "start_time_str" => $startTimeStr,
@@ -532,9 +544,13 @@ class SaleController
             "order_state_str" => $orderStateStr,
             "order_state_id_str" => $orderStateIdStr,
             'list_members' => $listMembers,
+            'search_customer_name' => $filterCustomerName,
             'filter_member_id' => strval($filterMemberId),
             'filter_member_str' => $filterMemberStr,
-            'list_states' => $listStates
+            'list_states' => $listStates,
+            'total_order' => SaleFunctions::countOrder($listUserIds, $startTime, $endTime, $orderStateId, $filterOrderType),
+            'filter_order_type' => $filterOrderType,
+            'filter_order_type_str' => $filterOrderTypeStr
         ]);
     }
 
@@ -548,14 +564,15 @@ class SaleController
         $emptyOrder = new \stdClass();
         $emptyOrder->id = -1;
         $emptyOrder->customer_code = $customerCode;
-        $emptyOrder->order_state_id = OrderState::STATE_CUSTOMER_AGREED;
+        $emptyOrder->order_state_id = OrderState::STATE_ORDER_PENDING;
         $emptyOrder->order_fail_reason_id = -1;
         $emptyOrder->created = Util::now();
         $emptyOrder->replace_order_code = "";
         $emptyOrder->order_fail_cause = "___";
-        $emptyOrder->note = "";
+        $emptyOrder->note = Config::getOrNew()->order_note;
         $emptyOrder->is_test = false;
-        $listOrderStates = SaleFunctions::getListOrderStates();
+        $listOrderStates = [];
+        //$listOrderStates = SaleFunctions::getListOrderStates();
         $listFailReasons = SaleFunctions::getListFailReasons();
         $listSizes = CommonFunctions::listProductSizes();
         $listColors = CommonFunctions::listProductColors();
@@ -573,7 +590,7 @@ class SaleController
             'list_product_discount' => $listDiscounts,
             'start_time_str' => "",
             'user' => Auth::user(),
-            'order_state_name' => OrderState::getName(OrderState::STATE_CUSTOMER_AGREED),
+            'order_state_name' => OrderState::getName(OrderState::STATE_ORDER_PENDING),
             'detailEditable' => $detailEditable,
             'list_fail_reasons' => $listFailReasons,
             'list_suggestion_product_codes' => json_encode($listSuggestionProductCode)
@@ -618,8 +635,8 @@ class SaleController
             if ($order->order_fail_cause == "") {
                 $order->order_fail_cause = "___";
             }
-
-            $listOrderStates = SaleFunctions::getListOrderStates();
+            $listOrderStates = [];
+            //$listOrderStates = SaleFunctions::getListOrderStates();
             $listFailReasons = SaleFunctions::getListFailReasons();
             $response["status"] = 200;
             $response['content'] = view("sale.sale_update_order", [
@@ -632,7 +649,7 @@ class SaleController
                 'start_time_str' => "",
 
                 'user' => Auth::user(),
-                'order_state_name' => OrderState::getName(OrderState::STATE_CUSTOMER_AGREED),
+                'order_state_name' => OrderState::getName($order->order_state),
                 'detailEditable' => false,
                 'list_fail_reasons' => $listFailReasons,
                 'list_suggestion_product_codes' => json_encode([])
@@ -673,7 +690,7 @@ class SaleController
             $orderInfo->note = $note;
             $orderInfo->delivery_time = $deliveryTime;
             $orderInfo->is_test = $isOrderTest == 1;
-            $orderInfo->order_state_id = $orderStateId;
+            $orderInfo->order_state_id = CustomerState::STATE_CUSTOMER_CUSTOMER_AGREED;
             if ($orderFailId == -1) {
                 $orderInfo->order_fail_reason_id = null;
             } else {
@@ -750,7 +767,7 @@ class SaleController
         $orderInfo->note = $note;
         $orderInfo->delivery_time = $deliveryTime;
         $orderInfo->is_test = $isOrderTest == 1;
-        $orderInfo->order_state_id = $orderStateId;
+        $orderInfo->order_state_id = null;
         if ($orderFailId == -1) {
             $orderInfo->order_fail_reason_id = null;
         } else {
@@ -774,8 +791,14 @@ class SaleController
         );
 
         $orderId = Util::parseInt($request->get('order_id', -1));
-        if (SaleFunctions::deleteOrder(Auth::user(), $orderId) == ResultCode::SUCCESS) {
+        $resultCode = SaleFunctions::deleteOrder(Auth::user(), $orderId);
+
+        if ($resultCode == ResultCode::SUCCESS) {
             $response['status'] = 200;
+        }else{
+            if($resultCode == ResultCode::FAILED_DELETE_ORDER_STATE_MORE_THAN_STATE_ORDER_CREATED){
+                $response['message'] = "Lỗi xóa hóa đơn đã được đăng lên GHTK";
+            }
         }
         return response()->json($response);
     }
@@ -883,7 +906,6 @@ class SaleController
         if (Auth::user()->isLeader()) {
             $listOrderIds = json_decode($request->get('list_order_ids', '[]'));
             $listOrders = SaleFunctions::listOrderDelivering($listOrderIds);
-            Log::log("taih", strval(count($listOrders)));
             $response['status'] = 200;
             $response['content'] = view("sale.sale_leader_form_prepare_order_deliver", [
                 "list_orders" => $listOrders
@@ -901,34 +923,201 @@ class SaleController
             'message' => '',
             'content' => ''
         );
-        $url = 'https://services.giaohangtietkiem.vn/services/shipment/order';
-        $ch = null;
-        try {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, "http://example.com/my_url.php" );
-            curl_setopt($ch, CURLOPT_POST, 1 );
-            curl_setopt($ch, CURLOPT_POSTFIELDS, []);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-
-            // Execute the POST request
-            $result = curl_exec($ch);
-            if (curl_errno($ch)) {
-                Log::log("result", curl_error($ch));
-            }
-            if($result == null){
-                Log::log("result", "null");
-            }
-            Log::log("result", $result);
-        } catch (\Exception $e) {
-            Log::log("error message", $e->getMessage());
-        } finally {
-            if ($ch != null) {
-                curl_close($ch);
-            }
+        if (!Auth::user()->isLeader()) {
+            $response["message"] = "Permission Denied";
+            return response()->json($response);
         }
-
+        $orderId = $request->get("order_id");
+        $resultCode = SaleFunctions::pushOrderToGHTK($orderId);
+        if ($resultCode == ResultCode::SUCCESS) {
+            $response['status'] = 200;
+        }
         return response()->json($response);
     }
+
+    public function orderStateManager(Request $request)
+    {
+        $response = array(
+            "status" => 302,
+            "content" => "",
+            "message" => "Permission Denied"
+        );
+        if (Auth::user()->isLeader()) {
+            $startTimeStr = $request->get('start_time', '');
+            $searchGHTKCode = $request->get('search_ghtk_code', '');
+
+            $endTimeStr = $request->get('end_time', '');
+            $orderStateStr = "Chọn trạng thái";
+            $orderStateIdStr = "-1";
+            $startTime = Util::safeParseDate($startTimeStr);
+            $endTime = Util::safeParseDate($endTimeStr);
+            $orderStateId = Util::parseInt($request->get('order_state_id', ''), -1);
+            if ($orderStateId != -1) {
+                $orderStateIdStr = strval($orderStateId);
+                $orderStateStr = OrderState::getName($orderStateId);
+            }
+
+            $listMembers = SaleFunctions::findAllSales();
+
+            $listUserIds = [];
+            foreach ($listMembers as $member) {
+                array_push($listUserIds, $member->id);
+            }
+            $listOrders = SaleFunctions::listOrderStateManager($listUserIds, $startTime, $endTime, $orderStateId, $searchGHTKCode);
+            $listState = SaleFunctions::getListOrderStates();
+            return view("sale.sale_leader_order_state_manager", [
+                "list_orders" => $listOrders,
+                'list_states' => $listState,
+                'start_time_str' => $startTimeStr,
+                'end_time_str' => $endTimeStr,
+                'order_state_str' => $orderStateStr,
+                'order_state_id_str' => $orderStateIdStr,
+                'search_ghtk_code' => $searchGHTKCode,
+                'total_order' => SaleFunctions::countOrderStateManager($listUserIds, $startTime, $endTime, $orderStateId, $searchGHTKCode)
+            ]);
+        } else {
+            return response()->json($response);
+        }
+    }
+
+    public function getFormPrepareOrderStateSynchronizer(Request $request)
+    {
+        $response = array(
+            "status" => 302,
+            "content" => "",
+            "message" => "Permission Denied"
+        );
+        if (Auth::user()->isLeader()) {
+            $listOrderIds = json_decode($request->get('list_order_ids', '[]'));
+            $listOrders = SaleFunctions::filterOrderByIds($listOrderIds);
+            $response['status'] = 200;
+            $response['content'] = view("sale.sale_leader_form_prepare_order_state_synchronizer", [
+                "list_orders" => $listOrders
+            ])->render();
+            return response()->json($response);
+        } else {
+            return response()->json($response);
+        }
+    }
+
+    public function synchronizeOrderState(Request $request)
+    {
+        $response = array(
+            "status" => 403,
+            'message' => '',
+            'content' => '',
+            "new_order_state" => "fake state",
+            "is_change" => true
+        );
+        if (!Auth::user()->isLeader()) {
+            $response["message"] = "Permission Denied";
+            return response()->json($response);
+        }
+        $orderId = $request->get("order_id");
+        $result = SaleFunctions::syncOrderState($orderId);
+        if ($result->result_code == ResultCode::SUCCESS) {
+            $response['status'] = 200;
+            $response['new_order_state'] = $result->new_order_state;
+            $response['is_change'] = $result->is_change;
+        }
+        return response()->json($response);
+    }
+
+    public function getFormPrepareCancelOrder(Request $request)
+    {
+        $response = array(
+            "status" => 302,
+            "content" => "",
+            "message" => "Permission Denied"
+        );
+        if (Auth::user()->isLeader()) {
+            $listOrderIds = json_decode($request->get('list_order_ids', '[]'));
+            $listOrders = SaleFunctions::filterOrderByIds($listOrderIds);
+            $response['status'] = 200;
+            $response['content'] = view("sale.sale_leader_form_prepare_cancel_order", [
+                "list_orders" => $listOrders
+            ])->render();
+            return response()->json($response);
+        } else {
+            return response()->json($response);
+        }
+    }
+
+    public function cancelOrder(Request $request)
+    {
+        $response = array(
+            "status" => 403,
+            'message' => '',
+            'content' => '',
+            "new_order_state" => "fake state",
+            "is_change" => true
+        );
+        if (!Auth::user()->isLeader()) {
+            $response["message"] = "Permission Denied";
+            return response()->json($response);
+        }
+        $orderId = $request->get("order_id");
+        $result = SaleFunctions::cancelOrder(Auth::user(), $orderId);
+        if ($result->result_code == ResultCode::SUCCESS) {
+            $response['status'] = 200;
+            $response['new_order_state'] = $result->new_order_state;
+            $response['is_change'] = $result->is_change;
+        }
+        return response()->json($response);
+    }
+
+    public function prepareUpdateOrderState(Request $request)
+    {
+        $response = array(
+            "status" => 302,
+            "content" => "",
+            "message" => "Permission Denied"
+        );
+        if (Auth::user()->isLeader()) {
+            $listOrderIds = json_decode($request->get('list_order_ids', '[]'));
+            $listOrders = SaleFunctions::filterOrderByIds($listOrderIds);
+
+            $listStates = [];
+            $state = new \stdClass();
+            $state->id = OrderState::STATE_ORDER_IS_RETURNED_AND_BROKEN;
+            $state->name = OrderState::getName($state->id);
+            array_push($listStates, $state);
+
+            $state = new \stdClass();
+            $state->id = OrderState::STATE_ORDER_IS_RETURNED_AND_NO_BROKEN;
+            $state->name = OrderState::getName($state->id);
+            array_push($listStates, $state);
+
+            $response['status'] = 200;
+            $response['content'] = view("sale.sale_leader_form_prepare_update_order_state", [
+                "list_orders" => $listOrders,
+                "list_states" => $listStates
+            ])->render();
+            return response()->json($response);
+        } else {
+            return response()->json($response);
+        }
+    }
+
+
+    public function updateOrderState(Request $request)
+    {
+        $response = array(
+            "status" => 403,
+            'message' => '',
+            'content' => ''
+        );
+        if (!Auth::user()->isLeader()) {
+            $response["message"] = "Permission Denied";
+            return response()->json($response);
+        }
+        $newOrderState = Util::parseInt($request->get("new_state_id", ''), 0);
+        $orderId = Util::parseInt($request->get("order_id", ''), 0);
+        $result = SaleFunctions::orderStateManagerUpdateState(Auth::user(), $orderId, $newOrderState);
+        if ($result->result_code == ResultCode::SUCCESS) {
+            $response['status'] = 200;
+        }
+        return response()->json($response);
+    }
+
 }

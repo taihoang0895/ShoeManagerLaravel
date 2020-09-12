@@ -8,5 +8,5 @@ class Customer extends Model
 {
     //
     public $timestamps = false;
-    protected $dates = ['birthday'];
+    protected $dates = ['birthday', 'created'];
 }

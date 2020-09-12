@@ -4,6 +4,9 @@
 <div class="menu_item" id="marketing_menu_item_marketing">
     Marketing
 </div>
+<div class="menu_item" id="marketing_menu_item_campaigns">
+    Chiến Dịch
+</div>
 <div class="menu_item" id="marketing_menu_item_inventory_report">
     Tồn Kho
 </div>
@@ -63,6 +66,9 @@
         });
         $('#marketing_menu_item_bank_account').click(function () {
             location.href = "/marketing/bank-accounts/";
+        });
+        $('#marketing_menu_item_campaigns').click(function(){
+            location.href = "/marketing/campaign_names/";
         });
         @endif
 

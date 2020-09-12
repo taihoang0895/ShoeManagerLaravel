@@ -11,6 +11,7 @@ use App\models\functions\rows\DetailProductRow;
 use App\models\Inventory;
 use App\models\Notification;
 use App\models\NotificationManager;
+use App\models\Order;
 use App\models\Product;
 use App\models\Province;
 use App\models\Remind;
@@ -21,6 +22,10 @@ class CommonFunctions
     public static function searchProduct($productCode)
     {
         return Product::where("code", 'like', '%' . $productCode . '%')->where("is_active", true)->where("is_test", false)->limit(5)->get();
+    }
+
+    public static function searchGHTKCode($code){
+        return Order::where("ghtk_label", 'like', '%' . $code . '%')->limit(5)->get();
     }
 
     public static function findDetailProducts($productCode)
@@ -35,8 +40,10 @@ class CommonFunctions
             "         inventories.failed_quantity as failed_quantity" .
             " FROM detail_products " .
             " INNER JOIN product_categories ON detail_products.product_category_id =product_categories.id" .
+            " INNER JOIN products ON detail_products.product_code=products.code" .
             " LEFT JOIN inventories ON detail_products.id=inventories.detail_product_id " .
-            " WHERE product_code =:productCode";
+            " WHERE product_code =:productCode and products.is_active=1 and products.is_test=0 ".
+            " ORDER BY product_size";
 
         $listDetailProducts = DB::select($sql, ['productCode' => $productCode]);
         $listDetailProductRow = array();
@@ -60,7 +67,7 @@ class CommonFunctions
             array_push($listDetailProductRow, $detailProductRow);
 
             $detailProductRow->importing_quantity = $detailProduct->importing_quantity;
-            $detailProductRow->remaining_quantity = $detailProduct->importing_quantity - $detailProduct->exporting_quantity;
+            $detailProductRow->remaining_quantity = $detailProduct->importing_quantity - $detailProduct->exporting_quantity + $detailProduct->returning_quantity;
             $detailProductRow->id = $detailProduct->id;
 
         }

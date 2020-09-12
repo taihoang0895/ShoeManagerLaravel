@@ -29,7 +29,7 @@ function handleAddButton(){
                 return;
               }
               is_waiting_for_request = true;
-              $.get("/admin/form-add-campaign_name/", function(response) {
+              $.get("/marketing/form-add-campaign_name/", function(response) {
                         if(response['status'] === 200){
                                $('#dialog_edit_campaign_name').empty();
                                $('#dialog_edit_campaign_name').html(response['content']);
@@ -60,7 +60,7 @@ function handleUpdateButton(){
                       var data = {
                             "campaign_name_id" : campaign_name_id,
                       }
-                      $.get("/admin/form-update-campaign_name/",data, function(response) {
+                      $.get("/marketing/form-update-campaign_name/",data, function(response) {
                                 if(response['status'] === 200){
                                        $('#dialog_edit_campaign_name').empty();
                                        $('#dialog_edit_campaign_name').html(response['content']);
@@ -106,7 +106,7 @@ function handleDeleteButton(){
                 }
                 setupCSRF();
                 is_waiting_for_request = true;
-                  $.post('/admin/delete-campaign-name/', data, function(response) {
+                  $.post('/marketing/delete-campaign-name/', data, function(response) {
                       if(response['status'] == 200){
                             showMessage("xóa thành công");
                             var curr_url = location.href.toString().toLowerCase();

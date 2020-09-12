@@ -354,13 +354,23 @@ function addNewCampaign(){
 }
 
 function validateMarketingProduct(){
+    var marketing_code = $('#edit_marketing_product_marketing_code').val().trim();
     var marketing_product_code = $('#edit_marketing_product_product_code').val().trim();
     var product_source_id = $('#edit_marketing_product_source_id').val().trim();
     var marketing_product_created = $('#edit_marketing_product_created_text').val().trim();
 
-
+    if(marketing_code == ""){
+        message = "Mã marketing không được để trống";
+        showMessage(message);
+        return false;
+    }
     if(marketing_product_code ==""){
         message = "Mã sản phẩm không được để trống";
+        showMessage(message);
+        return false;
+    }
+    if(product_source_id == -1){
+        message = "Nguồn không được để trống";
         showMessage(message);
         return false;
     }
@@ -447,7 +457,8 @@ function saveMarketingProduct(){
                 var marketing_product_id = $('#edit_marketing_product_id').val().trim();
                 var product_code = $('#edit_marketing_product_product_code').val().trim();
                 var marketing_source_id = $('#edit_marketing_product_source_id').val().trim();
-                  var marketing_product_created = $('#edit_marketing_product_created_text').val().trim();
+                var marketing_product_created = $('#edit_marketing_product_created_text').val().trim();
+                var marketing_code = $('#edit_marketing_product_marketing_code').val().trim();
 
                 list_campaigns = collectListCampaigns();
                 marketing_product = {
@@ -456,6 +467,7 @@ function saveMarketingProduct(){
                 marketing_product['marketing_product_id'] = marketing_product_id;
                 marketing_product['marketing_product_created'] = marketing_product_created;
                 marketing_product['product_code'] = product_code;
+                marketing_product['marketing_code'] = marketing_code;
                 marketing_product['marketing_source_id'] = marketing_source_id;
                 marketing_product['list_campaigns'] =JSON.stringify(list_campaigns);
 

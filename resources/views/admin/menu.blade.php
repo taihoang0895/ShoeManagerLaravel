@@ -1,4 +1,4 @@
-<div class="menu_item" id="admin_menu_item_products">
+<div class="menu_item" id="admin_menu_item_products" style="display: none">
     Sản Phẩm
 </div>
 <div class="menu_item" id="admin_menu_item_users">
@@ -7,9 +7,7 @@
 <div class="menu_item" id="admin_menu_item_discounts">
     Khuyến Mại
 </div>
-<div class="menu_item" id="admin_menu_item_campaigns">
-    Chiến Dịch
-</div>
+
 <div class="menu_item" id="admin_menu_item_landing_page">
     Landing Page
 </div>
@@ -38,18 +36,16 @@
 </style>
 <script>
     $(document).ready(function () {
-        $('#admin_menu_item_products').click(function(){
+       /* $('#admin_menu_item_products').click(function(){
             location.href = "/admin/products/";
-        });
+        });*/
         $('#admin_menu_item_discounts').click(function(){
             location.href = "/admin/discounts/";
         });
         $('#admin_menu_item_users').click(function(){
             location.href = "/admin/users/";
         });
-        $('#admin_menu_item_campaigns').click(function(){
-            location.href = "/admin/campaign_names/";
-        });
+
         $('#admin_menu_item_landing_page').click(function(){
             location.href = "/admin/landing-pages/";
         });

@@ -1,16 +1,20 @@
 var is_waiting_for_request = false;
-
 function collectFilterParam() {
     var start_time = $('#order_filter_start_time_text').val().trim();
     var end_time = $('#order_filter_end_time_text').val().trim();
     var order_state_id = $('#filter_order_state_id_selected').val().trim();
-
+    var order_test_selected = $('#filter_order_type').is(':checked');
     var param = "";
     if (start_time != '' && end_time != '') {
         param = 'start_time=' + start_time + "&" + "end_time=" + end_time;
     }
     if (order_state_id != "-1") {
         param += "&order_state_id=" + order_state_id
+    }
+    if (order_test_selected) {
+        param += "&order_test_selected=1"
+    } else {
+        param += "&order_test_selected=0"
     }
     if (param.startsWith("&")) {
         param = param.substring(1);
@@ -211,6 +215,10 @@ function init() {
     $('#filter_order_dropdown_state a').click(function () {
         $('#filter_order_dropdown_state_text').text($(this).text());
         $('#filter_order_state_id_selected').val($(this).find('#state_id').val());
+    });
+    $('#filter_order_type a').click(function () {
+        $('#filter_order_type_text').text($(this).text());
+        $('#filter_order_type_selected').val($(this).find('.order_type_id').val())
     });
 
 

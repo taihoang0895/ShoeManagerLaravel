@@ -10,6 +10,7 @@ class CustomerState
     public const STATE_CUSTOMER_CUSTOMER_NOT_REPLY_TO_TELESALES = 2;
     public const STATE_CUSTOMER_CUSTOMER_DISAGREED = 3;
     public const STATE_CUSTOMER_CUSTOMER_AGREED = 4;
+    public const STATE_CUSTOMER_WAITING_FOR_PRODUCT_AVAILABLE = 5;
 
     public static function getName($stateId)
     {
@@ -22,15 +23,19 @@ class CustomerState
                 return "Không đồng ý mua";
             case self::STATE_CUSTOMER_CUSTOMER_AGREED:
                 return "Đồng ý mua";
+            case self::STATE_CUSTOMER_WAITING_FOR_PRODUCT_AVAILABLE:
+                return "Đợi hàng";
         }
         return "";
     }
 
     public static function listIds()
     {
-        return [self::STATE_CUSTOMER_WAITING_FOR_CONFIRMING_CUSTOMER,
+        return [
+            self::STATE_CUSTOMER_WAITING_FOR_CONFIRMING_CUSTOMER,
             self::STATE_CUSTOMER_CUSTOMER_NOT_REPLY_TO_TELESALES,
             self::STATE_CUSTOMER_CUSTOMER_DISAGREED,
-            self::STATE_CUSTOMER_CUSTOMER_AGREED];
+            self::STATE_CUSTOMER_CUSTOMER_AGREED,
+            self::STATE_CUSTOMER_WAITING_FOR_PRODUCT_AVAILABLE];
     }
 }

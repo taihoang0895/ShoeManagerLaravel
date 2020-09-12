@@ -25,6 +25,7 @@ class CretateOrderTable extends Migration
             $table->boolean("is_test");
             $table->dateTime("delivery_time")->nullable();
             $table->dateTime("created");
+            $table->dateTime("order_state_updated")->nullable();
 
             $table->foreign('customer_id')->references('id')->on('customers');
             $table->foreign('order_fail_reason_id')->references('id')->on('order_fail_reasons');

@@ -335,7 +335,6 @@ function handleCancelButtonClicked() {
     });
 }
 
-alert();
 $(document).ready(function () {
     handleAddDetailProductButton();
     handleCancelButtonClicked();

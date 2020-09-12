@@ -253,7 +253,7 @@ function addNewDetailOrder() {
             var price = response['content']['price'];
             var discountValue = response['content']['discount_value'];
             var row_index = $('.tbl_detail_order_item').length;
-            $('#row_additional_detail_order').after(genRow(productCode, productSize, productColor, quantity, discountId, productDiscount, quantity * price - discountValue, price, quantity * price - discountValue, row_index));
+            $('#row_additional_detail_order').after(genRow(productCode, productSize, productColor, quantity, discountId, productDiscount, quantity * price - quantity * discountValue, price, quantity * price - quantity * discountValue, row_index));
             $('.detail_order_btn_update').first().click(handleUpdateBtnClicked);
             $('.detail_order_btn_delete').first().click(handleDeleteBtnClicked);
             $('.detail_order_updating_product_size').first().find('a').click(updatingRowProductSizeSelected);
@@ -564,7 +564,7 @@ function collect_detail_order() {
 
 }
 
-function save_order(order_id, customer_code, order_state_id, order_fail_id, note, list_detail_orders, replace_order, delivery_time) {
+function save_order(order_id, customer_code, order_state_id, order_fail_id, note, list_detail_orders, replace_order, delivery_time, is_order_test) {
     if (is_waiting_for_request) {
         return;
     }
@@ -579,6 +579,11 @@ function save_order(order_id, customer_code, order_state_id, order_fail_id, note
     order['note'] = note;
     order['replace_order'] = replace_order;
     order['delivery_time'] = delivery_time;
+    if(is_order_test){
+        order['is_order_test'] = 1;
+    }else{
+        order['is_order_test'] = 0;
+    }
     order['list_detail_orders'] = JSON.stringify(list_detail_orders);
 
     setupCSRF();
@@ -662,7 +667,8 @@ $(document).ready(function () {
             var fail_reason_id = $('#edit_order_fail_reason_id').val();
             var replace_order = $('#edit_order_replace_order').val();
             var delivery_time = $('#edit_order_delivery_time_text').val();
-            save_order(order_id, customer_code, state_id, fail_reason_id, note, list_detail_orders, replace_order, delivery_time);
+            var is_order_test = $('#edit_order_is_test').is(':checked');
+            save_order(order_id, customer_code, state_id, fail_reason_id, note, list_detail_orders, replace_order, delivery_time, is_order_test);
 
         }
     });

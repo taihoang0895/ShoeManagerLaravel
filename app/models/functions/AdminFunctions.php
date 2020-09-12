@@ -17,62 +17,6 @@ use Illuminate\Support\Facades\Hash;
 
 class AdminFunctions
 {
-
-
-    public static function saveCampaignName($campaignNameRow)
-    {
-        $campaignName = CampaignName::where("id", $campaignNameRow->id)->first();
-        if ($campaignName == null) {
-            $campaignName = new CampaignName();
-            $campaignName->created = Util::now();
-        }
-
-        $campaignName->name = $campaignNameRow->name;
-
-        if ($campaignName->save()) {
-            return ResultCode::SUCCESS;
-        }
-
-        return ResultCode::FAILED_UNKNOWN;
-    }
-
-    public
-    static function deleteCampaignName($id)
-    {
-        $campaignName = CampaignName::where('id', $id)->first();
-        if ($campaignName != null) {
-            $campaignName->is_active = false;
-            if ($campaignName->save()) {
-                return ResultCode::SUCCESS;
-            }
-        }
-        return ResultCode::FAILED_UNKNOWN;
-    }
-
-    public
-    static function getCampaignName($id)
-    {
-        $campaignName = CampaignName::where("id", $id)->first();
-        if ($campaignName != null) {
-            $campaignName->create_str = $campaignName->getCreatedStr();
-        }
-        return $campaignName;
-    }
-
-    public
-    static function findCampaignName($campaignName = "")
-    {
-        $perPage = config('settings.per_page');
-        $condition = [];
-        if ($campaignName != "") {
-            $condition[] = ['name', 'like', '%' . $campaignName . '%'];
-        }
-        $condition['is_active'] = true;
-
-        $listCampaignName = CampaignName::where($condition)->paginate($perPage);
-        return $listCampaignName;
-    }
-
     public static function findLandingPage($landingPageName = "")
     {
         $perPage = config('settings.per_page');

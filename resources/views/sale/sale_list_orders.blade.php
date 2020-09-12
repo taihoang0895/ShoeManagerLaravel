@@ -20,10 +20,11 @@
 @section('content')
     @include("confirm_dialog", ["confirm_dialog_id"=>"confirm_dialog_delete_order", "confirm_dialog_btn_positive_id"=>"order_delete_dialog_btn_ok","confirm_dialog_btn_negative_id"=>"order_delete_dialog_btn_cancel", "confirm_dialog_message"=>"Bạn có chắc chắn muốn xóa không?"])
     @csrf
-    <div class="title">Danh Sách Hóa Đơn</div>
+    <div class="title">Danh Sách Hóa Đơn <span style="font-size : 0.9em;">({{$total_order}})</span></div>
     <table id="list_order_filter">
         <input type="hidden" id="filter_order_state_id_selected" value="{{$order_state_id_str}}">
         <input type="hidden" id="filter_member_id_selected" value="{{$filter_member_id}}">
+        <input type="hidden" id="filter_order_type_selected" value="{{$filter_order_type}}">
         <tr>
             <td class="filter_start_time">
                 <div class="input-group date" id="order_filter_start_time" data-target-input="nearest">
@@ -47,10 +48,6 @@
                     </div>
                 </div>
             </td>
-           {{-- <td class="value" style="display:none;">
-                <input class="form-control" type="text" placeholder="Nhập tên sale"
-                       id="filter_order_by_sale_name" value="{{$filter_sale_name}}" style="width:80%;margin: 0 auto;">
-            </td>--}}
             <td class="filter_by_order_state">
                 <div class="dropdown" id="filter_order_dropdown_state">
                     <button class="btn btn-secondary dropdown-toggle" type="button"
@@ -61,9 +58,9 @@
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                         <a class="dropdown-item"><input type="hidden" id="state_id" value="">_______</a>
                         @foreach ($list_states as $state)
-                        <a class="dropdown-item"><input type="hidden" id="state_id"
-                                                        value="{{$state->id}}">{{$state->name}}
-                        </a>
+                            <a class="dropdown-item"><input type="hidden" id="state_id"
+                                                            value="{{$state->id}}">{{$state->name}}
+                            </a>
                         @endforeach
                     </div>
                 </div>
@@ -86,6 +83,25 @@
                             <a class="dropdown-item"><input type="hidden"
                                                             value="{{$member->id}}">{{$member->alias_name}}</a>
                         @endforeach
+                    </div>
+                </div>
+
+            </td>
+            <td class="filter_order_type" style="text-align: center;vertical-align: middle;">
+                <div class="dropdown" id="filter_order_type">
+                    <button class="btn btn-secondary dropdown-toggle" type="button"
+                            id="filter_order_type_text"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        @if($filter_order_type == -1 )
+                            Lọc Test Đơn
+                        @else
+                            {{$filter_order_type_str}}
+                        @endif
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <a class="dropdown-item"><input class="order_type_id" type="hidden" value="-1">_______</a>
+                        <a class="dropdown-item"><input class="order_type_id" type="hidden" value="1">Đơn Test</a>
+                        <a class="dropdown-item"><input class="order_type_id" type="hidden" value="0">Đơn Thực</a>
                     </div>
                 </div>
 
@@ -115,10 +131,10 @@
             <td class="order_code">MHD</td>
             <td class="order_sale">Người Tạo</td>
             <td class="order_created">Ngày lập</td>
+            <td class="order_customer_name">Tên Khách</td>
             <td class="order_customer_phone_number">SĐT</td>
             <td class="order_state">Trạng thái</td>
-            <td class="order_fail_reason">Lý do lỗi</td>
-            <td class="order_note">Sản phẩm</td>
+            <td class="order_product_name">Sản phẩm</td>
             <td class="detail"></td>
         </tr>
         @foreach ($list_orders as $order)
@@ -133,16 +149,15 @@
                 <td class="order_created">
                     <div>{{$order->created_str}}</div>
                 </td>
+                <td class="order_customer_name">  <div>{{$order->customer_name}}</div></td>
                 <td class="order_customer_phone">
                     <div>{{$order->customer_phone}}</div>
                 </td>
                 <td class="order_state">
                     <div>{{$order->order_state_name}}</div>
                 </td>
-                <td class="order_fail_reason">
-                    <div>{{$order->order_fail_cause}}</div>
-                </td>
-                <td class="order_note">
+
+                <td class="order_product_name">
                     <div>{!! $order->list_order_codes !!}</div>
                 </td>
                 <td class="show_detail_order" id="order_id_{{$order->id}}">xem chi tiết</td>

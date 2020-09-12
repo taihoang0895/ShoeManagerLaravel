@@ -37,17 +37,17 @@
     width : 15%;
 }
 .tbl_customers .state {
-    width : 15%;
+    width : 20%;
 }
 .tbl_customers .province {
-    width : 10%;
+    width : 15%;
 }
 .tbl_customers .customer_name {
     width : 15%;
 }
 
-.tbl_customers .address {
-    width : 25%;
+.tbl_customers .created {
+    width : 15%;
 }
 .tbl_customers .show_detail,.show_detail_header {
     width : 10%;

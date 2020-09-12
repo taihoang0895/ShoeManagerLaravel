@@ -45,7 +45,7 @@
                         </button>
                     </td>
                     <td style="text-align:center;">
-                        <button type="button" class="btn btn-secondary btn_cancel" id="push_order_btn_cancel">Hủy
+                        <button type="button" class="btn btn-secondary btn_cancel" id="push_order_btn_cancel">Ẩn
                         </button>
                     </td>
                 </tr>

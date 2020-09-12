@@ -1,7 +1,7 @@
 var is_waiting_for_request = false;
 
 function saveCampaignName(data){
-     $.post('/admin/save-campaign-name/', data, function(response) {
+     $.post('/marketing/save-campaign-name/', data, function(response) {
               if(response['status'] == 200){
                     location.reload();
               }else{

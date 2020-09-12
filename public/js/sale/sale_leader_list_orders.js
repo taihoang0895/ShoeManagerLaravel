@@ -7,6 +7,7 @@ function collectFilterParam() {
 
     var order_state_id = $('#filter_order_state_id_selected').val().trim();
     var filter_member_id = $('#filter_member_id_selected').val().trim();
+    var filter_order_type = $('#filter_order_type_selected').val();
 
     var param = "";
     if (start_time != '' && end_time != '') {
@@ -18,7 +19,7 @@ function collectFilterParam() {
     if (filter_member_id != "-1") {
         param += "&filter_member_id=" + filter_member_id
     }
-
+    param += "&filter_order_type=" + filter_order_type;
     if (param.startsWith("&")) {
         param = param.substring(1);
     }
@@ -219,6 +220,10 @@ function init() {
         $(this).addClass('row_selected');
     });
 
+    $('#filter_order_type a').click(function () {
+        $('#filter_order_type_text').text($(this).text());
+        $('#filter_order_type_selected').val($(this).find('.order_type_id').val())
+    });
     $('#filter_order_dropdown_state a').click(function () {
         $('#filter_order_dropdown_state_text').text($(this).text());
         $('#filter_order_state_id_selected').val($(this).find('#state_id').val());

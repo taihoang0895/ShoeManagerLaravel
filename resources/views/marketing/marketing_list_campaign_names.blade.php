@@ -1,9 +1,9 @@
 @extends ('base_layout')
 @section('extra_head')
 <link rel="stylesheet" href={{ asset('css/extra/bootstrap_4_2_1.css') }}>
-<link rel="stylesheet" href={{ asset('css/admin/admin_main.css' ) }}>
-<link rel="stylesheet" href={{ asset('css/admin/admin_list_campaign_names.css' ) }}>
-<script src={{ asset('js/admin/admin_list_campaign_names.js') }}></script>
+<link rel="stylesheet" href={{ asset('css/marketing/marketing_main.css' ) }}>
+<link rel="stylesheet" href={{ asset('css/marketing/marketing_list_campaign_names.css' ) }}>
+<script src={{ asset('js/marketing/marketing_list_campaign_names.js') }}></script>
 <meta name="csrf-token" content="{{ Session::token() }}">
 @endsection
 
@@ -77,28 +77,12 @@
 <script type="text/javascript">
  $(document).ready(function() {
         document.title = 'Chiến dịch';
-        $('#admin_menu_item_campaigns').addClass('selected');
-
-        $('#fake_notification_button').click(function() {
-             /*$.get('/admin/fake-notification/', function(response) {
-              if(response['status'] == 200){
-                showMessage("fake notification successfully");
-              }else{
-                showMessage(response['message']);
-              }
-           })
-           .fail(function() {
-                showMessage("Lỗi mạng");
-            })
-            .always(function() {
-
-            });*/
-        });
+        $('#marketing_menu_item_campaigns').addClass('selected');
 
  });
 </script>
 @endsection
 
 @section('menu')
-    @include( "admin.menu")
+    @include( "marketing.menu")
 @endsection

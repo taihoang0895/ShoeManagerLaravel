@@ -109,6 +109,7 @@ function handleBtnUpdateMarketingProduct() {
         } else {
             var marketing_product_id = $('.marketing_product_row_selected').first().attr('id');
             marketing_product_id = marketing_product_id.replace("marketing_product_row_", "");
+
             var data = {
                 'marketing_product_id': marketing_product_id
             }

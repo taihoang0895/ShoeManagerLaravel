@@ -1,19 +1,11 @@
 .tbl_order_state_manager{
-    width : 95%;
-    margin-left :2.5%;
+    overflow-x:auto;
     border-collapse: collapse;
+    display : block;
+    margin : auto;
     margin-top : 15px;
+    margin-left : 15px;
 
-}
-.tbl_order_state_manager thead {
-  display: table; /* to take the same width as tr */
-  width: calc(100% - 17px); /* - 17px because of the scrollbar width */
-}
-.tbl_order_state_manager tbody {
-  display: block; /* to enable vertical scrolling */
-  height :200px;
-  overflow-x : hidden;
-  overflow-y: auto; /* keeps the scrollbar even if it doesn't need it; display purpose */
 }
 
 .tbl_order_state_manager .tbl_header_item {
@@ -28,35 +20,95 @@
     padding: 0;
     margin: 0;
 }
+
 .tbl_order_state_manager .col_mark {
-    width : 5%;
-    min-width : 70px;
+    min-width : 50px;
+    text-align : center;
+}
+.tbl_order_state_manager .sale{
+    min-width : 150px;
+    text-align : center;
+}
+
+.tbl_order_state_manager .order_code{
+    min-width : 150px;
+    text-align : center;
+}
+.tbl_order_state_manager .ghtk_label{
+    min-width : 320px;
     text-align : center;
 
 }
-.tbl_order_state_manager .order_code {
-    width : 10%;
-      min-width : 10%;
-
+.tbl_order_state_manager .created{
+    min-width : 250px;
+    text-align : center;
 
 }
-.tbl_order_state_manager .order_created{
-     width : 20%;
+
+.tbl_order_state_manager .order_state{
+    min-width : 210px;
+    text-align : center;
+}
+.tbl_order_state_manager .phone_number {
+    min-width : 210px;
+    text-align : center;
+
+}
+.tbl_order_state_manager .customer_name{
+    min-width :  210px;
+    text-align : center;
+}
+.tbl_order_state_manager .product_name{
+    min-width :  250px;
+    text-align : center;
 }
 
-.tbl_order_state_manager .order_customer_phone {
-    width : 15%;
+.tbl_order_state_manager .customer_province {
+    min-width : 250px;
+    text-align : center;
 }
 
-.tbl_order_state_manager .order_state {
-    width : 40%;
+.tbl_order_state_manager .customer_district {
+    min-width : 250px;
+    text-align : center;
+
 }
 
-
-.tbl_order_state_manager .show_detail_order {
-    width : 10%;
-    color : #007bff;
+.tbl_order_state_manager .customer_street {
+    min-width : 250px;
+    text-align : center;
 }
+
+.tbl_order_state_manager .customer_address {
+    min-width : 250px;
+    text-align : center;
+}
+
+.tbl_order_state_manager .quantity {
+    min-width : 140px;
+    text-align : center;
+}
+
+.tbl_order_state_manager .kg {
+    min-width : 140px;
+    text-align : center;
+}
+
+.tbl_order_state_manager .actually_collected {
+    min-width : 210px;
+    text-align : center;
+}
+
+.tbl_order_state_manager .pick_money {
+    min-width :210px;
+    text-align : center;
+}
+.tbl_order_state_manager .note {
+    min-width :500px;
+    text-align : center;
+
+}
+
 .tbl_order_state_manager .show_detail_order:hover{
      cursor: pointer;
      text-decoration: underline;
@@ -79,17 +131,21 @@
 }
 
 #list_order_filter .filter_start_time{
-     width : 300px;
+     width : 250px;
     text-align:center;
 
 }
 #list_order_filter .filter_end_time{
-     width : 320px;
+     width : 250px;
     text-align:center;
 
 }
 
-
+#list_order_filter #list_order_state_search_ghtk_code{
+    margin-left:15px;
+    margin-right:15px;
+    width : 200px;
+}
 #list_order_filter .filter_by_order_state{
      width : 200px;
     text-align:center;
@@ -106,5 +162,33 @@
     color : white;
 }
 
+#btn_sync_order{
+    width:100px;
+    height : 40px;
+    text-align : center;
+    border-radius : 5px;
+    color: white;
+    font-family : 'roboto_bold';
+    background-image :  linear-gradient(to right, rgba(6,185,224,1), rgba(13,211,255,0.8));
+}
 
+#btn_cancel_order{
+    background-image :  linear-gradient(to right, rgba(255,0,0,1), rgba(237,35,35,1));
+    width:100px;
+    height : 40px;
+    text-align : center;
+    border-radius : 5px;
+    color: white;
+    font-family : 'roboto_bold';
+}
+
+#btn_update_order_state{
+    background-image :  linear-gradient(to right, rgba(28,196,136,1), rgba(28,196,135,0.7));
+    width:150px;
+    height : 40px;
+    text-align : center;
+    border-radius : 5px;
+    color: white;
+    font-family : 'roboto_bold';
+}
 

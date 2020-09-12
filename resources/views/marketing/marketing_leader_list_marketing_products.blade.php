@@ -130,6 +130,7 @@
 
     <table class="tbl">
         <tr class="tbl_header_item">
+            <td class="marketing_code">Mã</td>
             <td class="marketing_product_code">MSP</td>
             <td class="marketing_product_created">Ngày</td>
             <td class="marketing_product_source">Nguồn</td>
@@ -142,8 +143,11 @@
         @foreach ($list_marketing_products as $marketing_product)
 
             <tr class="tbl_item marketing_product_row" id="marketing_product_row_{{$marketing_product->id}}">
-                <td class="marketing_product_code">
+                <td class="marketing_code">
                     {{$marketing_product->code}}
+                </td>
+                <td class="marketing_product_code">
+                    {{$marketing_product->product_code}}
                 </td>
                 <td class="marketing_product_created">
                     {{$marketing_product->createdStr()}}

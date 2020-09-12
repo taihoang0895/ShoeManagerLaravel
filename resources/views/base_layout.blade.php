@@ -56,7 +56,9 @@
                 </div>
             </td>
             <td>
-                <div id="menu_btn_logout">Đăng Xuất</div>
+                <form method="get" action="/logout/" id="form_logout">
+                    <div id="menu_btn_logout">Đăng Xuất</div>
+                </form>
             </td>
         </tr>
     </table>

@@ -23,8 +23,8 @@ class CreateDetailOrderTable extends Migration
 
             $table->unsignedInteger('marketing_product_id')->nullable();
             $table->unsignedInteger('discount_id')->nullable();
-            $table->unsignedInteger('product_category_id');
-            $table->unsignedInteger('detail_product_id');
+            $table->unsignedInteger('product_category_id')->nullable();
+            $table->unsignedInteger('detail_product_id')->nullable();
 
             $table->foreign("discount_id")->references('id')->on('discounts');
             $table->foreign("product_category_id")->references('id')->on('product_categories');

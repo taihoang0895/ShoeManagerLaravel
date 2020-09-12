@@ -72,6 +72,65 @@ class MarketingFunctions
         return BankAccount::all();
     }
 
+
+    public static function saveCampaignName($campaignNameRow)
+    {
+        $campaignName = CampaignName::where("id", $campaignNameRow->id)->first();
+        if ($campaignName == null) {
+            $campaignName = CampaignName::where("name", $campaignNameRow->name)->first();
+            if ($campaignName != null) {
+                return ResultCode::FAILED_CAMPAIGN_NAME_DUPLICATE_NAME;
+            }
+            $campaignName = new CampaignName();
+            $campaignName->created = Util::now();
+        }
+
+        $campaignName->name = $campaignNameRow->name;
+
+        if ($campaignName->save()) {
+            return ResultCode::SUCCESS;
+        }
+
+        return ResultCode::FAILED_UNKNOWN;
+    }
+
+    public
+    static function deleteCampaignName($id)
+    {
+        $campaignName = CampaignName::where('id', $id)->first();
+        if ($campaignName != null) {
+            $campaignName->is_active = false;
+            if ($campaignName->save()) {
+                return ResultCode::SUCCESS;
+            }
+        }
+        return ResultCode::FAILED_UNKNOWN;
+    }
+
+    public
+    static function getCampaignName($id)
+    {
+        $campaignName = CampaignName::where("id", $id)->first();
+        if ($campaignName != null) {
+            $campaignName->create_str = $campaignName->getCreatedStr();
+        }
+        return $campaignName;
+    }
+
+    public
+    static function findCampaignName($campaignName = "")
+    {
+        $perPage = config('settings.per_page');
+        $condition = [];
+        if ($campaignName != "") {
+            $condition[] = ['name', 'like', '%' . $campaignName . '%'];
+        }
+        $condition['is_active'] = true;
+
+        $listCampaignName = CampaignName::where($condition)->paginate($perPage);
+        return $listCampaignName;
+    }
+
     public static function getMarketingProduct($marketingProductId)
     {
         $marketingProduct = MarketingProduct::where("id", $marketingProductId)->first();
@@ -93,17 +152,18 @@ class MarketingFunctions
                 }
                 Campaign::where("marketing_product_id", $marketingProductInfo->id)->delete();
             } else {
+                $marketingProduct = MarketingProduct::where("code", $marketingProductInfo->code)->first();
+                if($marketingProduct != null){
+                    return ResultCode::FAILED_MARKETING_PRODUCT_DUPLICATE_CODE;
+                }
                 $marketingProduct = new MarketingProduct();
-                $marketingProduct->created = $marketingProductInfo->created;
             }
+            $marketingProduct->created = $marketingProductInfo->created;
             $marketingProduct->user_id = $user->id;
             $marketingProduct->marketing_source_id = $marketingProductInfo->source_id;
             $marketingProduct->product_code = $marketingProductInfo->product_code;
+            $marketingProduct->code = $marketingProductInfo->code;
             $marketingProduct->save();
-            if ($marketingProduct->code == null) {
-                $marketingProduct->code = "MSPM_" . Util::formatLeadingZeros($marketingProduct->id, 4);
-                $marketingProduct->save();
-            }
             $totalComment = 0;
             $totalBudget = 0;
             foreach ($marketingProductInfo->list_campaign_infos as $campaignInfo) {

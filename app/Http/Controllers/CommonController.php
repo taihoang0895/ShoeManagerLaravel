@@ -64,7 +64,19 @@ class CommonController extends Controller
             return redirect("/marketing");
         }
     }
+    public function searchGHTKCode(Request $request){
+        $response = array();
+        $code = trim($request->get("search", ""));
+        if ($code != "") {
+            $listOrders = CommonFunctions::searchGHTKCode($code);
+            foreach ($listOrders as $order) {
+                $response[] = array("value" => strval($order->ghtk_label));
+            }
+        }
 
+
+        return response()->json($response);
+    }
     public function searchProductCode(Request $request)
     {
         $response = array();

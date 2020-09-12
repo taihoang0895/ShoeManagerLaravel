@@ -25,12 +25,12 @@
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 {{$order_state_name}}
                             </button>
-                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                         {{--   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                 @foreach ($list_states as $state)
                                     <a class="dropdown-item"
                                        id="edit_order_state_id_{{$state->id}}">{{$state->name}}</a>
                                 @endforeach
-                            </div>
+                            </div>--}}
                         </div>
                     </td>
                 </tr>

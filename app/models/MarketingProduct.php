@@ -82,7 +82,7 @@ class MarketingProduct extends Model
             $this->_total_bill = DB::table("detail_orders")
                 ->join("orders", 'detail_orders.order_id', "=", "orders.id")
                 ->where('detail_orders.marketing_product_id', $this->id)
-                ->where("orders.order_state", OrderState::STATE_CUSTOMER_AGREED)
+                ->where("orders.order_state", OrderState::STATE_ORDER_PENDING)
                 ->count();
         }
         return $this->_total_bill;
@@ -106,7 +106,7 @@ class MarketingProduct extends Model
             $listOrders = DB::table('orders')
                 ->select("orders.id as id")
                 ->join('customers', 'orders.customer_id', "=", "customers.id")
-                ->where("orders.order_state", OrderState::STATE_CUSTOMER_AGREED);
+                ->where("orders.order_state", OrderState::STATE_ORDER_PENDING);
             $this->_total_phone = DB::table("detail_orders")
                 ->joinSub($listOrders, 'list_orders', 'list_orders.id', "=", "detail_orders.order_id")
                 ->where('detail_orders.marketing_product_id', $this->id)

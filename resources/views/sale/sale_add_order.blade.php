@@ -27,7 +27,7 @@
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 {{$order_state_name}}
                             </button>
-                            @if($user->isLeader())
+                           {{-- @if($user->isLeader())
                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton"
                                      style="max-height:200px;overflow-y: auto;">
                                     @foreach ($list_states as $state)
@@ -35,7 +35,7 @@
                                            id="edit_order_state_id_{{$state->id}}">{{$state->name}}</a>
                                     @endforeach
                                 </div>
-                            @endif
+                            @endif--}}
                         </div>
                     </td>
                 </tr>
