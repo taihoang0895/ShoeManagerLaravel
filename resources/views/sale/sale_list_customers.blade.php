@@ -7,9 +7,6 @@
 
     <script src={{ asset('js/extra/tempusdominus-moment.js' ) }}></script>
     <script src={{ asset('js/extra/tempusdominus-bootstrap-4.js' ) }}></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
     <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
           integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
     <link rel="stylesheet" href={{ asset('css/extra/tempusdominus-bootstrap-4.css' ) }}>
@@ -20,14 +17,36 @@
     @csrf
     <div class="title">Danh Sách Khách Hàng <span style="font-size : 0.9em;">({{$total_customer}})</span></div>
     <div id="list_customer_filter">
+        <input type="hidden" id="filter_member_id_selected" value="{{$filter_member_id}}">
         <table>
             <tr>
                 <td><input class="form-control" type="text" placeholder="Nhập số điện thoại"
                            value="{{$search_phone_number}}"
-                           id="list_customer_search_phone_number"></td>
+                           id="list_customer_search_phone_number">
+                </td>
+                <td class="filter_by_member" style="display: {{$filter_member_display}}">
+                    <div class="dropdown" id="filter_by_member">
+                        <button class="btn btn-secondary dropdown-toggle" type="button"
+                                id="filter_by_member_text"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            @if($filter_member_id == -1 )
+                                Chọn Người Tạo
+                            @else
+                                {{$filter_member_str}}
+                            @endif
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="max-height:200px;overflow-y: auto;">
+                            <a class="dropdown-item"><input type="hidden" value="-1">_______</a>
+                            @foreach ($list_members as $member)
+                                <a class="dropdown-item"><input type="hidden"
+                                                                value="{{$member->id}}">{{$member->alias_name}}</a>
+                            @endforeach
+                        </div>
+                    </div>
+
+                </td>
                 <td style="text-align:center;">
-                    <button type="button" class="btn btn-warning btn_search_text" id="list_customer_btn_search">Tìm Kiếm
-                    </button>
+                    <button type="button" class="btn btn-warning btn_filter" id="list_customer_btn_search">Lọc</button>
                 </td>
 
             </tr>

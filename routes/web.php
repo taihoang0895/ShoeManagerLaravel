@@ -36,8 +36,6 @@ Route::get("fake-notification/", "CommonController@fakeNotification")->middlewar
 Route::get('common/detail-product/', "CommonController@detailProduct")->name("detail-product");
 Route::get('/search-product-code/', "CommonController@searchProductCode")->name("search-product-code");
 Route::get('/sale/search-ghtk-code/', "CommonController@searchGHTKCode")->name("search-ghtk-code");
-
-
 /*Route::get('/admin/', "AdminController@products")->middleware("auth", 'permission', 'notification')->name("admin-main");
 Route::get('/admin/products/', "AdminController@products")->middleware("auth", 'permission', 'notification')->name("admin-products");
 Route::get("/admin/form-update-product/", "AdminController@formUpdateProduct")->middleware("auth", 'permission')->name("admin-update-product");
@@ -192,3 +190,5 @@ Route::get("sale/form-prepare-cancel-order/", "SaleController@getFormPrepareCanc
 Route::post("sale/cancel-order/", "SaleController@cancelOrder")->middleware("auth", 'permission')->name("sale-cancel-order");
 Route::get("sale/form-prepare-update-order-state/","SaleController@prepareUpdateOrderState")->middleware("auth", 'permission')->name("sale-form-prepare-update-order-state");
 Route::post("sale/update-order-state/","SaleController@updateOrderState")->middleware("auth", 'permission')->name("sale-update-order-state");
+
+Route::get("sale/report/","SaleController@reportOrder")->middleware("auth", 'permission', 'notification')->name("sale-report");

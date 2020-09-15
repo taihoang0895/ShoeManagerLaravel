@@ -90,6 +90,13 @@
     position: relative;
     color: rgba(255, 255, 255, 0.7);
 }
+#dropdown_menu_department_text{
+    font-family: 'roboto_regular';
+    font-size: 21px;
+    margin-right: 15px;
+    position: relative;
+    color: rgba(255, 255, 255, 0.7);
+}
 
 #menu_item_right .avatar {
     max-width: 30px;

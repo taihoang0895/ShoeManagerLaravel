@@ -25,6 +25,7 @@ use App\models\Province;
 use App\models\Remind;
 use App\models\Street;
 use App\User;
+use Carbon\Carbon;
 use Dotenv\Result\Result;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\DB;
@@ -238,15 +239,14 @@ class SaleFunctions
         return Customer::where($filterOptions)->count();
     }
 
-    public static function findCustomers($user, $searchPhoneNumber = "")
+    public static function findCustomers($listUserIds, $searchPhoneNumber = "")
     {
         $filterOptions = [];
-        $filterOptions['user_id'] = $user->id;
         if ($searchPhoneNumber != "") {
             $filterOptions[] = ["phone_number", "like", "%" . $searchPhoneNumber . "%"];
         }
         $perPage = config('settings.per_page');
-        $listCustomers = Customer::where($filterOptions)->paginate($perPage);
+        $listCustomers = Customer::where($filterOptions)->whereIn("user_id", $listUserIds)->paginate($perPage);
         foreach ($listCustomers as $customer) {
             self::attachExtraCustomerProperty($customer);
             $customer->customer_state_color = "";
@@ -405,7 +405,7 @@ class SaleFunctions
         $order->order_fail_cause = "";
         $order->replace_order_code = "";
         $order->delivery_time_str = "";
-
+        $order->customer_landing_page_name = "";
 
         $order->product_name = "";
         $order->customer_province_name = "";
@@ -423,6 +423,11 @@ class SaleFunctions
             $order->customer_code = $customer->code;
             $order->customer_name = $customer->name;
             $order->customer_address = $customer->address;
+            $landingPage = LandingPage::where("id", $customer->landing_page_id)->first();
+            if ($landingPage != null) {
+                $order->customer_landing_page_name = $landingPage->name;
+            }
+
             $street = Street::where("id", $customer->street_id)->first();
             if ($street != null) {
                 $order->customer_street_name = $street->name;
@@ -980,11 +985,15 @@ class SaleFunctions
                 $query->whereNull('delivery_time');
                 $query->orWhere('delivery_time', '<=', Util::now());
             })->get();
+        $result = [];
         foreach ($listOrders as $order) {
             self::attachExtraOrderProperty($order);
             self::attachExtraDeliverOrder($order);
+            if (!LandingPage::isShopeeSource($order->customer_landing_page_name)) {
+                array_push($result, $order);
+            }
         }
-        return $listOrders;
+        return $result;
     }
 
     public static function countOrderStateManager($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $searchGHTKCode = "")
@@ -1095,6 +1104,9 @@ class SaleFunctions
             if ($order->is_test) {
                 return ResultCode::FAILED_UNKNOWN;
             }
+            if (LandingPage::isShopeeSource($order->customer_landing_page_name)) {
+                return ResultCode::FAILED_UNKNOWN;
+            }
             $sumPickMoney = 0;
             $sumActuallyCollected = 0;
             foreach ($order->list_detail_orders as $detailOrder) {
@@ -1118,7 +1130,7 @@ class SaleFunctions
                     foreach ($order->list_detail_orders as $detailOrder) {
                         $product = [
                             "name" => $detailOrder->code_color_size_str,
-                            "weight" => $detailOrder->kg,
+                            "weight" => $detailOrder->kg * $detailOrder->quantity,
                             "quantity" => $detailOrder->quantity
                         ];
                         array_push($listProducts, $product);
@@ -1435,5 +1447,36 @@ class SaleFunctions
             }
         }
         return $result;
+    }
+
+    public static function reportOrder($userId)
+    {
+        $perPage = config('settings.per_page');
+        $result = DB::table("orders")
+            ->select(DB::raw('COUNT(orders.id) as total_order'),
+                DB::raw('DATE(orders.created) as day'))
+            ->where('user_id', $userId)
+            ->groupBy('day')
+            ->orderBy('day', 'DESC')
+            ->paginate($perPage);
+        $today = Util::now();
+        foreach ($result as $report) {
+            $date = Util::convertDateSql($report->day);
+            if ($today->day == $date->day && $today->month == $date->month && $today->year == $date->year) {
+                $report->date_str = "Hôm nay";
+            } else {
+                $report->date_str = Util::formatDate($date);
+            }
+            $listOrders = Order::whereDate("created", $date)->where('user_id', $userId)->get();
+            $listCustomerIds = [];
+            foreach ($listOrders as $order) {
+                array_push($listCustomerIds, $order->customer_id);
+            }
+            $remain = Customer::whereDate("created", $date)->where('user_id', $userId)->whereNotIn("id", $listCustomerIds)->count();
+            $report->total_customer = $report->total_order + $remain;
+            $report->percent =(int)($report->total_order*1.0/$report->total_customer * 100);
+        }
+        return $result;
+
     }
 }

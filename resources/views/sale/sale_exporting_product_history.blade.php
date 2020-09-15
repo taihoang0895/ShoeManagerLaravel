@@ -8,8 +8,6 @@
     <link rel="stylesheet" href={{ asset('css/extra/tempusdominus-bootstrap-4.css' ) }}>
     <script src={{ asset('js/extra/tempusdominus-moment.js' ) }}></script>
     <script src={{ asset('js/extra/tempusdominus-bootstrap-4.js') }}></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
     <script src={{ asset('js/storekeeper/storekeeper_product_history.js' ) }}></script>
 @endsection
 @section('content')

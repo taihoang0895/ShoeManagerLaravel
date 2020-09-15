@@ -3,8 +3,6 @@
     <link rel="stylesheet" href={{ asset('css/extra/bootstrap_4_2_1.css' ) }}>
     <link rel="stylesheet" href={{ asset('css/sale/sale_main.css' ) }}>
     <link rel="stylesheet" href={{ asset('css/sale/sale_list_discounts.css' ) }}>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
     <script src={{ asset('js/sale/sale_list_discounts.js'  ) }}></script>
 @endsection
 @section('content')

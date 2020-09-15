@@ -109,7 +109,7 @@
                                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     ___
                                 </button>
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="max-height:200px;overflow-y: auto;">
                                     @foreach ($list_campaign_names as $campaign_name)
                                         <a class="dropdown-item"><input type="hidden"
                                                                         value="{{$campaign_name->id}}">{{$campaign_name->name}}
@@ -127,7 +127,7 @@
                                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     ___
                                 </button>
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="max-height:200px;overflow-y: auto;">
                                     @foreach ($list_bank_accounts as $bank_account)
                                         <a class="dropdown-item"><input type="hidden"
                                                                         value="{{$bank_account->id}}">{{$bank_account->name}}

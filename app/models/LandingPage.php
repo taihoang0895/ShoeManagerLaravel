@@ -18,4 +18,7 @@ class LandingPage extends Model
 
         return "";
     }
+    public static function isShopeeSource($name){
+        return $name == "Khách hàng đến từ Shopee";
+    }
 }

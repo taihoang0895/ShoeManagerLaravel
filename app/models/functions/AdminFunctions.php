@@ -111,7 +111,7 @@ class AdminFunctions
 
         $listUsers = User::where($condition)->whereNotIn('id', $excludeUser)->paginate($perPage);
         foreach ($listUsers as $user) {
-            $user->department_name = User::getDepartmentName($user->department);
+            $user->department_name = $user->getDepartmentName();
             $user->role_name = User::getRoleName($user->role);
         }
         return $listUsers;
@@ -122,7 +122,7 @@ class AdminFunctions
         $user = User::where('id', $userId)->first();
         if ($user != null) {
             $user->role_name = User::getRoleName($user->role);
-            $user->department_name = User::getDepartmentName($user->department);
+            $user->department_name = $user->getDepartmentName();
         }
         return $user;
     }

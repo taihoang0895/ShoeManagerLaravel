@@ -1,0 +1,66 @@
+.tbl_order_report {
+    margin-top: 15px;
+    background-color: #ffffff;
+    width: 95%;
+    margin-left: 2.5%;
+    border-collapse: collapse;
+}
+
+.tbl_order_report .tbl_header_item {
+    background-color: #778F9B;
+    text-align: center;
+    font-family: 'roboto_bold';
+    min-height: 50px;
+    height: 5vh;
+
+    font-size: 18px;
+    color: white;
+    padding: 0;
+    margin: 0;
+}
+
+.tbl_order_report td {
+    word-break: break-all;
+}
+
+.tbl_order_report .tbl_item {
+    background-color: #ffffff;
+    text-align: center;
+    font-family: 'roboto_regular';
+    min-height: 50px;
+    height: 5vh;
+    font-size: 18px;
+    color: #000000;
+    border-bottom: 1px solid #E5E5E5;
+}
+
+.tbl_order_report .date {
+    width: 40%;
+}
+
+.tbl_order_report .total_order {
+    width: 20%;
+}
+
+.tbl_order_report .total_customer {
+    width: 20%;
+}
+
+.tbl_order_report .percent {
+    width: 20%;
+}
+
+#list_order_report_filter{
+    margin-top : 15px;
+}
+#list_order_report_filter table{
+    margin : auto;
+}
+#btn_search{
+    width : 100px;
+    margin-left:15px;
+    margin-right:15px;
+    font-family : 'roboto_bold';
+    font-size : 16px;
+    color : white;
+}

@@ -18,6 +18,7 @@ class CommonController extends Controller
 {
     public function logout(Request $request)
     {
+        $request->session()->flush();
         Auth::logout();
         return redirect("/login/");
     }
@@ -48,7 +49,6 @@ class CommonController extends Controller
             "login_failed" => false
         ]);
     }
-
     private function switchUser()
     {
         if (Auth::user()->isAdmin()) {

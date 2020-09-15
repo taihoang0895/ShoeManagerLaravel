@@ -10,8 +10,6 @@
     <link rel="stylesheet" href={{ asset('main/css/extra/tempusdominus-bootstrap-4.css' ) }}>
     <script src={{ asset('js/extra/tempusdominus-moment.js') }}></script>
     <script src={{ asset('js/extra/tempusdominus-bootstrap-4.js' ) }}></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
     <script src={{ asset('js/marketing/marketing_list_marketing_products.js' ) }}></script>
     <meta name="csrf-token" content="{{ Session::token() }}">
 @endsection

@@ -153,10 +153,16 @@ function handlePagination() {
 }
 function collectFilterParam(){
     var search_phone_number = $('#list_customer_search_phone_number').val().trim();
-
+    var filter_member_id = $('#filter_member_id_selected').val().trim();
     var param = "";
     if(search_phone_number != ''){
         param = 'search_phone_number='+search_phone_number;
+    }
+    if (filter_member_id != "-1") {
+        param += "&filter_member_id=" + filter_member_id
+    }
+    if (param.startsWith("&")) {
+        param = param.substring(1);
     }
     return param;
 }
@@ -172,12 +178,19 @@ function handleSearchButton() {
         location.href = curr_url;
     });
 }
-
-$(document).ready(function () {
+function init(){
     $('.customer_row').click(function () {
         $('.customer_row_selected').removeClass('customer_row_selected');
         $(this).addClass('customer_row_selected');
     });
+    $('#filter_by_member a').click(function () {
+        $('#filter_by_member_text').text($(this).text());
+        $('#filter_member_id_selected').val($(this).find('input').val());
+    });
+
+}
+$(document).ready(function () {
+    init();
     handleAddButton();
     handleUpdateButton();
     handleDeleteButton();

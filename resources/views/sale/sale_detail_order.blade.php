@@ -63,6 +63,12 @@
                     <label>{{$order->delivery_time_str}}</label>
                 </td>
             </tr>
+            <tr class="order_field_row">
+                <td class="lbl_name_col1">Landing Page</td>
+                <td class="value_col1">
+                    {{$order->customer_landing_page_name}}
+                </td>
+            </tr>
         </table>
         <div id="detail_order_content">
             <table width="100%" class="tbl_detail_order" id="tbl_detail_order">

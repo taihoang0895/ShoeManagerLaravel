@@ -61,6 +61,7 @@
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                 <a class="dropdown-item">Member</a>
                                 <a class="dropdown-item">Leader</a>
+                                <a class="dropdown-item">Sale Admin</a>
                             </div>
                         </div>
                     </td>

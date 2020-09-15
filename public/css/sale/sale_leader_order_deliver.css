@@ -7,16 +7,6 @@
       margin-left : 15px;
 }
 
-.tbl_order_deliver thead {
-  display: table; /* to take the same width as tr */
-  width: calc(100% - 17px); /* - 17px because of the scrollbar width */
-}
-.tbl_order_deliver tbody {
-  display: block; /* to enable vertical scrolling */
-  height :200px;
-  overflow-x : hidden;
-  overflow-y: auto; /* keeps the scrollbar even if it doesn't need it; display purpose */
-}
 .tbl_order_deliver .tbl_header_item {
     background-color : #778F9B;
     text-align : center;
@@ -92,7 +82,7 @@
      text-align : center;
 }
 .tbl_order_deliver .note {
-    min-width :210px;
+    min-width :500px;
      text-align : center;
 }
 

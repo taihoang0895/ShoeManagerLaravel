@@ -1,6 +1,5 @@
 @extends ('base_layout')
 @section('extra_head')
-    <link rel="stylesheet" href={{ asset('css/extra/bootstrap_4_2_1.css') }}>
     <link rel="stylesheet" href={{ asset('css/admin/admin_main.css' ) }}>
     <link rel="stylesheet" href={{ asset('css/admin/admin_list_users.css' ) }}>
     <script src={{ asset('js/admin/admin_list_users.js') }}></script>
@@ -75,8 +74,6 @@
         </tr>
     </table>
     <div id="dialog_edit_user"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function() {
             document.title = 'Khuyến Mại';

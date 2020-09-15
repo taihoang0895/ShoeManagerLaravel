@@ -5,8 +5,11 @@
     <title>Title</title>
     <link rel="stylesheet" href={{ asset('css/base.css')}}>
     <link rel="stylesheet" href={{  asset('css/header.css')}}>
+    <link rel="stylesheet" href={{ asset('css/extra/bootstrap_4_2_1.css') }}>
     <script src="{{ asset('js/extra/jquery.js')}}"></script>
     <script src="{{ asset('js/base.js')}}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
     @yield('extra_head')
 
 </head>
@@ -33,6 +36,32 @@
             </td>
             <td>
                 <div id="menu_alias_user">{{Auth::user()->alias_name}}</div>
+            </td>
+            <td>
+                <div class="dropdown" id="dropdown_menu_department">
+                    <button class="btn dropdown-toggle" type="button"
+                            id="dropdown_menu_department_text"
+                            data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        @if(Session::has('current_department_name'))
+                            {{Session::get("current_department_name")}}
+                        @else
+                            {{Auth::user()->getDepartmentName()}}
+                        @endif
+                    </button>
+                    @if(Auth::user()->isAdmin()|| Auth::user()->isSaleAdmin())
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            @if(Auth::user()->isAdmin())
+                                <a class="dropdown-item" href="/admin">Admin</a>
+                                <a class="dropdown-item" href="/sale">Sale</a>
+                                <a class="dropdown-item" href="/marketing">Marketing</a>
+                                <a class="dropdown-item" href="/storekeeper">Kho</a>
+                            @elseif(Auth::user()->isSaleAdmin())
+                                <a class="dropdown-item" href="/sale">Sale</a>
+                                <a class="dropdown-item" href="/storekeeper">Kho</a>
+                            @endif
+                        </div>
+                    @endif
+                </div>
             </td>
             <td>
                 <div id="menu_btn_notification">

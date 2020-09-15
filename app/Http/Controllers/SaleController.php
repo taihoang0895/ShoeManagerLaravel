@@ -250,11 +250,57 @@ class SaleController
     public function listCustomers(Request $request)
     {
         $searchPhoneNumber = $request->get('search_phone_number', "");
-        $listCustomer = SaleFunctions::findCustomers(Auth::user(), $searchPhoneNumber);
+        $filterMemberId = Util::parseInt($request->get('filter_member_id', -1));
+
+        $filterMemberStr = "Chọn Người Tạo";
+        $listMembers = [];
+        $result = SaleFunctions::findAllSales();
+        if (Auth::user()->isAdmin()) {
+            array_push($listMembers, Auth::user());
+        }
+        foreach ($result as $member) {
+            array_push($listMembers, $member);
+        }
+
+
+        $listUserIds = [];
+        if (Auth::user()->isLeader()) {
+            if ($filterMemberId == -1) {
+                foreach ($listMembers as $member) {
+                    array_push($listUserIds, $member->id);
+                }
+
+            } else {
+                foreach ($listMembers as $member) {
+                    if ($member->id == $filterMemberId) {
+                        $filterMemberStr = $member->alias_name;
+                        break;
+                    }
+                }
+                array_push($listUserIds, $filterMemberId);
+            }
+        } else {
+            $listMembers = [Auth::user()];
+            $listUserIds = [Auth::user()->id];
+            $filterMemberStr = Auth::user()->username;
+            $filterMemberId = Auth::user()->id;
+        }
+
+        $listCustomer = SaleFunctions::findCustomers($listUserIds, $searchPhoneNumber);
+        $filterMemberDisplay = "";
+
+        if (!Auth::user()->isLeader()) {
+            $filterMemberDisplay = "none";
+        }
+        Log::log("taih", "filter_member_display " . $filterMemberDisplay);
         return view("sale.sale_list_customers", [
             "list_customers" => $listCustomer,
             'search_phone_number' => $searchPhoneNumber,
-            'total_customer' => SaleFunctions::countCustomer(Auth::user(), $searchPhoneNumber)
+            'total_customer' => SaleFunctions::countCustomer(Auth::user(), $searchPhoneNumber),
+            'list_members' => $listMembers,
+            'filter_member_id' => strval($filterMemberId),
+            'filter_member_str' => $filterMemberStr,
+            "filter_member_display" => $filterMemberDisplay
         ]);
 
     }
@@ -492,7 +538,7 @@ class SaleController
         $startTimeStr = $request->get('start_time', '');
         $endTimeStr = $request->get('end_time', '');
         $filterOrderType = Util::parseInt($request->get('filter_order_type', -1));
-        $filterCustomerName =  $request->get('search_customer_name', '');
+        $filterCustomerName = $request->get('search_customer_name', '');
         $filterOrderTypeStr = "";
         $orderStateStr = "Chọn trạng thái";
         $filterMemberStr = "Chọn Người Tạo";
@@ -795,8 +841,8 @@ class SaleController
 
         if ($resultCode == ResultCode::SUCCESS) {
             $response['status'] = 200;
-        }else{
-            if($resultCode == ResultCode::FAILED_DELETE_ORDER_STATE_MORE_THAN_STATE_ORDER_CREATED){
+        } else {
+            if ($resultCode == ResultCode::FAILED_DELETE_ORDER_STATE_MORE_THAN_STATE_ORDER_CREATED) {
                 $response['message'] = "Lỗi xóa hóa đơn đã được đăng lên GHTK";
             }
         }
@@ -1118,6 +1164,43 @@ class SaleController
             $response['status'] = 200;
         }
         return response()->json($response);
+    }
+
+    public function reportOrder(Request $request)
+    {
+        $filterMemberId = Util::parseInt($request->get('filter_member_id', -1));
+        $filterMemberStr = Auth::user()->alias_name;
+        $listMembers = [];
+        $result = SaleFunctions::findAllSales();
+        if (Auth::user()->isAdmin()) {
+            array_push($listMembers, Auth::user());
+        }
+        foreach ($result as $member) {
+            array_push($listMembers, $member);
+        }
+
+
+        $listUserIds = [];
+
+        if ($filterMemberId != -1) {
+            foreach ($listMembers as $member) {
+                if ($member->id == $filterMemberId) {
+                    $filterMemberStr = $member->alias_name;
+                    break;
+                }
+            }
+        }else{
+            $filterMemberId = Auth::user()->id;
+        }
+
+
+        $listOrderReports = SaleFunctions::reportOrder($filterMemberId);
+        return view("sale.sale_report", [
+            "list_order_reports" => $listOrderReports,
+            'list_members' => $listMembers,
+            'filter_member_id' => strval($filterMemberId),
+            'filter_member_str' => $filterMemberStr,
+        ]);
     }
 
 }

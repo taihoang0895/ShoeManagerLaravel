@@ -491,6 +491,9 @@ class AdminController extends Controller
         $landingPageInfo = new \stdClass();
         $landingPageInfo->id = $landingPageId;
         $landingPageInfo->name = $name;
+        if($note == null){
+            $note = "";
+        }
         $landingPageInfo->note = $note;
         $resultCode = AdminFunctions::saveLandingPage($landingPageInfo);
         if ($resultCode != ResultCode::SUCCESS) {

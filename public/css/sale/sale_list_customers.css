@@ -88,7 +88,7 @@
     margin : auto;
 }
 #list_customer_filter #list_customer_search_phone_number{
-    width : 300px;
+    width : 250px;
     margin-left:15px;
     margin-right:15px;
 }
@@ -99,4 +99,12 @@
     color : white;
     margin-left:15px;
     margin-right:15px;
+}
+#list_customer_btn_search{
+    width : 100px;
+    margin-left:15px;
+    margin-right:15px;
+    font-family : 'roboto_bold';
+    font-size : 16px;
+    color : white;
 }

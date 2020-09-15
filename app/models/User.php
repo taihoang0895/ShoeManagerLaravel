@@ -2,10 +2,12 @@
 
 namespace App;
 
+use App\models\functions\Log;
 use App\models\functions\Util;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use phpDocumentor\Reflection\Types\This;
 
 class User extends Authenticatable
 {
@@ -16,6 +18,7 @@ class User extends Authenticatable
     static $ROLE_MEMBER = 0;
     static $ROLE_LEADER = 1;
     static $ROLE_ADMIN = 2;
+    static $ROLE_SALE_ADMIN = 3;
 
 
     use Notifiable;
@@ -28,20 +31,38 @@ class User extends Authenticatable
     protected $hidden = [
         'password', 'remember_token',
     ];
-    public static function getRoleName($role){
-        switch ($role){
+
+    public static function getRoleName($role)
+    {
+        switch ($role) {
             case User::$ROLE_MEMBER:
                 return "Member";
             case User::$ROLE_LEADER:
                 return "Leader";
             case User::$ROLE_ADMIN:
                 return "Admin";
+            case User::$ROLE_SALE_ADMIN:
+                return "Sale Admin";
         }
         return "";
     }
-
-    public static function getDepartmentName($department){
-        switch ($department){
+    public function getDepartmentName(){
+        if($this->isAdmin()){
+            return "Admin";
+        }
+        switch ($this->department) {
+            case User::$DEPARTMENT_SALE:
+                return "Sale";
+            case User::$DEPARTMENT_MARKETING:
+                return "Marketing";
+            case User::$DEPARTMENT_STOREKEEPER:
+                return "Kho";
+        }
+        return "";
+    }
+    public static function convertCodeToDepartmentName($department)
+    {
+        switch ($department) {
             case User::$DEPARTMENT_SALE:
                 return "Sale";
             case User::$DEPARTMENT_MARKETING:
@@ -52,30 +73,35 @@ class User extends Authenticatable
         return "";
     }
 
-    public static function parseDepartmentName($name){
+    public static function parseDepartmentName($name)
+    {
         $name = Util::toUpper($name);
-        if($name == "SALE"){
+        if ($name == "SALE") {
             return User::$DEPARTMENT_SALE;
         }
-        if($name == "MARKETING"){
+        if ($name == "MARKETING") {
             return User::$DEPARTMENT_MARKETING;
         }
-        if($name == "KHO"){
+        if ($name == "KHO") {
             return User::$DEPARTMENT_STOREKEEPER;
         }
         return -1;
     }
 
-    public static function parseRoleName($name){
+    public static function parseRoleName($name)
+    {
         $name = Util::toUpper($name);
-        if($name == "MEMBER"){
+        if ($name == "MEMBER") {
             return User::$ROLE_MEMBER;
         }
-        if($name == "LEADER"){
+        if ($name == "LEADER") {
             return User::$ROLE_LEADER;
         }
-        if($name == "ADMIN"){
+        if ($name == "ADMIN") {
             return User::$ROLE_ADMIN;
+        }
+        if ($name == "SALE ADMIN") {
+            return User::$ROLE_SALE_ADMIN;
         }
         return -1;
     }
@@ -102,12 +128,16 @@ class User extends Authenticatable
 
     public function isLeader()
     {
-        return $this->role == User::$ROLE_LEADER;
+        return ($this->role == User::$ROLE_LEADER || $this->role == User::$ROLE_ADMIN || $this->role == User::$ROLE_SALE_ADMIN);
     }
 
     public function isAdmin()
     {
         return $this->role == User::$ROLE_ADMIN;
+    }
+    public function isSaleAdmin()
+    {
+        return $this->role == User::$ROLE_SALE_ADMIN;
     }
 
     public function isMember()

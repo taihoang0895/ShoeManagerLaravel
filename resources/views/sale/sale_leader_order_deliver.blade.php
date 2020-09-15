@@ -17,7 +17,6 @@
         </tr>
     </table>
     <table class="tbl_order_deliver">
-        <thead>
         <tr class="tbl_header_item">
             <td class="col_mark"><input type="checkbox" style="width:20px;height:20px;" id="cb_selected_all"></td>
             <td class="order_code">MHD</td>
@@ -35,8 +34,6 @@
             <td class="pick_money">Tiền thu hộ</td>
             <td class="note">Ghi chú</td>
         </tr>
-        </thead>
-        <tbody>
         @foreach ($list_orders as $order)
             <tr class="tbl_item">
                 <td class="col_mark"><input type="checkbox" style="width:20px;height:20px;" class="cb_mark"><input
@@ -57,7 +54,6 @@
 
             </tr>
         @endforeach
-        </tbody>
     </table>
     @if (count($list_orders) == 0)
         <div class="empty">không có đơn hàng nào</div>
@@ -68,14 +64,6 @@
         $(document).ready(function () {
             document.title = 'Đăng Đơn';
             $('#sale_menu_item_order_deliver').addClass('selected');
-            @if (count($list_orders) != 0)
-            $('.tbl_order_deliver tbody').css('width', $('.tbl_order_deliver thead').width() + 17);
-            $('.tbl_order_deliver').css('height', $(window).height() - $('.tbl_order_deliver thead').offset().top);
-            $('.tbl_order_deliver tbody').css('height', $(window).height() - $('.tbl_order_deliver thead').offset().top - $('.tbl_order_deliver thead').height() - 20);
-            @else
-            $('.tbl_order_deliver tbody').css('height', '0px');
-            @endif
-
         });
 
     </script>
