@@ -5,15 +5,21 @@ namespace App\models\functions;
 
 
 use App\models\CampaignName;
+use App\models\Customer;
+use App\models\CustomerState;
+use App\models\DetailOrder;
 use App\models\DetailProduct;
 use App\models\Discount;
 use App\models\functions\rows\ProductRow;
 use App\models\LandingPage;
+use App\models\MarketingProduct;
+use App\models\Order;
 use App\models\Product;
 use App\models\ProductCategory;
 use App\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use mysql_xdevapi\Exception;
 
 class AdminFunctions
 {
@@ -152,13 +158,9 @@ class AdminFunctions
             $product->code = $productInfo->code;
             $product->name = $productInfo->name;
             $product->price = $productInfo->price;
+            $product->is_test = $productInfo->is_test;
             $product->historical_cost = $productInfo->historical_cost;
             $product->created = Util::now();
-            if (count($listDetailProductInfo) == 0) {
-                $product->is_test = true;
-            } else {
-                $product->is_test = false;
-            }
             if ($product->save()) {
                 foreach ($listDetailProductInfo as $detailProductInfo) {
                     $productCat = ProductCategory::getOrNew($detailProductInfo->size, $detailProductInfo->color);
@@ -212,7 +214,7 @@ class AdminFunctions
             $product->name = $productInfo->name;
             $product->price = $productInfo->price;
             $product->historical_cost = $productInfo->historical_cost;
-            Log::log("taih", "-$product");
+            $product->is_test = $productInfo->is_test;
             if ($product->save()) {
                 $listOldDetailProducts = DetailProduct::where("product_code", $product->code)->get();
                 foreach ($listOldDetailProducts as $oldDetailProduct) {
@@ -234,12 +236,6 @@ class AdminFunctions
                         }
                     }
                 }
-                if (DetailProduct::where("product_code", $product->code)->count() == 0) {
-                    $product->is_test = true;
-                } else {
-                    $product->is_test = false;
-                }
-                $product->save();
 
             } else {
                 throw new \Exception("updateProduct -> add product failed");
@@ -274,6 +270,11 @@ class AdminFunctions
         $product = Product::where("code", $productCode)->first();
         if ($product != null) {
             $listDetailProducts = DetailProduct::where("product_code", $productCode)->get();
+            foreach ($listDetailProducts as $detailProduct) {
+                $productCategory = ProductCategory::where("id", $detailProduct->product_category_id)->first();
+                $detailProduct->color = $productCategory->color;
+                $detailProduct->size = $productCategory->size;
+            }
             return new ProductRow($product, $listDetailProducts);
         }
         return null;
@@ -346,4 +347,71 @@ class AdminFunctions
         }
         return ResultCode::FAILED_UNKNOWN;
     }
+
+    public static function syncCustomerState()
+    {
+        DB::beginTransaction();
+        try {
+            $listCustomers = Customer::all();
+            foreach ($listCustomers as $customer) {
+                if (Order::existCustomer($customer->id)) {
+                    $customer->customer_state = CustomerState::STATE_CUSTOMER_ORDER_CREATED;
+                    if (!$customer->save()) {
+                        throw new \Exception("failed");
+                    }
+                }
+            }
+
+            DB::commit();
+            return ResultCode::SUCCESS;
+        } catch (\Exception $e) {
+            Log::log("error message", $e->getMessage());
+            DB::rollBack();
+        }
+        return ResultCode::FAILED_UNKNOWN;
+
+    }
+
+    public static function syncCustomerSource()
+    {
+
+        DB::beginTransaction();
+        try {
+            $listDetailOrders = DetailOrder::all();
+            foreach ($listDetailOrders as $detailOrder) {
+                $order = Order::where("id", $detailOrder->order_id)->first();
+                $customer = Customer::where("id", $order->customer_id)->first();
+                $productCode = "";
+                if ($detailOrder->marketing_product_id != null) {
+
+                    $marketingProduct = MarketingProduct::get($detailOrder->marketing_product_id, $order->created);
+                    if ($marketingProduct == null) {
+                        $productCode = DetailProduct::getProductCode($detailOrder->detail_product_id);
+                    } else {
+                        $productCode = $marketingProduct->code;
+                    }
+                } else {
+                    $productCode = DetailProduct::getProductCode($detailOrder->detail_product_id);
+                }
+                if ($productCode == "") {
+                    continue;
+                }
+                $resultCode = SaleFunctions::saveCustomerSource($customer->id, [$productCode], $order->created);
+                if ($resultCode != ResultCode::SUCCESS) {
+                    throw new \Exception($resultCode);
+                }
+            }
+
+            DB::commit();
+            return ResultCode::SUCCESS;
+        } catch (\Exception $e) {
+            Log::log("TAIH", $e->getMessage());
+            DB::rollBack();
+            return $e->getMessage();
+
+        }
+        return ResultCode::FAILED_UNKNOWN;
+    }
+
+
 }

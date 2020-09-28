@@ -8,6 +8,8 @@ function collectFilterParam() {
     var order_state_id = $('#filter_order_state_id_selected').val().trim();
     var filter_member_id = $('#filter_member_id_selected').val().trim();
     var filter_order_type = $('#filter_order_type_selected').val();
+    var search_phone_number = $('#list_order_search_phone_number').val().trim();
+
 
     var param = "";
     if (start_time != '' && end_time != '') {
@@ -18,6 +20,9 @@ function collectFilterParam() {
     }
     if (filter_member_id != "-1") {
         param += "&filter_member_id=" + filter_member_id
+    }
+    if (search_phone_number != "") {
+        param += "&search_phone_number=" + search_phone_number
     }
     param += "&filter_order_type=" + filter_order_type;
     if (param.startsWith("&")) {
@@ -94,11 +99,11 @@ function handleUpdateButton() {
             var order_id = $('.row_selected').first().attr('id');
             order_id = order_id.replace("order_row_", "");
             var data = {
-                "order_id" : order_id
+                "order_id": order_id
             }
             var url = '/sale/form-update-order/';
             is_waiting_for_request = true;
-            $.get(url, data,function (response) {
+            $.get(url, data, function (response) {
                 if (response['status'] == 200) {
                     $('#detail_order_show_detail_item').empty();
                     $('#detail_order_show_detail_item').html(response['content']);

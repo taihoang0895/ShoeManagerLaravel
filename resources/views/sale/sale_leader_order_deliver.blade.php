@@ -66,6 +66,9 @@
             $('#sale_menu_item_order_deliver').addClass('selected');
         });
 
+
+
+
     </script>
 @endsection
 @section('menu')

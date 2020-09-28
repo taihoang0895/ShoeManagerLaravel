@@ -137,7 +137,7 @@
                             </div>
                         </td>
                         <td>
-                            <input class="form-control" type="number" placeholder="Nhập ngân sách" min="0" value="0"
+                            <input class="form-control" placeholder="Nhập ngân sách" min="0" value="0"
                                    style="width:70%;margin: 0 auto;" id="detail_campaign_additional_budget">
                         </td>
                         <td>

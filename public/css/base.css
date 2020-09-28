@@ -1,14 +1,14 @@
 @font-face {
     font-family : 'roboto_bold';
-    src : url('../fonts/roboto_bold.ttf');
+    src : url('../fonts/sanfrancisco_bold.otf');
 }
 @font-face {
     font-family : 'roboto_regular';
-    src : url('../fonts/roboto_regular.ttf');
+    src : url('../fonts/sanfrancisco_regular.otf');
 }
 @font-face {
     font-family : 'roboto_medium';
-    src : url('../fonts/roboto_medium.ttf');
+    src : url('../fonts/sanfrancisco_medium.otf');
 }
 body {
 

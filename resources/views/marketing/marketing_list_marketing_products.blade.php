@@ -105,9 +105,9 @@
             <td class="marketing_code">Mã</td>
             <td class="marketing_product_code">MSP</td>
             <td class="marketing_product_created">Ngày</td>
-            <td class="marketing_product_source">Nguồn</td>
+            <td class="marketing_product_source">Số Đơn</td>
             <td class="marketing_product_cmt_cost">Giá CMT</td>
-            <td class="marketing_product_price">Giá Bán</td>
+            <td class="marketing_product_price">Data</td>
             <td class="marketing_product_bill_cost">Cost Đơn</td>
 
             <td class="detail"></td>
@@ -125,14 +125,14 @@
                     {{$marketing_product->createdStr()}}
                 </td>
                 <td class="marketing_product_source">
-                    {{$marketing_product->sourceName()}}
+                    {{$marketing_product->totalPhone()}}
                 </td>
                 <td class="marketing_product_cmt_cost"
                     style="background-color:{{$marketing_product->commentCostColor()}};">
                     {{$marketing_product->commentCostStr()}}&nbsp;&#8363;
                 </td>
                 <td class="marketing_product_price">
-                    {{$marketing_product->priceStr()}}&nbsp;&#8363;
+                    {{$marketing_product->totalBill()}}&nbsp;&#8363;
                 </td>
                 <td class="marketing_product_bill_cost" style="background-color:{{$marketing_product->billCostColor()}};">
                     {{$marketing_product->billCostStr()}}&nbsp;&#8363;

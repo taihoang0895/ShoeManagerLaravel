@@ -11,6 +11,7 @@ class CustomerState
     public const STATE_CUSTOMER_CUSTOMER_DISAGREED = 3;
     public const STATE_CUSTOMER_CUSTOMER_AGREED = 4;
     public const STATE_CUSTOMER_WAITING_FOR_PRODUCT_AVAILABLE = 5;
+    public const STATE_CUSTOMER_ORDER_CREATED = 6;
 
     public static function getName($stateId)
     {
@@ -25,6 +26,8 @@ class CustomerState
                 return "Đồng ý mua";
             case self::STATE_CUSTOMER_WAITING_FOR_PRODUCT_AVAILABLE:
                 return "Đợi hàng";
+            case self::STATE_CUSTOMER_ORDER_CREATED:
+                return "Lên đơn";
         }
         return "";
     }
@@ -36,6 +39,7 @@ class CustomerState
             self::STATE_CUSTOMER_CUSTOMER_NOT_REPLY_TO_TELESALES,
             self::STATE_CUSTOMER_CUSTOMER_DISAGREED,
             self::STATE_CUSTOMER_CUSTOMER_AGREED,
-            self::STATE_CUSTOMER_WAITING_FOR_PRODUCT_AVAILABLE];
+            self::STATE_CUSTOMER_WAITING_FOR_PRODUCT_AVAILABLE,
+            self::STATE_CUSTOMER_ORDER_CREATED];
     }
 }

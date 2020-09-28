@@ -44,9 +44,13 @@ function saveCustomer(data) {
         });
 }
 
-function validate(name, street_name, address) {
+function validate(name, street_name, address, list_marketing_product_code) {
     if (name == '') {
         showMessage('Tên khách hàng không được để trống');
+        return false;
+    }
+    if (list_marketing_product_code.length == 0) {
+        showMessage('danh sách sản phẩm quan tâm không được rỗng');
         return false;
     }
     var customer_state_id_selected = $('#customer_state_id_selected').val();
@@ -68,6 +72,7 @@ function init() {
     $("#list_provinces").focusin(function () {
         prevProvinceName = $('#list_provinces').val().trim();
     });
+
     $("#list_provinces").focusout(function () {
         var name = $('#list_provinces').val().trim();
 
@@ -202,9 +207,14 @@ function handleOkButton() {
         var province_name = $('#list_provinces').val().trim();
         var district_name = $('#list_districts').val().trim();
         var street_name = $('#list_streets').val().trim();
+        var list_marketing_product_code = [];
+        $("#list_marketing_product .item").each(function () {
+            var code = $(this).text().trim();
+            code = code.substr(0, code.length - 1);
+            list_marketing_product_code.push(code);
+        });
 
-
-        if (validate(name, street_name, address)) {
+        if (validate(name, street_name, address, list_marketing_product_code)) {
             is_waiting_for_request = true;
             setupCSRF();
             var customer_id = $('#edit_customer_id').val();
@@ -219,6 +229,7 @@ function handleOkButton() {
                 'address': address,
                 'customer_id': customer_id,
                 'state_id': customer_state_id,
+                'list_marketing_product': JSON.stringify(list_marketing_product_code),
                 'landing_page_id': customer_landing_page_id,
                 '_token': $('meta[name=csrf-token]').attr('content'),
             }
@@ -229,10 +240,59 @@ function handleOkButton() {
 
 }
 
+function handleRemoveMarketingProductButton() {
+    $('#list_marketing_product .item').click(function () {
+        $(this).parent().remove();
+    })
+}
+
+function handleAddMarketingProductButton() {
+    $('#add_marketing_product_button').click(function () {
+
+        if (is_waiting_for_request) {
+            return
+        }
+        var code = $('#search_marketing_product').val().trim();
+        if (code != "") {
+            var param = {
+                "product_code" : code
+            }
+            $.get('/sale/customer-check-product-code/', param, function (response) {
+                if(response['status'] == 200){
+                    addMarketingProductitem(code);
+                    $('#search_marketing_product').val("")
+                }else{
+                    showMessage(response['message'])
+                }
+
+            }).fail(function () {
+                showMessage("Lỗi mạng");
+            })
+                .always(function () {
+                    is_waiting_for_request = false;
+                });
+
+
+        }
+    })
+}
+
+function addMarketingProductitem(code) {
+    var str = '';
+    str += '<td>'
+    str += '<div class="item">' + code + '<span class="remove">x</span></div>'
+    str += '</td>'
+    $('#list_marketing_product tr:first').append(str)
+    $('#list_marketing_product .item:last').click(function () {
+        $(this).parent().remove();
+    })
+}
 
 $(document).ready(function () {
     init();
     handleOkButton();
+    handleRemoveMarketingProductButton();
+    handleAddMarketingProductButton();
     $('#edit_customer_btn_cancel').click(function () {
         $('#edit_customer_dialog').css('display', 'none');
     });

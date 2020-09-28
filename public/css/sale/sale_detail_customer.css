@@ -56,3 +56,32 @@
 #detail_customer_dialog .btn_cancel:hover {
       background-color : #00B6DE;
 }
+
+#list_marketing_product .item {
+    background-color: royalblue;
+    padding: 5px;
+    border-radius: 5px;
+    position: relative;
+    font-family: 'roboto_regular';
+    font-size: 18px;
+    color: white;
+    margin-right: 15px;
+}
+
+#list_marketing_product {
+    overflow-x: auto;
+    width: 50%;
+    max-width: 50%;
+    display: block;
+    padding-top: 15px;
+    float: right;
+    margin-right: 5%;
+}
+
+#lbl_marketing_source{
+    width: 45%;
+    margin-top: 20px;
+    text-align : center;
+    font-family : 'roboto_bold';
+    font-size : 16px;
+}

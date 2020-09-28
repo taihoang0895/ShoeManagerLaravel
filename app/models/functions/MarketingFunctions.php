@@ -17,7 +17,7 @@ class MarketingFunctions
 {
     public static function findAllMarketing()
     {
-        return User::where("department", User::$DEPARTMENT_MARKETING)->get();
+        return User::where("department", User::$DEPARTMENT_MARKETING)->where("is_active", true)->get();
     }
 
     public static function findListProducts($productCode = "")
@@ -27,7 +27,7 @@ class MarketingFunctions
             $filterOptions[] = ["code", "like", '%' . $productCode . '%'];
         }
         $perPage = config('settings.per_page');
-        return Product::where($filterOptions)->where("is_active", true)->paginate($perPage);
+        return Product::where($filterOptions)->where("is_active", true)->orderBy("created", "DESC")->paginate($perPage);
     }
 
     public static function listMarketingProductCodes()
@@ -53,7 +53,7 @@ class MarketingFunctions
             $filterOptions[] = ['product_code', 'like', '%' . $searchProductCode . '%'];
         }
         $perPage = config('settings.per_page');
-        $marketingProducts = MarketingProduct::whereIn('user_id', $listUserIds)->where($filterOptions)->paginate($perPage);
+        $marketingProducts = MarketingProduct::whereIn('user_id', $listUserIds)->where($filterOptions)->orderBy("created", "DESC")->paginate($perPage);
         return $marketingProducts;
     }
 
@@ -64,7 +64,7 @@ class MarketingFunctions
 
     public static function listCampaignName()
     {
-        return CampaignName::all();
+        return CampaignName::where("is_active", true)->get();
     }
 
     public static function listBankAccounts()
@@ -146,18 +146,23 @@ class MarketingFunctions
         try {
             $marketingProduct = MarketingProduct::where("id", $marketingProductInfo->id)->first();
 
-            if ($marketingProduct != null) {
+            if ($marketingProduct != null ) {
                 if ($marketingProduct->user_id != $user->id) {
                     return ResultCode::FAILED_PERMISSION_DENY;
                 }
                 Campaign::where("marketing_product_id", $marketingProductInfo->id)->delete();
             } else {
                 $marketingProduct = MarketingProduct::where("code", $marketingProductInfo->code)->first();
-                if($marketingProduct != null){
+                if($marketingProduct != null && $marketingProduct->user_id != $user->id){
                     return ResultCode::FAILED_MARKETING_PRODUCT_DUPLICATE_CODE;
                 }
                 $marketingProduct = new MarketingProduct();
             }
+            $productCode = Product::where("code", $marketingProductInfo->product_code)->first();
+            if($productCode == null){
+                return ResultCode::FAILED_PRODUCT_NOT_FOUND;
+            }
+
             $marketingProduct->created = $marketingProductInfo->created;
             $marketingProduct->user_id = $user->id;
             $marketingProduct->marketing_source_id = $marketingProductInfo->source_id;

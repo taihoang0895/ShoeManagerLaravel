@@ -183,6 +183,7 @@ function collectFilterParam() {
     var end_time = $('#order_filter_end_time_text').val().trim();
     var order_state_id = $('#filter_order_state_id_selected').val().trim();
     var search_ghtk_code = $('#list_order_state_search_ghtk_code').val().trim();
+    var search_phone_number = $('#list_order_state_search_phone_number').val().trim();
 
     var param = "";
     if (start_time != '' && end_time != '') {
@@ -193,6 +194,9 @@ function collectFilterParam() {
     }
     if(search_ghtk_code != ""){
         param += "&search_ghtk_code=" + search_ghtk_code
+    }
+    if(search_phone_number != ""){
+        param += "&search_phone_number=" + search_phone_number
     }
 
     if (param.startsWith("&")) {

@@ -33,6 +33,18 @@
                                                   value="{{$product->historical_cost}}">
                     </td>
                 </tr>
+                <tr class="product_field_row">
+                    <td class="lbl_name_col1">Sản Phẩm Test</td>
+                    <td class="value_col1">
+                        @if($product->is_test)
+                            <input type="checkbox" value="" style="width:20px;height:20px;"
+                                   id="edit_product_is_test" checked>
+                        @else
+                            <input type="checkbox" value="" style="width:20px;height:20px;"
+                                   id="edit_product_is_test">
+                        @endif
+                    </td>
+                </tr>
             </table>
             <div id="detail_product_content">
                 <table width="100%" class="tbl_detail_product" id="tbl_detail_product">
@@ -91,21 +103,23 @@
     $("#detail_product_additional_color_text").autocomplete({
         source: list_suggest_product_colors
     });
-    @foreach($list_detail_products as $detail_product)
-        var row_index = $('.tbl_detail_product_item').length;
-        $('#row_additional_detail_product').after(genRow(
-            '{{$detail_product->color}}',
-            '{{$detail_product->size}}',
-            row_index));
-        $('.detail_product_btn_update').first().click(handleUpdateDetailProductBtnClicked);
-        $('.detail_product_btn_delete').first().click(handleDeleteDetailProductBtnClicked);
-        var detail_product_size = "detail_product_updating_product_size_" + row_index.toString();
-        $("#" + detail_product_size).autocomplete({
-            source: list_suggest_product_sizes
-        });
-        var detail_product_color = "detail_product_updating_product_color_" + row_index.toString();
-        $("#" + detail_product_color).autocomplete({
-            source: list_suggest_product_colors
-        });
+     @foreach($list_detail_products as $detail_product)
+
+    var row_index = $('.tbl_detail_product_item').length;
+    $('#row_additional_detail_product').after(genRow(
+        '{{$detail_product->color}}',
+        '{{$detail_product->size}}',
+        row_index));
+    $('.detail_product_btn_update').first().click(handleUpdateDetailProductBtnClicked);
+    $('.detail_product_btn_delete').first().click(handleDeleteDetailProductBtnClicked);
+    var detail_product_size = "detail_product_updating_product_size_" + row_index.toString();
+    $("#" + detail_product_size).autocomplete({
+        source: list_suggest_product_sizes
+    });
+    var detail_product_color = "detail_product_updating_product_color_" + row_index.toString();
+    $("#" + detail_product_color).autocomplete({
+        source: list_suggest_product_colors
+    });
     @endforeach
+
 </script>

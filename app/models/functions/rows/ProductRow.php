@@ -10,6 +10,7 @@ class ProductRow
         $this->code = $product->code;
         $this->name = $product->name;
         $this->price = $product->price;
+        $this->is_test = $product->is_test;
         $this->historical_cost = $product->historical_cost;
         $this->created = $product->created;
         $this->listDetailProducts = $listDetailProducts;

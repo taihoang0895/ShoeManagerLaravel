@@ -20,6 +20,11 @@
     <table id="list_order_filter">
         <input type="hidden" id="filter_order_state_id_selected" value="{{$order_state_id_str}}">
         <tr>
+            <td class="filter_phone_number">
+                <input class="form-control" type="text" placeholder="Nhập SDT"
+                       value="{{$search_phone_number}}"
+                       id="list_order_state_search_phone_number"></td>
+            </td>
             <td class="filter_ghtk_code">
                 <input class="form-control" type="text" placeholder="Nhập mã ghtk"
                        value="{{$search_ghtk_code}}"
@@ -153,7 +158,28 @@
         $(document).ready(function () {
             document.title = 'Đơn Hàng';
             $('#sale_menu_item_order_state_manager').addClass('selected');
-
+            $("#list_order_state_search_phone_number").autocomplete({
+                source: function (request, response) {
+                    // Fetch data
+                    $.ajax({
+                        url: "/sale/search-phone-number/",
+                        type: 'get',
+                        dataType: "json",
+                        data: {
+                            '_token': $('meta[name=csrf-token]').attr('content'),
+                            search: request.term
+                        },
+                        success: function (data) {
+                            response(data);
+                        }
+                    });
+                },
+                select: function (event, ui) {
+                    // Set selection
+                    $('#list_order_state_search_phone_number').val(ui.item.value);
+                    return false;
+                }
+            });
 
             $("#list_order_state_search_ghtk_code").autocomplete({
                 source: function (request, response) {

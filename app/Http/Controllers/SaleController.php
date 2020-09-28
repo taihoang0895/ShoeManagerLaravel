@@ -4,10 +4,12 @@
 namespace App\Http\Controllers;
 
 use App\models\Config;
+use App\models\Customer;
 use App\models\CustomerState;
 use App\models\functions\AdminFunctions;
 use App\models\functions\CommonFunctions;
 use App\models\functions\Log;
+use App\models\functions\MarketingFunctions;
 use App\models\functions\ResultCode;
 use App\models\functions\SaleFunctions;
 use App\models\functions\StoreKeeperFunctions;
@@ -296,7 +298,7 @@ class SaleController
         return view("sale.sale_list_customers", [
             "list_customers" => $listCustomer,
             'search_phone_number' => $searchPhoneNumber,
-            'total_customer' => SaleFunctions::countCustomer(Auth::user(), $searchPhoneNumber),
+            'total_customer' => SaleFunctions::countCustomer($listUserIds, $searchPhoneNumber),
             'list_members' => $listMembers,
             'filter_member_id' => strval($filterMemberId),
             'filter_member_str' => $filterMemberStr,
@@ -343,8 +345,10 @@ class SaleController
         $emptyCustomer->customer_state = CustomerState::STATE_CUSTOMER_WAITING_FOR_CONFIRMING_CUSTOMER;
         $emptyCustomer->customer_state_name = CustomerState::getName(CustomerState::STATE_CUSTOMER_WAITING_FOR_CONFIRMING_CUSTOMER);
         $emptyCustomer->landing_page_id = -1;
+        $emptyCustomer->list_marketing_code = [];
         $emptyCustomer->landing_page_name = "____";
-        $listOrderStates = SaleFunctions::listCustomerState();
+        $listOrderStates = SaleFunctions::listCustomerState([CustomerState::STATE_CUSTOMER_ORDER_CREATED]);
+
         $listLandingPages = SaleFunctions::listLandingPages();
         $listProvinceNames = CommonFunctions::getListProvinceNames();
 
@@ -384,9 +388,18 @@ class SaleController
             if ($customer->landing_page_id == null) {
                 $customer->landing_page_id = -1;
             }
-            $listOrderStates = SaleFunctions::listCustomerState();
+            $listOrderStates = SaleFunctions::listCustomerState([CustomerState::STATE_CUSTOMER_ORDER_CREATED]);
             $listLandingPages = SaleFunctions::listLandingPages();
             $listProvinceNames = CommonFunctions::getListProvinceNames();
+            $listDistrictNames = [];
+            $listStreetNames = [];
+            if ($customer->province_name != "") {
+                $listDistrictNames = CommonFunctions::getDistrictNames($customer->province_name);
+            }
+            if ($customer->province_name != "" && $customer->district_name != "") {
+                $listStreetNames = CommonFunctions::getStreetsNames($customer->province_name, $customer->district_name);
+            }
+
 
             $response['content'] = view("sale.sale_edit_customer", [
                 'customer' => $customer,
@@ -394,11 +407,11 @@ class SaleController
                 'customer_province_text' => 'Chọn tỉnh/thành phố',
                 'customer_street_text' => 'Chọn đường/phố',
                 'list_province_names' => $listProvinceNames,
-                'list_district_names' => [],
-                'list_street_names' => [],
+                'list_district_names' => $listDistrictNames,
+                'list_street_names' => $listStreetNames,
                 'list_province_names_encode' => json_encode($listProvinceNames),
-                'list_district_names_encode' => json_encode([]),
-                'list_street_names_encode' => json_encode([]),
+                'list_district_names_encode' => json_encode($listDistrictNames),
+                'list_street_names_encode' => json_encode($listStreetNames),
                 'customer_is_public_phone_number' => false,
                 'list_customer_states' => $listOrderStates,
                 'list_landing_pages' => $listLandingPages,
@@ -431,6 +444,9 @@ class SaleController
             $districtName = $request->get('district_name', '');
             $streetName = $request->get('street_name', '');
             $address = $request->get('address', '');
+            $listMarketingProducts = json_decode($request->get('list_marketing_product', '{}'));
+
+
             $stateId = Util::parseInt($request->get('state_id', -1));
             $landing_page_id = Util::parseInt($request->get('landing_page_id', -1));
             $birthday = Util::safeParseDate($birthdayStr);
@@ -479,6 +495,7 @@ class SaleController
             $customerInfo->id = $id;
             $customerInfo->name = $name;
             $customerInfo->address = $address;
+            $customerInfo->listMarketingProducts = $listMarketingProducts;
             if ($street != null) {
                 $customerInfo->street_id = $street->id;
             } else {
@@ -501,6 +518,19 @@ class SaleController
             $resultCode = SaleFunctions::saveCustomer(Auth::user(), $customerInfo);
             if ($resultCode != ResultCode::SUCCESS) {
                 $response['message'] = 'Lỗi lưu';
+                if ($resultCode == ResultCode::FAILED_SAVE_CUSTOMER_NOT_FOUND_MARKETING_CODE) {
+                    $response['message'] = 'Mã marketing không tồn tại';
+                }
+                if ($resultCode == ResultCode::FAILED_PERMISSION_DENY) {
+                    $response['message'] = 'Lỗi Lưu bạn không thể sửa khách hàng của người khác';
+                }
+                if ($resultCode == ResultCode::UPDATE_FAILED_CUSTOMER_NOT_SAME_DATE) {
+                    $response['message'] = 'Lỗi Lưu ngày tạo khách hàng này khách hôm nay';
+                }
+                if ($resultCode == ResultCode::UPDATE_FAILED_CUSTOMER_IN_STATE_ORDER_CREATED) {
+                    $response['message'] = "Lỗi sửa khách hàng đang trong trạng thái lên đơn";
+                }
+
             } else {
                 $response['status'] = 200;
                 if ($customerInfo->state_id == CustomerState::STATE_CUSTOMER_CUSTOMER_AGREED) {
@@ -524,10 +554,20 @@ class SaleController
             "content" => "",
             "message" => "Lỗi xóa"
         );
-        $id = $request->get('customer_id', "");
-        $resultCode = SaleFunctions::deleteCustomer(Auth::user(), $id);
-        if ($resultCode == ResultCode::SUCCESS) {
-            $response['status'] = 200;
+        try {
+
+            $id = $request->get('customer_id', "");
+            $resultCode = SaleFunctions::deleteCustomer(Auth::user(), $id);
+            if ($resultCode == ResultCode::SUCCESS) {
+                $response['status'] = 200;
+            } else {
+                if ($resultCode == ResultCode::FAILED_DELETE_CUSTOMER_EXISTED_IN_ORDER) {
+                    $response['message'] = "Lỗi xóa khách hàng này đã được lập hóa đơn";
+                }
+            }
+
+        } catch (\Exception $e) {
+            Log::log("taih", $e->getMessage());
         }
         return response()->json($response);
     }
@@ -539,6 +579,7 @@ class SaleController
         $endTimeStr = $request->get('end_time', '');
         $filterOrderType = Util::parseInt($request->get('filter_order_type', -1));
         $filterCustomerName = $request->get('search_customer_name', '');
+        $search_phone_number = $request->get('search_phone_number', '');
         $filterOrderTypeStr = "";
         $orderStateStr = "Chọn trạng thái";
         $filterMemberStr = "Chọn Người Tạo";
@@ -555,13 +596,23 @@ class SaleController
             $filterOrderTypeStr = "Đơn Thực";
         }
 
-        $listMembers = SaleFunctions::findAllSales();
+        $listMembers = [];
+        $result = SaleFunctions::findAllSales();
+        if (Auth::user()->isAdmin()) {
+            array_push($listMembers, Auth::user());
+        }
+        foreach ($result as $member) {
+            array_push($listMembers, $member);
+        }
+
+
         $listUserIds = [];
         if (Auth::user()->isLeader()) {
             if ($filterMemberId == -1) {
                 foreach ($listMembers as $member) {
                     array_push($listUserIds, $member->id);
                 }
+
             } else {
                 foreach ($listMembers as $member) {
                     if ($member->id == $filterMemberId) {
@@ -577,12 +628,13 @@ class SaleController
             $filterMemberStr = Auth::user()->username;
             $filterMemberId = Auth::user()->id;
         }
+
         if (OrderState::getName($orderStateId) != "") {
             $orderStateStr = OrderState::getName($orderStateId);
         }
 
         $listStates = SaleFunctions::getListOrderStates();
-        $listOrders = SaleFunctions::findOrders($listUserIds, $startTime, $endTime, $orderStateId, $filterOrderType);
+        $listOrders = SaleFunctions::findOrders($listUserIds, $startTime, $endTime, $orderStateId, $filterOrderType, $search_phone_number);
         return view("sale.sale_list_orders", [
             "list_orders" => $listOrders,
             "start_time_str" => $startTimeStr,
@@ -591,10 +643,11 @@ class SaleController
             "order_state_id_str" => $orderStateIdStr,
             'list_members' => $listMembers,
             'search_customer_name' => $filterCustomerName,
+            'search_phone_number' => $search_phone_number,
             'filter_member_id' => strval($filterMemberId),
             'filter_member_str' => $filterMemberStr,
             'list_states' => $listStates,
-            'total_order' => SaleFunctions::countOrder($listUserIds, $startTime, $endTime, $orderStateId, $filterOrderType),
+            'total_order' => SaleFunctions::countOrder($listUserIds, $startTime, $endTime, $orderStateId, $filterOrderType, $search_phone_number),
             'filter_order_type' => $filterOrderType,
             'filter_order_type_str' => $filterOrderTypeStr
         ]);
@@ -778,6 +831,12 @@ class SaleController
                 if ($resultCode == ResultCode::FAILED_SAVE_DETAIL_ORDER_OUT_OF_PRODUCT) {
                     $response['message'] = "Trong kho không đủ cho số lượng hiện tại";
                 }
+                if ($resultCode == ResultCode::FAILED_SAVE_ORDER_NOT_FOUND_PRODUCT_CODE_IN_CUSTOMER_SOURCE) {
+                    $response['message'] = "Không tìm thấy sản phẩm trong danh sách sản phảm quan tâm";
+                }
+                if ($resultCode == ResultCode::FAILED_SAVE_ORDER_DUPLICATE_CUSTOMER) {
+                    $response['message'] = "Trùng mã khách hàng vui lòng tạo mới khách hàng";
+                }
             }
             return response()->json($response);
         } catch (\Exception $e) {
@@ -813,7 +872,7 @@ class SaleController
         $orderInfo->note = $note;
         $orderInfo->delivery_time = $deliveryTime;
         $orderInfo->is_test = $isOrderTest == 1;
-        $orderInfo->order_state_id = null;
+        $orderInfo->order_state_id = $orderStateId;
         if ($orderFailId == -1) {
             $orderInfo->order_fail_reason_id = null;
         } else {
@@ -991,7 +1050,7 @@ class SaleController
         if (Auth::user()->isLeader()) {
             $startTimeStr = $request->get('start_time', '');
             $searchGHTKCode = $request->get('search_ghtk_code', '');
-
+            $search_phone_number = $request->get('search_phone_number', '');
             $endTimeStr = $request->get('end_time', '');
             $orderStateStr = "Chọn trạng thái";
             $orderStateIdStr = "-1";
@@ -1009,7 +1068,7 @@ class SaleController
             foreach ($listMembers as $member) {
                 array_push($listUserIds, $member->id);
             }
-            $listOrders = SaleFunctions::listOrderStateManager($listUserIds, $startTime, $endTime, $orderStateId, $searchGHTKCode);
+            $listOrders = SaleFunctions::listOrderStateManager($listUserIds, $startTime, $endTime, $orderStateId, $searchGHTKCode, $search_phone_number);
             $listState = SaleFunctions::getListOrderStates();
             return view("sale.sale_leader_order_state_manager", [
                 "list_orders" => $listOrders,
@@ -1019,7 +1078,8 @@ class SaleController
                 'order_state_str' => $orderStateStr,
                 'order_state_id_str' => $orderStateIdStr,
                 'search_ghtk_code' => $searchGHTKCode,
-                'total_order' => SaleFunctions::countOrderStateManager($listUserIds, $startTime, $endTime, $orderStateId, $searchGHTKCode)
+                'search_phone_number' => $search_phone_number,
+                'total_order' => SaleFunctions::countOrderStateManager($listUserIds, $startTime, $endTime, $orderStateId, $searchGHTKCode, $search_phone_number)
             ]);
         } else {
             return response()->json($response);
@@ -1189,7 +1249,7 @@ class SaleController
                     break;
                 }
             }
-        }else{
+        } else {
             $filterMemberId = Auth::user()->id;
         }
 
@@ -1202,5 +1262,83 @@ class SaleController
             'filter_member_str' => $filterMemberStr,
         ]);
     }
+
+    public function searchPhoneNumber(Request $request)
+    {
+        $response = array();
+        $phoneNumber = trim($request->get("search", ""));
+        if ($phoneNumber != "") {
+            $listCustomers = SaleFunctions::searchPhoneNumber($phoneNumber);
+            foreach ($listCustomers as $customer) {
+                $response[] = array("value" => strval($customer->phone_number));
+            }
+        }
+        return response()->json($response);
+    }
+
+    public function customerCheckProductCode(Request $request)
+    {
+        $response = array(
+            "status" => 403,
+            'message' => '',
+            'content' => ''
+        );
+        $productCode = $request->get("product_code", "");
+        Log::log("taih", $productCode);
+        if ($productCode == "") {
+            $response['message'] = "Không tìm thấy sản phẩm";
+        } else {
+            $resultCode = SaleFunctions::checkProductCodeForAddCustomer($productCode);
+            if ($resultCode == ResultCode::SUCCESS) {
+                $response['status'] = 200;
+            } else {
+                if ($resultCode == ResultCode::FAILED_PRODUCT_NOT_FOUND) {
+                    $response['message'] = "Không tìm thấy sản phẩm";
+                }
+                if ($resultCode == ResultCode::FAILED_CUSTOMER_MARKETING_PRODUCT_NOT_FOUND_TODAY) {
+                    $response['message'] = "Hôm nay, Marketing chưa tạo mã sản phẩm này";
+                }
+            }
+        }
+
+        return response()->json($response);
+    }
+
+    public function findCustomerByPhoneNumber(Request $request)
+    {
+        $response = array(
+            "status" => 403,
+            'message' => '',
+            'content' => ''
+        );
+        $phoneNumber = $request->get("phone_number", "");
+        if ($phoneNumber != "") {
+            $customer = SaleFunctions::findCustomerByPhoneNumber($phoneNumber);
+            $listDistrictNames = [];
+            $listStreetNames = [];
+            if ($customer->province_name != "") {
+                $listDistrictNames = CommonFunctions::getDistrictNames($customer->province_name);
+            }
+            if ($customer->province_name != "" && $customer->district_name != "") {
+                $listStreetNames = CommonFunctions::getStreetsNames($customer->province_name, $customer->district_name);
+            }
+            if ($customer != null) {
+                $response['status'] = 200;
+                $response['customer'] = [
+                    "name" => $customer->name,
+                    "is_public_phone_number" => $customer->public_phone_number,
+                    "birthday_text" => $customer->birthday_str,
+                    "province" => $customer->province_name,
+                    "district" => $customer->district_name,
+                    "street" => $customer->street_name,
+                    "address" => $customer->address,
+                    'list_district_names_encode' => json_encode($listDistrictNames),
+                    'list_street_names_encode' => json_encode($listStreetNames),
+                ];
+            }
+        }
+        return response()->json($response);
+    }
+
 
 }

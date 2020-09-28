@@ -732,5 +732,10 @@ class StorekeeperController
         return $this->createProductHistory($request, 3);
     }
 
+    public function checkInventoryIsUnharmed(Request $request)
+    {
+        return response()->json(StoreKeeperFunctions::checkInventoryIsUnharmed());
+    }
+
 
 }

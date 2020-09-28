@@ -14,6 +14,16 @@ class Util
         return now();
     }
 
+    public static function yesterday()
+    {
+        return Carbon::yesterday();
+    }
+
+    public static function equalDate($date1, $date2)
+    {
+        return $date1->day == $date2->day && $date1->month == $date2->month && $date1->year == $date2->year;
+    }
+
     public static function formatLeadingZeros($number, $length)
     {
         return substr(str_repeat(0, $length) . $number, -$length);

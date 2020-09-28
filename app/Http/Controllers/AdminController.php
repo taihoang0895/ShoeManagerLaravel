@@ -41,7 +41,7 @@ class AdminController extends Controller
 
             $list_suggest_product_sizes = json_encode($list_suggest_product_sizes);
             $list_suggest_product_colors = json_encode($list_suggest_product_colors);
-            $list_detail_products = CommonFunctions::findDetailProducts($product->code);
+            $list_detail_products = $product->listDetailProducts;
             $response['content'] = view("admin.admin_edit_product", [
                 "product" => $product,
                 "list_suggest_product_sizes" => $list_suggest_product_sizes,
@@ -536,6 +536,37 @@ class AdminController extends Controller
         if ($resultCode != ResultCode::SUCCESS) {
             $response['status'] = 406;
             $response['message'] = 'Lỗi xóa';
+        }
+        return response()->json($response);
+    }
+
+    public function syncCustomerSource(Request $request){
+        $response = array(
+            "status" => 200,
+            "content" => "",
+            "message" => ""
+        );
+        $resultCode = AdminFunctions::syncCustomerSource();
+        $response['message'] = $resultCode;
+        if($resultCode == ResultCode::SUCCESS){
+            $response['content'] = "syncCustomerSource success";
+        }else{
+            $response['content'] = "syncCustomerSource failed";
+        }
+        return response()->json($response);
+    }
+
+    public static function syncCustomerState(Request $request){
+        $response = array(
+            "status" => 200,
+            "content" => "",
+            "message" => ""
+        );
+        $resultCode = AdminFunctions::syncCustomerState();
+        if($resultCode == ResultCode::SUCCESS){
+            $response['content'] = "syncCustomerSource success";
+        }else{
+            $response['content'] = "syncCustomerSource failed";
         }
         return response()->json($response);
     }

@@ -21,7 +21,7 @@ Route::get('/login/', "CommonController@login")->name("login");
 Route::get('/logout/', "CommonController@logout")->name("logout");
 Route::post('/login/', "CommonController@login");
 
-
+Route::get("search-marketing-code-and-product-code/","CommonController@searchMarketingCodeAndProductCode")->name("search-marketing-code-and-product-code");
 Route::get("list-districts/", "CommonController@listDistricts")->name("get-list-districts");
 Route::get("list-streets/", "CommonController@listStreets")->name("get-list-streets");
 Route::get("common/get-notifications/", "CommonController@getNotifications")->middleware("auth")->name("get-notifications");
@@ -62,6 +62,9 @@ Route::get("admin/form-add-landing-page/", "AdminController@formAddLandingPage")
 Route::get("admin/form-update-landing-page/", "AdminController@formUpdateLandingPage")->middleware("auth", 'permission')->name("admin-form-update-landing-page");
 Route::post("admin/delete-landing-page/", "AdminController@deleteLandingPage")->middleware("auth", 'permission')->name("admin-delete-landing-page");
 Route::post("admin/save-landing-page/", "AdminController@saveLandingPage")->middleware("auth", 'permission')->name("admin-save-landing-page");
+Route::get("admin/sync-customer-source", "AdminController@syncCustomerSource")->middleware("auth", 'permission')->name("admin-sync-customer-source");
+Route::get("admin/sync-customer-state", "AdminController@syncCustomerState")->middleware("auth", 'permission')->name("admin-sync-customer-customer-state");
+
 
 Route::get("admin/config/", "AdminController@config")->middleware("auth", 'permission', 'notification')->name("admin-config");
 Route::post("admin/save-config/", "AdminController@saveConfig")->middleware("auth", 'permission')->name("admin-save-config");
@@ -96,6 +99,7 @@ Route::get("storekeeper/importing-product-history/", "StorekeeperController@impo
 Route::get("storekeeper/failed-product-history/", "StorekeeperController@failedProductHistory")->middleware("auth", 'permission', 'notification')->name("storekeeper-failed-product-history");
 Route::get("storekeeper/returning-product-history/", "StorekeeperController@returningProductHistory")->middleware("auth", 'permission', 'notification')->name("storekeeper-returning-product-history");
 Route::get("storekeeper/exporting-product-history/", "StorekeeperController@exportingProductHistory")->middleware("auth", 'permission', 'notification')->name("storekeeper-exporting-product-history");
+Route::get("storekeeper/check-inventory-is-unharmed/", "StorekeeperController@checkInventoryIsUnharmed")->middleware("auth", 'permission', 'notification')->name("storekeeper-check-inventory-is-unharmed");
 
 
 Route::get("marketing", "MarketingController@listProducts")->middleware("auth", 'permission', 'notification')->name("marketing-main");
@@ -164,6 +168,8 @@ Route::get("sale/leader/form-add-order-fail-reason/", "SaleController@formAddOrd
 Route::get("sale/leader/form-update-order-fail-reason/", "SaleController@formUpdateOrderFailReason")->middleware("auth", 'permission')->name("sale-leader-form-update-order-fail-reason");
 Route::post("sale/leader/save-order-fail-reason/", "SaleController@saveOrderFailReason")->middleware("auth", 'permission')->name("sale-leader-save-order-fail-reason");
 Route::post("sale/leader/delete-order-fail-reason/", "SaleController@deleteOrderFailReason")->middleware("auth", 'permission')->name("sale-leader-delete-order-fail-reason");
+Route::get("sale/search-phone-number/","SaleController@searchPhoneNumber")->middleware("auth")->name("sale-search-phone-number");
+Route::get("sale/find-customer-by-phone-number/","SaleController@findCustomerByPhoneNumber")->middleware("auth", 'permission')->name("sale-find-customer-by-phone-number");
 
 
 Route::get("sale/orders/", "SaleController@listOrder")->middleware("auth", 'permission', 'notification')->name("sale-list-orders");
@@ -190,5 +196,5 @@ Route::get("sale/form-prepare-cancel-order/", "SaleController@getFormPrepareCanc
 Route::post("sale/cancel-order/", "SaleController@cancelOrder")->middleware("auth", 'permission')->name("sale-cancel-order");
 Route::get("sale/form-prepare-update-order-state/","SaleController@prepareUpdateOrderState")->middleware("auth", 'permission')->name("sale-form-prepare-update-order-state");
 Route::post("sale/update-order-state/","SaleController@updateOrderState")->middleware("auth", 'permission')->name("sale-update-order-state");
-
 Route::get("sale/report/","SaleController@reportOrder")->middleware("auth", 'permission', 'notification')->name("sale-report");
+Route::get("sale/customer-check-product-code/", "SaleController@customerCheckProductCode")->middleware("auth")->name("sale-customer-check-product-code");

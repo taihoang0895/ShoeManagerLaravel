@@ -1,12 +1,12 @@
 <div class="menu_item" id="storekeeper_menu_item_importing_products">
     Nhập Hàng
 </div>
-<div class="menu_item" id="storekeeper_menu_item_returning_products">
+{{--<div class="menu_item" id="storekeeper_menu_item_returning_products">
     Hàng Hoàn
 </div>
 <div class="menu_item" id="storekeeper_menu_item_failed_products">
     Hàng Lỗi
-</div>
+</div>--}}
 <div class="menu_item" id="storekeeper_menu_item_inventory_report">
     Tồn Kho
 </div>
@@ -23,13 +23,13 @@
         cursor: pointer;
     }
 
-    #storekeeper_menu_item_returning_products:hover {
+   /* #storekeeper_menu_item_returning_products:hover {
         cursor: pointer;
     }
 
     #storekeeper_menu_item_failed_products:hover {
         cursor: pointer;
-    }
+    }*/
 
     #storekeeper_menu_item_inventory_report:hover {
         cursor: pointer;
@@ -60,12 +60,12 @@
         $('#storekeeper_menu_item_importing_products').click(function () {
             location.href = "/storekeeper/importing-products/";
         });
-        $('#storekeeper_menu_item_returning_products').click(function () {
+      /*  $('#storekeeper_menu_item_returning_products').click(function () {
             location.href = "/storekeeper/returning-products/";
         });
         $('#storekeeper_menu_item_failed_products').click(function () {
             location.href = "/storekeeper/failed-products/";
-        });
+        });*/
         $('#storekeeper_menu_item_inventory_report').click(function () {
             location.href = "/storekeeper/inventory-report/";
         });

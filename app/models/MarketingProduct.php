@@ -2,6 +2,7 @@
 
 namespace App\models;
 
+use App\models\functions\Log;
 use App\models\functions\Util;
 use App\User;
 use Illuminate\Database\Eloquent\Model;
@@ -79,15 +80,30 @@ class MarketingProduct extends Model
     public function totalBill()
     {
         if ($this->_total_bill == null) {
-            $this->_total_bill = DB::table("detail_orders")
-                ->join("orders", 'detail_orders.order_id', "=", "orders.id")
-                ->where('detail_orders.marketing_product_id', $this->id)
-                ->where("orders.order_state", OrderState::STATE_ORDER_PENDING)
+            $this->_total_bill = DB::table("customer_sources")
+                ->whereDate("customer_sources.created", $this->created)
+                ->join("customers", "customer_sources.customer_id", "=", "customers.id")
+                ->where("marketing_product_id", $this->id)
+                ->where("customer_state", CustomerState::STATE_CUSTOMER_ORDER_CREATED)
                 ->count();
         }
         return $this->_total_bill;
     }
-    public function totalBudgetStr(){
+
+    public function totalPhone()
+    {
+        if ($this->_total_phone == null) {
+
+            $this->_total_phone = DB::table("customer_sources")
+                ->whereDate("customer_sources.created", $this->created)
+                ->where("marketing_product_id", $this->id)
+                ->count();
+        }
+        return $this->_total_phone;
+    }
+
+    public function totalBudgetStr()
+    {
         return Util::formatMoney($this->total_budget);
     }
 
@@ -100,34 +116,29 @@ class MarketingProduct extends Model
 
     }
 
-    public function totalPhone()
+
+    public function totalBillStr()
     {
-        if ($this->_total_phone == null) {
-            $listOrders = DB::table('orders')
-                ->select("orders.id as id")
-                ->join('customers', 'orders.customer_id', "=", "customers.id")
-                ->where("orders.order_state", OrderState::STATE_ORDER_PENDING);
-            $this->_total_phone = DB::table("detail_orders")
-                ->joinSub($listOrders, 'list_orders', 'list_orders.id', "=", "detail_orders.order_id")
-                ->where('detail_orders.marketing_product_id', $this->id)
-                ->count();
-        }
-        return $this->_total_phone;
-    }
-    public function totalBillStr(){
         return Util::formatMoney($this->totalBill());
     }
-    public function commentCostStr(){
+
+    public function commentCostStr()
+    {
         return Util::formatMoney($this->commentCost());
     }
-    public function billCostStr(){
+
+    public function billCostStr()
+    {
         return Util::formatMoney($this->billCost());
     }
-    public function priceStr(){
+
+    public function priceStr()
+    {
         return Util::formatMoney($this->price());
     }
 
-    public function username(){
+    public function username()
+    {
         return User::where("id", $this->user_id)->first()->name;
     }
 
@@ -147,4 +158,24 @@ class MarketingProduct extends Model
         }
         return $this->marketingSource;
     }
+
+    public static function find($code, $date = null)
+    {
+        $query = MarketingProduct::where("code", $code);
+        if ($date != null) {
+            $query->whereDate("created", $date);
+        }
+        return $query->first();
+    }
+
+    public static function get($id, $date = null)
+    {
+        $query = MarketingProduct::where("id", $id);
+        if ($date != null) {
+            $query->whereDate("created", $date);
+        }
+        return $query->first();
+    }
+
+
 }

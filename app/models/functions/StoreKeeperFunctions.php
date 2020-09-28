@@ -682,7 +682,7 @@ class StoreKeeperFunctions
         }
         $query = DB::table($tableName);
         $perPage = config('settings.per_page');
-        $results = $query->where($filterOptions)->paginate($perPage);
+        $results = $query->where($filterOptions)->orderBy("created", "DESC")->paginate($perPage);
         foreach ($results as $historyProduct) {
             $data = [];
             switch ($tabIndex) {
@@ -708,6 +708,78 @@ class StoreKeeperFunctions
             $historyProduct->quantity = $data->quantity;
         }
         return $results;
+    }
+
+    public static function checkInventoryIsUnharmed()
+    {
+        $response = array(
+            "status" => 200,
+            "exporting_product" => "true",
+            "importing_product" => "true",
+            "returning_product" => "true",
+            "failed_product" => "true",
+        );
+        //check exporting product
+        $result = DB::table("detail_orders")
+            ->select("detail_product_id", DB::raw('SUM(quantity) as total_quantity'))
+            ->whereNotNull("detail_product_id")
+            ->groupBy('detail_product_id')
+            ->get();
+
+        foreach ($result as $row) {
+            $detailProductId = $row->detail_product_id;
+            $inventory = Inventory::get($detailProductId);
+            if ($inventory->exporting_quantity != $row->total_quantity) {
+                $response['exporting_product'] = "false";
+                break;
+            }
+        }
+
+        //check returning product
+        $result = DB::table("returning_products")
+            ->select("detail_product_id", DB::raw('SUM(quantity) as total_quantity'))
+            ->whereNotNull("detail_product_id")
+            ->groupBy('detail_product_id')
+            ->get();
+        foreach ($result as $row) {
+            $detailProductId = $row->detail_product_id;
+            $inventory = Inventory::get($detailProductId);
+            if ($inventory->returning_quantity != $row->total_quantity) {
+                $response['returning_product'] = "false";
+                break;
+            }
+        }
+
+        //check importing product
+        $result = DB::table("importing_products")
+            ->select("detail_product_id", DB::raw('SUM(quantity) as total_quantity'))
+            ->whereNotNull("detail_product_id")
+            ->groupBy('detail_product_id')
+            ->get();
+        foreach ($result as $row) {
+            $detailProductId = $row->detail_product_id;
+            $inventory = Inventory::get($detailProductId);
+            if ($inventory->importing_quantity != $row->total_quantity) {
+                $response['importing_product'] = "false";
+                break;
+            }
+        }
+
+        //check failed product
+        $result = DB::table("failed_products")
+            ->select("detail_product_id", DB::raw('SUM(quantity) as total_quantity'))
+            ->whereNotNull("detail_product_id")
+            ->groupBy('detail_product_id')
+            ->get();
+        foreach ($result as $row) {
+            $detailProductId = $row->detail_product_id;
+            $inventory = Inventory::get($detailProductId);
+            if ($inventory->failed_quantity != $row->total_quantity) {
+                $response['failed_product'] = "false";
+                break;
+            }
+        }
+        return $response;
     }
 
 }

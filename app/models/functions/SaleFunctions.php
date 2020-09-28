@@ -6,6 +6,7 @@ namespace App\models\functions;
 
 use App\models\Config;
 use App\models\Customer;
+use App\models\CustomerSource;
 use App\models\CustomerState;
 use App\models\DetailOrder;
 use App\models\DetailProduct;
@@ -16,6 +17,7 @@ use App\models\HistoryOrder;
 use App\models\Inventory;
 use App\models\LandingPage;
 use App\models\MarketingProduct;
+use App\models\MarketingSource;
 use App\models\Order;
 use App\models\OrderFailReason;
 use App\models\OrderState;
@@ -28,10 +30,18 @@ use App\User;
 use Carbon\Carbon;
 use Dotenv\Result\Result;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use mysql_xdevapi\Exception;
 
 class SaleFunctions
 {
+
+    public static function searchPhoneNumber($phoneNumber)
+    {
+        return Customer::where("phone_number", 'like', '%' . $phoneNumber . '%')->select('phone_number')->distinct()->limit(5)->get();
+    }
+
     public static function findSchedules($user, $startTime = null, $endTime = null)
     {
         $filterOptions = [];
@@ -228,15 +238,14 @@ class SaleFunctions
         }
     }
 
-    public static function countCustomer($user, $searchPhoneNumber = "")
+    public static function countCustomer($listUserIds, $searchPhoneNumber = "")
     {
         $filterOptions = [];
-        $filterOptions['user_id'] = $user->id;
         if ($searchPhoneNumber != "") {
             $filterOptions[] = ["phone_number", "like", "%" . $searchPhoneNumber . "%"];
         }
 
-        return Customer::where($filterOptions)->count();
+        return Customer::where($filterOptions)->whereIn("user_id", $listUserIds)->count();
     }
 
     public static function findCustomers($listUserIds, $searchPhoneNumber = "")
@@ -246,7 +255,7 @@ class SaleFunctions
             $filterOptions[] = ["phone_number", "like", "%" . $searchPhoneNumber . "%"];
         }
         $perPage = config('settings.per_page');
-        $listCustomers = Customer::where($filterOptions)->whereIn("user_id", $listUserIds)->paginate($perPage);
+        $listCustomers = Customer::where($filterOptions)->whereIn("user_id", $listUserIds)->orderBy("created", "DESC")->paginate($perPage);
         foreach ($listCustomers as $customer) {
             self::attachExtraCustomerProperty($customer);
             $customer->customer_state_color = "";
@@ -262,14 +271,17 @@ class SaleFunctions
     }
 
 
-    public static function listCustomerState()
+    public static function listCustomerState($exculde = [])
     {
         $listCustomerState = [];
         foreach (CustomerState::listIds() as $stateId) {
-            $customerState = new \stdClass();
-            $customerState->id = $stateId;
-            $customerState->name = CustomerState::getName($stateId);
-            array_push($listCustomerState, $customerState);
+            if (!in_array($stateId, $exculde)) {
+                $customerState = new \stdClass();
+                $customerState->id = $stateId;
+                $customerState->name = CustomerState::getName($stateId);
+                array_push($listCustomerState, $customerState);
+            }
+
         }
         return $listCustomerState;
     }
@@ -279,9 +291,86 @@ class SaleFunctions
         return LandingPage::all();
     }
 
+    public static function saveCustomerSource($customerId, $listProductCodes, $created = null)
+    {
+        if ($created == null) {
+            $created = Util::now();
+        }
+        $listOldProductCodes = [];
+        $listCustomerSources = CustomerSource::where("customer_id", $customerId)->get();
+        foreach ($listCustomerSources as $customerSources) {
+            if ($customerSources->marketing_product_id == null) {
+                array_push($listOldProductCodes, $customerSources->product_code);
+            } else {
+                array_push($listOldProductCodes, $customerSources->marketing_product_id);
+            }
+        }
+        $listNewProductCodes = [];
+        foreach ($listProductCodes as $code) {
+            if (self::checkProductCodeForAddCustomer($code, $created) != ResultCode::SUCCESS) {
+                return ResultCode::FAILED_UNKNOWN;
+            }
+            $marketingProduct = MarketingProduct::find($code, $created);
+            if ($marketingProduct != null) {
+                array_push($listNewProductCodes, $marketingProduct->id);
+            } else {
+                array_push($listNewProductCodes, $code);
+            }
+        }
+
+        $changed = false;
+        if (count($listNewProductCodes) != count($listOldProductCodes)) {
+            $changed = true;
+        } else {
+            foreach ($listOldProductCodes as $code) {
+                if (!in_array($code, $listNewProductCodes)) {
+                    $changed = true;
+                    break;
+                }
+            }
+        }
+
+        if ($changed) {
+
+            CustomerSource::where("customer_id", $customerId)->delete();
+            foreach ($listNewProductCodes as $code) {
+                $customerSource = new CustomerSource();
+                $customerSource->customer_id = $customerId;
+                $customerSource->marketing_product_id = null;
+                $customerSource->created = $created;
+
+                $product = Product::getProduct($code);
+                if ($product == null) {
+                    $marketingProduct = MarketingProduct::get($code);
+                    if ($marketingProduct != null) {
+                        $customerSource->marketing_product_id = $marketingProduct->id;
+                        $customerSource->product_code = $marketingProduct->product_code;
+                    } else {
+                        return ResultCode::FAILED_UNKNOWN;
+                    }
+                } else {
+                    $customerSource->product_code = $product->code;
+                }
+                if (CustomerSource::exist($customerSource)) {
+                    continue;
+                }
+                if (!$customerSource->save()) {
+                    return ResultCode::FAILED_UNKNOWN;
+                }
+            }
+        }
+        return ResultCode::SUCCESS;
+    }
+
     public static function saveCustomer($user, $customerInfo)
     {
+        if ($customerInfo->state_id == CustomerState::STATE_CUSTOMER_ORDER_CREATED) {
+            return ResultCode::UPDATE_FAILED_CUSTOMER_IN_STATE_ORDER_CREATED;
+        }
+
+        DB::beginTransaction();
         try {
+
             $customer = Customer::where("id", $customerInfo->id)->first();
 
             if ($customer == null) {
@@ -293,8 +382,16 @@ class SaleFunctions
                 if ($customer->user_id != $user->id) {
                     return ResultCode::FAILED_PERMISSION_DENY;
                 }
-            }
+                if (!Util::equalDate($customer->created, Util::now())) {
+                    return ResultCode::UPDATE_FAILED_CUSTOMER_NOT_SAME_DATE;
+                }
 
+                if ($customer->customer_state == CustomerState::STATE_CUSTOMER_ORDER_CREATED) {
+
+                    return ResultCode::UPDATE_FAILED_CUSTOMER_IN_STATE_ORDER_CREATED;
+                }
+
+            }
             $customer->name = $customerInfo->name;
             $customer->address = $customerInfo->address;
             $customer->customer_state = $customerInfo->state_id;
@@ -304,34 +401,64 @@ class SaleFunctions
 
             $customer->public_phone_number = $customerInfo->is_public_phone_number;
             $customer->street_id = $customerInfo->street_id;
+            $success = false;
             if ($customer->save()) {
                 if ($customer->code == "") {
                     $customer->code = 'MKH_' . Util::formatLeadingZeros($customer->id, 4);
                     if ($customer->save()) {
                         $customerInfo->code = $customer->code;
-                        return ResultCode::SUCCESS;
+                        $success = true;
                     }
                 } else {
                     $customerInfo->code = $customer->code;
-                    return ResultCode::SUCCESS;
+                    $success = true;
+
                 }
 
             }
+            if ($success) {
+                $success = self::saveCustomerSource($customer->id, $customerInfo->listMarketingProducts) == ResultCode::SUCCESS;
+            }
 
+            if ($success) {
+
+                DB::commit();
+                return ResultCode::SUCCESS;
+            }
+            DB::rollBack();
             return ResultCode::FAILED_UNKNOWN;
         } catch (\Exception $e) {
             Log::log("error message ", $e->getMessage());
+            DB::rollBack();
             return ResultCode::FAILED_UNKNOWN;
         }
     }
 
-    public static function getCustomer($id)
+    public static function findCustomerByPhoneNumber($phoneNumber)
     {
-        $customer = Customer::where("id", $id)->first();
+        $customer = Customer::where("phone_number", $phoneNumber)->orderBy("created", "DESC")->first();
         if ($customer != null) {
             self::attachExtraCustomerProperty($customer);
         }
         return $customer;
+    }
+
+
+    public static function getCustomer($id)
+    {
+        try {
+            $customer = Customer::where("id", $id)->first();
+            if ($customer != null) {
+                self::attachExtraCustomerProperty($customer);
+                $listMarketingCode = CustomerSource::getProductCode($customer->id);
+                $customer->list_marketing_code = $listMarketingCode;
+            }
+
+            return $customer;
+        } catch (\Exception $e) {
+            Log::log("error message", $e->getMessage());
+        }
+        return null;
     }
 
     public static function deleteCustomer($user, $id)
@@ -341,9 +468,14 @@ class SaleFunctions
             if ($customer->user_id != $user->id) {
                 return ResultCode::FAILED_PERMISSION_DENY;
             }
-            if (Customer::where("id", $id)->delete()) {
-                return ResultCode::SUCCESS;
+            try {
+                if (Customer::where("id", $id)->delete()) {
+                    return ResultCode::SUCCESS;
+                }
+            } catch (QueryException $e) {
+                return ResultCode::FAILED_DELETE_CUSTOMER_EXISTED_IN_ORDER;
             }
+
         }
         return ResultCode::FAILED_UNKNOWN;
     }
@@ -377,7 +509,7 @@ class SaleFunctions
         $detailProduct = DetailProduct::where("id", $detailOrder->detail_product_id)->first();
         $product = null;
         if ($detailProduct != null) {
-            $product = Product::where("code", $detailProduct->product_code)->where("is_active", true)->where("is_test", false)->first();
+            $product = Product::where("code", $detailProduct->product_code)->first();
         }
         if ($productCat != null) {
             $detailOrder->product_size = $productCat->size;
@@ -464,7 +596,7 @@ class SaleFunctions
 
     }
 
-    public static function countOrder($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $filterOrderType = -1)
+    public static function countOrder($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $filterOrderType = -1, $search_phone_number = "")
     {
         $filterOptions = [];
         if ($orderStateId != -1) {
@@ -482,10 +614,16 @@ class SaleFunctions
             }
         }
 
-        return Order::where($filterOptions)->whereIn("user_id", $listUserIds)->count();
+        $query = Order::where($filterOptions)
+            ->whereIn("orders.user_id", $listUserIds);
+        if ($search_phone_number != '') {
+            $query->join("customers", "orders.customer_id", "=", "customers.id")
+                ->where("customers.phone_number", "like", "%" . $search_phone_number . "%");
+        }
+        return $query->count();
     }
 
-    public static function findOrders($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $filterOrderType = -1)
+    public static function findOrders($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $filterOrderType = -1, $search_phone_number = "")
     {
         $filterOptions = [];
         if ($orderStateId != -1) {
@@ -504,7 +642,16 @@ class SaleFunctions
         }
 
         $perPage = config('settings.per_page');
-        $orders = Order::where($filterOptions)->whereIn("user_id", $listUserIds)->orderBy('created', 'DESC')->paginate($perPage);
+
+        $query = Order::where($filterOptions)
+            ->whereIn("orders.user_id", $listUserIds)
+            ->orderBy('orders.created', 'DESC');
+        if ($search_phone_number != '') {
+            $query->join("customers", "orders.customer_id", "=", "customers.id")
+                ->where("customers.phone_number", "like", "%" . $search_phone_number . "%");
+        }
+
+        $orders = $query->paginate($perPage);
 
         foreach ($orders as $order) {
             self::attachExtraOrderProperty($order);
@@ -606,7 +753,15 @@ class SaleFunctions
         }
         if ($customer == null) {
             return ResultCode::FAILED_SAVE_ORDER_CUSTOMER_NOT_FOUND;
+        } else {
+            if ($customer->customer_state != CustomerState::STATE_CUSTOMER_ORDER_CREATED) {
+                $customer->customer_state = CustomerState::STATE_CUSTOMER_ORDER_CREATED;
+                if (!$customer->save()) {
+                    return ResultCode::FAILED_UNKNOWN;
+                }
+            }
         }
+
         if (OrderState::getName($orderInfo->order_state_id) == "") {
             return ResultCode::FAILED_SAVE_ORDER_UNKNOWN_ORDER_STATE;
         }
@@ -619,6 +774,7 @@ class SaleFunctions
         if ($orderInfo->note == null) {
             $orderInfo->note = "";
         }
+
         $order->note = $orderInfo->note;
         $order->delivery_time = $orderInfo->delivery_time;
         $order->customer_id = $customer->id;
@@ -658,18 +814,35 @@ class SaleFunctions
     private static function addDetailOrder($user, $detailOrderInfo, $order)
     {
         $detailOrder = new DetailOrder();
-        $marketingProduct = MarketingProduct::where("code", $detailOrderInfo->marketing_product_code)->first();
-        $productCode = $detailOrderInfo->marketing_product_code;
-        if ($marketingProduct != null) {
+        $marketingProduct = MarketingProduct::find($detailOrderInfo->marketing_product_code, Util::now());
+        if ($marketingProduct == null) {
+            $productCode = $detailOrderInfo->marketing_product_code;
+        } else {
             $productCode = $marketingProduct->product_code;
         }
 
         $product = Product::where("code", $productCode)->first();
 
+
         if ($marketingProduct == null && $product == null) {
             return ResultCode::FAILED_SAVE_DETAIL_ORDER_NOT_FOUND_PRODUCT;
         }
+        $productCodeIsValid = false;
+        $listProductCodes = CustomerSource::getProductCode($order->customer_id);
+        if ($marketingProduct != null) {
+            if (in_array($marketingProduct->code, $listProductCodes)) {
+                $productCodeIsValid = true;
+            }
+        }
+        if (!$productCodeIsValid && $product != null) {
+            if (in_array($product->code, $listProductCodes)) {
+                $productCodeIsValid = true;
+            }
+        }
 
+        if (!$productCodeIsValid) {
+            return ResultCode::FAILED_SAVE_ORDER_NOT_FOUND_PRODUCT_CODE_IN_CUSTOMER_SOURCE;
+        }
 
         if (!$order->is_test) {
 
@@ -686,6 +859,7 @@ class SaleFunctions
             }
             $detailOrder->product_category_id = $productCat->id;
             $detailOrder->detail_product_id = $detailProduct->id;
+
         } else {
             $detailOrder->product_category_id = ProductCategory::getOrNew($detailOrderInfo->product_size, $detailOrderInfo->product_color)->id;
             $detailProduct = DetailProduct::where("product_code", $product->code)->where("product_category_id", $detailOrder->product_category_id)->first();;
@@ -768,15 +942,14 @@ class SaleFunctions
     public static function addOrder($user, $orderInfo)
     {
         $resultCode = ResultCode::FAILED_UNKNOWN;
+        if (Customer::isDuplicate($orderInfo->customer_code)) {
+            return ResultCode::FAILED_SAVE_ORDER_DUPLICATE_CUSTOMER;
+        }
+
+
         DB::beginTransaction();
         try {
             $orderInfo->id = null;
-            if ($orderInfo->is_test) {
-                Log::log("taih", "sdmsmdms ");
-            } else {
-                Log::log("taih", "sdmsmdms 11");
-            }
-
             $resultCode = self::saveOnlyOrder($user, $orderInfo);
             if ($resultCode == ResultCode::SUCCESS) {
 
@@ -812,6 +985,7 @@ class SaleFunctions
             if ($order != null) {
                 if ($order->user_id == $user->id || $user->isLeader()) {
                     $resultCode = self::saveOnlyOrder($user, $orderInfo);
+                    Log::log("taih", "resultCode $resultCode");
                     if ($resultCode == ResultCode::SUCCESS) {
                         DB::commit();
                         return ResultCode::SUCCESS;
@@ -996,27 +1170,32 @@ class SaleFunctions
         return $result;
     }
 
-    public static function countOrderStateManager($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $searchGHTKCode = "")
+    public static function countOrderStateManager($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $searchGHTKCode = "", $search_phone_number = "")
     {
         $filterOptions = [];
         if ($orderStateId != -1) {
             $filterOptions['order_state'] = $orderStateId;
         }
         if ($searchGHTKCode != '') {
-            $filterOptions[] = ['ghtk_label', "like", "%" . $searchGHTKCode . "%"];
+            $filterOptions[] = ['orders.ghtk_label', "like", "%" . $searchGHTKCode . "%"];
         }
         if ($startTime != null && $endTime != null) {
-            $filterOptions[] = ["created", ">=", $startTime];
-            $filterOptions[] = ["created", "<=", $endTime];
+            $filterOptions[] = ["orders.created", ">=", $startTime];
+            $filterOptions[] = ["orders.created", "<=", $endTime];
+        }
+        $query = Order::where($filterOptions)
+            ->whereIn("orders.user_id", $listUserIds);
+        if ($search_phone_number != '') {
+            $query->join("customers", "orders.customer_id", "=", "customers.id")
+                ->where("customers.phone_number", "like", "%" . $search_phone_number . "%");
         }
 
-        $perPage = config('settings.per_page');
-        return Order::where($filterOptions)->whereIn("user_id", $listUserIds)->count();
+        return $query->count();
     }
 
-    public static function listOrderStateManager($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $searchGHTKCode = "")
+    public static function listOrderStateManager($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $searchGHTKCode = "", $search_phone_number = "")
     {
-
+        $perPage = config('settings.per_page');
         $filterOptions = [
             "is_test" => false
         ];
@@ -1024,16 +1203,24 @@ class SaleFunctions
             $filterOptions['order_state'] = $orderStateId;
         }
         if ($searchGHTKCode != '') {
-            $filterOptions[] = ['ghtk_label', "like", "%" . $searchGHTKCode . "%"];
+            $filterOptions[] = ['orders.ghtk_label', "like", "%" . $searchGHTKCode . "%"];
         }
         if ($startTime != null && $endTime != null) {
-            $filterOptions[] = ["created", ">=", $startTime];
-            $filterOptions[] = ["created", "<=", $endTime];
+            $filterOptions[] = ["orders.created", ">=", $startTime];
+            $filterOptions[] = ["orders.created", "<=", $endTime];
+            $perPage = 106;
         }
 
-        $perPage = config('settings.per_page');
-        $listOrders = Order::where($filterOptions)->whereIn("user_id", $listUserIds)->orderBy('created', 'DESC')->paginate($perPage);
 
+        $query = Order::where($filterOptions)
+            ->whereIn("orders.user_id", $listUserIds)
+            ->orderBy('orders.created', 'DESC');
+        if ($search_phone_number != '') {
+            $query->join("customers", "orders.customer_id", "=", "customers.id")
+                ->where("customers.phone_number", "like", "%" . $search_phone_number . "%");
+        }
+
+        $listOrders = $query->paginate($perPage);
         foreach ($listOrders as $order) {
             self::attachExtraOrderProperty($order);
             self::attachExtraDeliverOrder($order);
@@ -1322,6 +1509,9 @@ class SaleFunctions
         if ($order->order_state == $newState) {
             return ResultCode::SUCCESS;
         }
+        if ($order->is_test) {
+            return ResultCode::FAILED_UNKNOWN;
+        }
         switch ($newState) {
             case OrderState::STATE_ORDER_CANCEL:
                 $order->order_state = OrderState::STATE_ORDER_CANCEL;
@@ -1335,7 +1525,9 @@ class SaleFunctions
                         $importingProductInfo->product_code = $detailOrder->product_code;
                         $importingProductInfo->note = "sale cancel order automatically";
                         $importingProductInfo->quantity = $detailOrder->quantity;
-                        StoreKeeperFunctions::saveImportingProduct($user, $importingProductInfo, false);
+                        if (StoreKeeperFunctions::saveImportingProduct($user, $importingProductInfo, false) != ResultCode::SUCCESS) {
+                            return ResultCode::FAILED_UNKNOWN;
+                        }
                     }
                     return ResultCode::SUCCESS;
                 }
@@ -1352,7 +1544,9 @@ class SaleFunctions
                         $importingProductInfo->product_code = $detailOrder->product_code;
                         $importingProductInfo->note = "sale cancel order automatically";
                         $importingProductInfo->quantity = $detailOrder->quantity;
-                        StoreKeeperFunctions::saveFailedProduct($user, $importingProductInfo, false);
+                        if (StoreKeeperFunctions::saveFailedProduct($user, $importingProductInfo, false) != ResultCode::SUCCESS) {
+                            return ResultCode::FAILED_UNKNOWN;
+                        }
                     }
                     return ResultCode::SUCCESS;
                 }
@@ -1369,7 +1563,9 @@ class SaleFunctions
                         $importingProductInfo->product_code = $detailOrder->product_code;
                         $importingProductInfo->note = "sale cancel order automatically";
                         $importingProductInfo->quantity = $detailOrder->quantity;
-                        StoreKeeperFunctions::saveReturningProduct($user, $importingProductInfo, false);
+                        if (StoreKeeperFunctions::saveReturningProduct($user, $importingProductInfo, false) != ResultCode::SUCCESS) {
+                            return ResultCode::FAILED_UNKNOWN;
+                        }
                     }
                     return ResultCode::SUCCESS;
                 }
@@ -1433,18 +1629,20 @@ class SaleFunctions
         $order = Order::where("id", $orderId)->first();
         if ($order != null &&
             in_array($newOrderState, [OrderState::STATE_ORDER_IS_RETURNED_AND_NO_BROKEN, OrderState::STATE_ORDER_IS_RETURNED_AND_BROKEN]) &&
-            $order->order_state == OrderState::STATE_ORDER_IS_RETURNED) {
-            if ($order->order_state >= OrderState::STATE_ORDER_CREATED) {
-                DB::beginTransaction();
-                try {
-                    $result->result_code = self::changeOrderState($user, $order, $newOrderState);
-                    if ($result->result_code == ResultCode::SUCCESS) {
-                        DB::commit();
-                    }
-                } catch (\Exception $e) {
+            $order->order_state >= OrderState::STATE_ORDER_CREATED) {
+            DB::beginTransaction();
+            try {
+                $result->result_code = self::changeOrderState($user, $order, $newOrderState);
+                if ($result->result_code == ResultCode::SUCCESS) {
+
+                    DB::commit();
+                } else {
                     DB::rollBack();
                 }
+            } catch (\Exception $e) {
+                DB::rollBack();
             }
+
         }
         return $result;
     }
@@ -1462,10 +1660,16 @@ class SaleFunctions
         $today = Util::now();
         foreach ($result as $report) {
             $date = Util::convertDateSql($report->day);
+            $yesterday = Util::yesterday();
             if ($today->day == $date->day && $today->month == $date->month && $today->year == $date->year) {
                 $report->date_str = "Hôm nay";
             } else {
-                $report->date_str = Util::formatDate($date);
+                if ($yesterday->day == $date->day && $yesterday->month == $date->month && $yesterday->year == $date->year) {
+                    $report->date_str = "Hôm qua";
+                } else {
+                    $report->date_str = Util::formatDate($date);
+                }
+
             }
             $listOrders = Order::whereDate("created", $date)->where('user_id', $userId)->get();
             $listCustomerIds = [];
@@ -1474,9 +1678,33 @@ class SaleFunctions
             }
             $remain = Customer::whereDate("created", $date)->where('user_id', $userId)->whereNotIn("id", $listCustomerIds)->count();
             $report->total_customer = $report->total_order + $remain;
-            $report->percent =(int)($report->total_order*1.0/$report->total_customer * 100);
+            $report->percent = (int)($report->total_order * 1.0 / $report->total_customer * 100);
         }
         return $result;
 
+    }
+
+
+    public static function checkProductCodeForAddCustomer($productCode, $created = null)
+    {
+        if ($created == null) {
+            $created = Util::now();
+        }
+        $product = Product::where("code", $productCode)->where("is_active", true)->first();
+        if ($product != null) {
+            return ResultCode::SUCCESS;
+        }
+        $marketingProduct = MarketingProduct::where("code", $productCode)->first();
+        if ($marketingProduct == null) {
+            return ResultCode::FAILED_PRODUCT_NOT_FOUND;
+        }
+        $count = MarketingProduct::where("code", $productCode)
+            ->whereDate("created", $created)
+            ->count();
+        if ($count > 0) {
+            return ResultCode::SUCCESS;
+        } else {
+            return ResultCode::FAILED_CUSTOMER_MARKETING_PRODUCT_NOT_FOUND_TODAY;
+        }
     }
 }

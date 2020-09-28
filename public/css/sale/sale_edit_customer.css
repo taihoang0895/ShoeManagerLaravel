@@ -1,58 +1,120 @@
-#edit_customer_dialog{
-      position: fixed; /* Stay in place */
-      z-index: 1; /* Sit on top */
-       padding-top : 70px;
-      left: 0;
-      top: 0;
-      width: 100%; /* Full width */
-      height: 100%; /* Full height */
-      overflow: auto; /* Enable scroll if needed */
-      background-color: rgb(0,0,0); /* Fallback color */
-      background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+#edit_customer_dialog {
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    padding-top: 70px;
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0, 0, 0); /* Fallback color */
+    background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
 }
 
-#edit_customer_dialog_content{
-     background-color: #fefefe;
-      margin: auto;
-      border: 1px solid #888;
-      width: 50%;
-      padding : 5px;
-      border-radius:10px;
+#edit_customer_dialog_content {
+    background-color: #fefefe;
+    margin: auto;
+    border: 1px solid #888;
+    width: 50%;
+    max-width: 50%;
+    padding: 5px;
+    border-radius: 10px;
 }
 
-#edit_customer_dialog .lbl_name{
+#edit_customer_dialog .lbl_name {
 
-    text-align : center;
-    font-family : 'roboto_bold';
-    font-size : 16px;
-    width : 25%;
+    text-align: center;
+    font-family: 'roboto_bold';
+    font-size: 16px;
+    width: 25%;
 }
 
-#edit_customer_dialog .value{
-    width : 75%;
+#edit_customer_dialog .value {
+    width: 75%;
+    max-width: 75%;
 }
-#edit_customer_dialog .customer_field_row td{
+
+#edit_customer_dialog .customer_field_row td {
     padding-top: 15px;
 }
-#edit_customer_dialog .btn_ok{
-    width : 90%;
-    height:48px;
-    margin-left:auto;
-    margin-right:auto;
-    margin-top : 15px;
-    background-color : #1CC487;
+
+#edit_customer_dialog .btn_ok {
+    width: 90%;
+    height: 48px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 15px;
+    background-color: #1CC487;
 }
-#edit_customer_dialog .btn_cancel{
-    width : 90%;
-    height:48px;
-    margin-left:auto;
-    margin-right:auto;
-    margin-top : 15px;
-    background-color : #00B6DE;
+
+#edit_customer_dialog .btn_cancel {
+    width: 90%;
+    height: 48px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 15px;
+    background-color: #00B6DE;
 }
+
 #edit_customer_dialog .btn_ok:hover {
-     background-color : #1CC487;
+    background-color: #1CC487;
 }
+
 #edit_customer_dialog .btn_cancel:hover {
-      background-color : #00B6DE;
+    background-color: #00B6DE;
+}
+
+#add_marketing_product_button {
+    background: #e9ecef;
+    width: 40px;
+    height: 40px;
+}
+
+#add_marketing_product_button img {
+    width: 20px;
+    height: 20px;
+    margin-left: 10px;
+    margin-top: 10px;
+}
+
+#add_marketing_product_button:hover {
+    cursor: pointer;
+}
+
+#list_marketing_product {
+    overflow-x: auto;
+    width: 78%;
+    max-width: 78%;
+    margin-left: 22.5%;
+    display: block;
+    padding-top: 15px;
+}
+
+#list_marketing_product .item {
+    background-color: royalblue;
+    padding: 5px;
+    border-radius: 5px;
+    position: relative;
+    font-family: 'roboto_regular';
+    font-size: 18px;
+    color: white;
+    margin-right: 15px;
+}
+#list_marketing_product .item .remove:hover {
+    cursor: pointer;
+}
+#list_marketing_product .item .remove {
+    min-width: 22px;
+    min-height: 22px;
+    max-width: 22px;
+    max-height: 22px;
+    border-radius: 50%;
+    position: absolute;
+    text-align: center;
+    padding-bottom: 10px;
+    top: -10px;
+    right: -10px;
+    color: white;
+    background-color: rgba(54, 54, 54, 0.9);
+    font-size: 15px;
 }

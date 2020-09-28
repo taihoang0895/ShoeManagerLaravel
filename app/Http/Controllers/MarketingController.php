@@ -30,30 +30,36 @@ class MarketingController
 
     public function formUpdateProduct(Request $request)
     {
-        $response = array(
-            "status" => 200,
-            "content" => "",
-            "message" => ""
-        );
-        $productCode = trim($request->get("product_code", ""));
-        $product = AdminFunctions::getProduct($productCode);
-        if ($product != null) {
-            $list_suggest_product_sizes = config("settings.list_suggest_product_sizes");
-            $list_suggest_product_colors = config("settings.list_suggest_product_color");
+        try {
+            $response = array(
+                "status" => 200,
+                "content" => "",
+                "message" => ""
+            );
+            $productCode = trim($request->get("product_code", ""));
+            $product = AdminFunctions::getProduct($productCode);
+            if ($product != null) {
+                $list_suggest_product_sizes = config("settings.list_suggest_product_sizes");
+                $list_suggest_product_colors = config("settings.list_suggest_product_color");
 
-            $list_suggest_product_sizes = json_encode($list_suggest_product_sizes);
-            $list_suggest_product_colors = json_encode($list_suggest_product_colors);
-            $list_detail_products = CommonFunctions::findDetailProducts($product->code);
-            $response['content'] = view("marketing.marketing_edit_product", [
-                "product" => $product,
-                "list_suggest_product_sizes" => $list_suggest_product_sizes,
-                "list_suggest_product_colors" => $list_suggest_product_colors,
-                'list_detail_products' => $list_detail_products
-            ])->render();
-        } else {
-            $response['status'] = 406;
+                $list_suggest_product_sizes = json_encode($list_suggest_product_sizes);
+                $list_suggest_product_colors = json_encode($list_suggest_product_colors);
+                $list_detail_products = $product->listDetailProducts;
+                Log::log("taih", "size " . count($list_detail_products));
+
+                $response['content'] = view("marketing.marketing_edit_product", [
+                    "product" => $product,
+                    "list_suggest_product_sizes" => $list_suggest_product_sizes,
+                    "list_suggest_product_colors" => $list_suggest_product_colors,
+                    'list_detail_products' => $list_detail_products
+                ])->render();
+            } else {
+                $response['status'] = 406;
+            }
+            return response()->json($response);
+        } catch (\Exception $e) {
+            Log::log("tsih", $e->getMessage());
         }
-        return response()->json($response);
     }
 
 
@@ -70,6 +76,7 @@ class MarketingController
         $emptyProduct->code = "";
         $emptyProduct->name = "";
         $emptyProduct->price = "";
+        $emptyProduct->is_test = false;
         $emptyProduct->historical_cost = "";
         $list_suggest_product_sizes = config("settings.list_suggest_product_sizes");
         $list_suggest_product_colors = config("settings.list_suggest_product_color");
@@ -97,6 +104,7 @@ class MarketingController
         $productCode = trim($request->get("product_code", ''));
         $productName = trim($request->get("product_name", ''));
         $price = Util::parseInt($request->get("product_price", ''));
+        $isTest = Util::parseInt($request->get("is_test", 0)) == 0;
         $historical_cost = Util::parseInt($request->get("product_historical_cost", ''));
 
         $listDetailProductJson = json_decode($request->get("list_detail_products", '[]'), true);
@@ -109,6 +117,7 @@ class MarketingController
             $product->code = $productCode;
             $product->name = $productName;
             $product->price = $price;
+            $product->is_test = $isTest;
             $product->historical_cost = $historical_cost;
             $listProductDetails = array();
             foreach ($listDetailProductJson as $detailProductJson) {
@@ -125,14 +134,14 @@ class MarketingController
             }
 
             //if (count($listProductDetails) != 0) {
-                $resultCode = AdminFunctions::addProduct($product, $listProductDetails);
-                if ($resultCode == ResultCode::SUCCESS) {
-                    $response['status'] = 200;
-                } else {
-                    if ($resultCode == ResultCode::FAILED_PRODUCT_DUPLICATE_CODE) {
-                        $response['message'] = "Trùng mã sản phẩm";
-                    }
+            $resultCode = AdminFunctions::addProduct($product, $listProductDetails);
+            if ($resultCode == ResultCode::SUCCESS) {
+                $response['status'] = 200;
+            } else {
+                if ($resultCode == ResultCode::FAILED_PRODUCT_DUPLICATE_CODE) {
+                    $response['message'] = "Trùng mã sản phẩm";
                 }
+            }
             //}
         }
         return response()->json($response);
@@ -149,11 +158,10 @@ class MarketingController
         $productCode = trim($request->get("product_code", ''));
         $productName = trim($request->get("product_name", ''));
         $price = Util::parseInt($request->get("product_price", ''));
+        $isTest = Util::parseInt($request->get("is_test", 0)) == 1;
         $historical_cost = Util::parseInt($request->get("product_historical_cost", ''));
 
         $listDetailProductJson = json_decode($request->get("list_detail_products", '[]'), true);
-
-
         if ($productCode != '' && $productName != '' && $price != null && $price >= 0 && $historical_cost != null &&
             $historical_cost >= 0) {
 
@@ -161,6 +169,7 @@ class MarketingController
             $product->code = $productCode;
             $product->name = $productName;
             $product->price = $price;
+            $product->is_test = $isTest;
             $product->historical_cost = $historical_cost;
             $listProductDetails = array();
             foreach ($listDetailProductJson as $detailProductJson) {
@@ -177,9 +186,9 @@ class MarketingController
             }
 
             //if (count($listProductDetails) != 0) {
-                if (AdminFunctions::updateProduct($product, $listProductDetails) == ResultCode::SUCCESS) {
-                    $response['status'] = 200;
-                }
+            if (AdminFunctions::updateProduct($product, $listProductDetails) == ResultCode::SUCCESS) {
+                $response['status'] = 200;
+            }
             //}
         }
         return response()->json($response);
@@ -200,7 +209,6 @@ class MarketingController
     }
 
 
-
     private function listMarketingProductsForLeader(Request $request)
     {
         $marketingSourceId = Util::parseInt($request->get('marketing_source_id', -1), -1);
@@ -213,13 +221,22 @@ class MarketingController
         $endTime = Util::safeParseDate($endTimeStr);
         $filterMemberStr = "";
         $listUserIds = [];
-        $members = MarketingFunctions::findAllMarketing();
+        $listMembers = [];
+        $result = MarketingFunctions::findAllMarketing();
+        if (Auth::user()->isAdmin()) {
+            array_push($listMembers, Auth::user());
+        }
+        foreach ($result as $member) {
+            array_push($listMembers, $member);
+        }
+
+
         if ($filterMemberId == -1) {
-            foreach ($members as $member) {
+            foreach ($listMembers as $member) {
                 array_push($listUserIds, $member->id);
             }
         } else {
-            foreach ($members as $member) {
+            foreach ($listMembers as $member) {
                 if ($member->id == $filterMemberId) {
                     $filterMemberStr = $member->alias_name;
                 }
@@ -229,7 +246,7 @@ class MarketingController
         $marketingProducts = MarketingFunctions::findMarketingProduct($listUserIds, $marketingSourceId, $startTime, $endTime, $searchProductCode);
         $listMarketingSource = MarketingFunctions::listMarketingSource();
         $filterMarketingSourceStr = "";
-        $listProductCodes =  json_encode(CommonFunctions::listProductCodes());
+        $listProductCodes = json_encode(CommonFunctions::listProductCodes());
         foreach ($listMarketingSource as $marketingSource) {
             if ($marketingSourceId == $marketingSource->id) {
                 $filterMarketingSourceStr = $marketingSource->name;
@@ -242,7 +259,7 @@ class MarketingController
             'filter_marketing_source_str' => $filterMarketingSourceStr,
             'start_time_str' => $startTimeStr,
             'end_time_str' => $endTimeStr,
-            'list_members' => $members,
+            'list_members' => $listMembers,
             'filter_member_id' => $filterMemberId,
             'filter_member_str' => $filterMemberStr,
             'list_product_codes' => $listProductCodes,
@@ -354,7 +371,7 @@ class MarketingController
                 'list_campaigns' => $marketingProduct->list_campaigns,
                 'list_bank_accounts' => $listBankAccounts,
                 'marketing_product_code' => $marketingProduct->product_code,
-                'marketing_product_created' => Util::formatDate(Util::now()),
+                'marketing_product_created' => Util::formatDate($marketingProduct->created),
                 'list_marketing_sources' => $listMarketingSource,
                 'list_product_codes' => $listProductCodes
             ])->render();
@@ -375,55 +392,59 @@ class MarketingController
         try {
 
             $marketingProductId = $request->get('marketing_product_id', -1);
-            Log::log("sjdbsbds", $marketingProductId);
             $productCode = $request->get('product_code', "");
-            $marketingCode= $request->get('marketing_code', "");
+            $marketingCode = $request->get('marketing_code', "");
             $marketingSourceId = Util::parseInt($request->get("marketing_source_id"));
             $created = Util::safeParseDate($request->get('marketing_product_created'));
-            if($marketingCode == ""){
+            if ($marketingCode == "") {
                 $response['message'] = "Mã marketing không được để rỗng";
                 return response()->json($response);
             }
             if ($created != null) {
                 $listCampaigns = json_decode($request->get('list_campaigns', '{}'));
-                if (count($listCampaigns) > 0) {
-                    $marketingProductInfo = new \stdClass();
-                    $marketingProductInfo->id = $marketingProductId;
-                    $marketingProductInfo->source_id = $marketingSourceId;
-                    $marketingProductInfo->created = $created;
-                    $marketingProductInfo->product_code = $productCode;
-                    $marketingProductInfo->code = $marketingCode;
+                $marketingProductInfo = new \stdClass();
+                $marketingProductInfo->id = $marketingProductId;
+                $marketingProductInfo->source_id = $marketingSourceId;
+                $marketingProductInfo->created = $created;
+                $marketingProductInfo->product_code = $productCode;
+                $marketingProductInfo->code = $marketingCode;
 
-                    $listCampaignInfo = [];
-                    foreach ($listCampaigns as $item) {
-                        $campaignInfo = new \stdClass();
-                        $campaignInfo->campaign_name_id = $item->campaign_name_id;
-                        $campaignInfo->bank_account_id = $item->bank_account_id;
-                        $campaignInfo->total_comment = $item->total_comment;
-                        $campaignInfo->budget = $item->budget;
-                        if ($campaignInfo->budget <= 0) {
-                            $response['message'] = "budget must be more than 0";
-                            throw new \Exception("budget must be more than 0");
-                        }
-                        if ($campaignInfo->total_comment <= 0) {
-                            $response['message'] = "total_comment must be more than 0";
-                            throw new \Exception("total_comment must be more than 0");
-                        }
-                        array_push($listCampaignInfo, $campaignInfo);
+                $listCampaignInfo = [];
+                foreach ($listCampaigns as $item) {
+                    $campaignInfo = new \stdClass();
+                    $campaignInfo->campaign_name_id = $item->campaign_name_id;
+                    $campaignInfo->bank_account_id = $item->bank_account_id;
+                    $campaignInfo->total_comment = $item->total_comment;
+                    $campaignInfo->budget = $item->budget;
+                    if ($campaignInfo->budget <= 0) {
+                        $response['message'] = "budget must be more than 0";
+                        throw new \Exception("budget must be more than 0");
                     }
-                    $marketingProductInfo->list_campaign_infos = $listCampaignInfo;
-                    $resultCode = MarketingFunctions::saveMarketingProduct(Auth::user(), $marketingProductInfo);
-                    if ($resultCode == ResultCode::SUCCESS) {
-                        $response['status'] = 200;
-                    }else{
-                        if($resultCode == ResultCode::FAILED_MARKETING_PRODUCT_DUPLICATE_CODE){
+                    if ($campaignInfo->total_comment <= 0) {
+                        $response['message'] = "total_comment must be more than 0";
+                        throw new \Exception("total_comment must be more than 0");
+                    }
+                    array_push($listCampaignInfo, $campaignInfo);
+                }
+                $marketingProductInfo->list_campaign_infos = $listCampaignInfo;
+                $resultCode = MarketingFunctions::saveMarketingProduct(Auth::user(), $marketingProductInfo);
+                if ($resultCode == ResultCode::SUCCESS) {
+                    $response['status'] = 200;
+                } else {
+                    if ($resultCode == ResultCode::FAILED_MARKETING_PRODUCT_DUPLICATE_CODE) {
                         $response['message'] = "Lỗi trùng mã marketing";
-                        }
+                    }
+                    if ($resultCode == ResultCode::FAILED_PERMISSION_DENY) {
+                        $response['message'] = "Bạn không có quyền sửa sản phẩm này";
+                    }
+                    if ($resultCode == ResultCode::FAILED_PRODUCT_NOT_FOUND) {
+                        $response['message'] = "Không tìm thấy mã sản phẩm";
                     }
                 }
+
             }
         } catch (\Exception $e) {
-
+            Log::log("error message", $e->getMessage());
         }
         return response()->json($response);
     }
@@ -645,15 +666,23 @@ class MarketingController
         $reportTimeStr = $request->get('report_time');
 
 
+        if (Auth::user()->isLeader()) {
+            $listMembers = [];
+            $result = MarketingFunctions::findAllMarketing();
+            if (Auth::user()->isAdmin()) {
+                array_push($listMembers, Auth::user());
+            }
+            foreach ($result as $member) {
+                array_push($listMembers, $member);
+            }
 
-        if(Auth::user()->isLeader()){
-            $listMembers = MarketingFunctions::findAllMarketing();
-            if($filterMemberId == -1){
+
+            if ($filterMemberId == -1) {
                 foreach ($listMembers as $member) {
                     array_push($listUserIds, $member->id);
                 }
                 $filterMemberStr = "___";
-            }else{
+            } else {
 
                 foreach ($listMembers as $member) {
                     if ($member->id == $filterMemberId) {
@@ -662,8 +691,8 @@ class MarketingController
                 }
                 array_push($listUserIds, $filterMemberId);
             }
-        }else{
-            $listMembers= [Auth::user()];
+        } else {
+            $listMembers = [Auth::user()];
             $filterMemberId = Auth::user()->id;
             $listUserIds = [Auth::user()->id];
             $filterMemberStr = Auth::user()->username;
@@ -846,7 +875,7 @@ class MarketingController
         if ($resultCode != ResultCode::SUCCESS) {
             $response['status'] = 406;
             $response['message'] = 'Lỗi thêm';
-            if($resultCode == ResultCode::FAILED_CAMPAIGN_NAME_DUPLICATE_NAME){
+            if ($resultCode == ResultCode::FAILED_CAMPAIGN_NAME_DUPLICATE_NAME) {
                 $response['message'] = 'Lỗi trùng tên chiến dịch';
             }
         }

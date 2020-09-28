@@ -9,6 +9,7 @@ use App\models\Discount;
 use App\models\District;
 use App\models\functions\rows\DetailProductRow;
 use App\models\Inventory;
+use App\models\MarketingProduct;
 use App\models\Notification;
 use App\models\NotificationManager;
 use App\models\Order;
@@ -24,7 +25,27 @@ class CommonFunctions
         return Product::where("code", 'like', '%' . $productCode . '%')->where("is_active", true)->where("is_test", false)->limit(5)->get();
     }
 
-    public static function searchGHTKCode($code){
+    public static function searchMarketingCodeAndProductCode($productCode)
+    {
+        $result = [];
+        $listMarketingProducts = MarketingProduct::where("code", 'like', '%' . $productCode . '%')->select('code')->distinct()->limit(5)->get();
+        foreach ($listMarketingProducts as $product) {
+            array_push($result, $product->code);
+        }
+
+
+        if (count($result) < 5) {
+            $listProducts = Product::where("code", 'like', '%' . $productCode . '%')->select('code')->distinct()->limit(5 - count($result))->get();
+
+            foreach ($listProducts as $product) {
+                array_push($result, $product->code);
+            }
+        }
+        return $result;
+    }
+
+    public static function searchGHTKCode($code)
+    {
         return Order::where("ghtk_label", 'like', '%' . $code . '%')->limit(5)->get();
     }
 
@@ -42,7 +63,7 @@ class CommonFunctions
             " INNER JOIN product_categories ON detail_products.product_category_id =product_categories.id" .
             " INNER JOIN products ON detail_products.product_code=products.code" .
             " LEFT JOIN inventories ON detail_products.id=inventories.detail_product_id " .
-            " WHERE product_code =:productCode and products.is_active=1 and products.is_test=0 ".
+            " WHERE product_code =:productCode" .
             " ORDER BY product_size";
 
         $listDetailProducts = DB::select($sql, ['productCode' => $productCode]);
@@ -267,12 +288,13 @@ class CommonFunctions
     {
         $inventory = Inventory::get($detailProductId);
         if ($inventory != null) {
-            return $inventory->importing_quantity - $inventory->exporting_quantity;
+            return $inventory->importing_quantity + $inventory->returning_quantity - $inventory->exporting_quantity;
         }
         return 0;
     }
 
-    public static function checkReminds($user){
+    public static function checkReminds($user)
+    {
         $filterOptions = [
             "active" => true,
         ];
@@ -280,13 +302,13 @@ class CommonFunctions
         $listReminds = Remind::where($filterOptions)->get();
         try {
             DB::beginTransaction();
-            foreach ($listReminds as $remind){
+            foreach ($listReminds as $remind) {
                 self::createNotification($user, $remind->note);
                 $remind->active = false;
                 $remind->save();
             }
             DB::commit();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             DB::rollBack();
             Log::log("error message", $e->getMessage());
         }

@@ -98,4 +98,10 @@
     color : white;
 }
 
+#list_order_filter #list_order_search_phone_number{
+    margin-left:15px;
+    margin-right:15px;
+    width : 150px;
+}
+
 

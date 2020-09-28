@@ -1,4 +1,4 @@
-<div class="autocomplete" style="width:100%;">
+<div class="autocomplete" style="width:100%;max-height:200px;overflow-y: auto;">
     <input class="form-control" id="{{$autocomplete_id}}" type="text"
            placeholder="{{$autocomplete_placeholder}}" value="{{$autocomplete_value}}" autocomplete="off"
            style="background-color:white;">

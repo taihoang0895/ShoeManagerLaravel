@@ -77,6 +77,21 @@ class CommonController extends Controller
 
         return response()->json($response);
     }
+
+    public function searchMarketingCodeAndProductCode(Request $request){
+        $response = array();
+        $productCode = trim($request->get("search", ""));
+        if ($productCode != "") {
+            $listProductCode = CommonFunctions::searchMarketingCodeAndProductCode($productCode);
+            foreach ($listProductCode as $code) {
+                $response[] = array("value" => strval($code));
+            }
+        }
+
+
+        return response()->json($response);
+    }
+
     public function searchProductCode(Request $request)
     {
         $response = array();

@@ -146,6 +146,13 @@
     margin-right:15px;
     width : 200px;
 }
+
+#list_order_filter #list_order_state_search_phone_number{
+    margin-left:15px;
+    margin-right:15px;
+    width : 150px;
+}
+
 #list_order_filter .filter_by_order_state{
      width : 200px;
     text-align:center;

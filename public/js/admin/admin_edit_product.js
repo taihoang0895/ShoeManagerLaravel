@@ -288,14 +288,20 @@ function saveProduct() {
     var product_name = $('#edit_product_name').val().trim();
     var price = $('#edit_product_price').val().trim();
     var historical_cost = $('#edit_product_historical_cost').val().trim();
+    var is_test = 0;
+    if($('#edit_product_is_test').is(":checked")){
+        is_test = 1;
+    }
+
     is_waiting_for_request = true;
 
     var product = {
-        '_token': $('meta[name=csrf-token]').attr('content'),
+        '_token': $('meta[name=csrf-token]').attr('content')
     };
     product['product_code'] = product_code;
     product['product_name'] = product_name;
     product['product_price'] = price;
+    product['is_test'] = is_test;
     product['product_historical_cost'] = historical_cost;
     product['list_detail_products'] = JSON.stringify(listDetailProduct);
 

@@ -13,7 +13,8 @@
     <script src={{ asset('js/extra/tempusdominus-bootstrap-4.js'  ) }}></script>
     <script src={{ asset('js/sale/sale_main.js'  ) }}></script>
     <meta name="csrf-token" content="{{ Session::token() }}">
-
+    <link rel="stylesheet" type="text/css" href="{{asset('jqueryui/jquery-ui.min.css')}}">
+    <script src="{{asset('jqueryui/jquery-ui.min.js')}}" type="text/javascript"></script>
 @endsection
 @section('content')
     @include("confirm_dialog", ["confirm_dialog_id"=>"confirm_dialog_delete_order", "confirm_dialog_btn_positive_id"=>"order_delete_dialog_btn_ok","confirm_dialog_btn_negative_id"=>"order_delete_dialog_btn_cancel", "confirm_dialog_message"=>"Bạn có chắc chắn muốn xóa không?"])
@@ -24,6 +25,11 @@
         <input type="hidden" id="filter_member_id_selected" value="{{$filter_member_id}}">
         <input type="hidden" id="filter_order_type_selected" value="{{$filter_order_type}}">
         <tr>
+            <td class="filter_phone_number">
+                <input class="form-control" type="text" placeholder="Nhập SDT"
+                       value="{{$search_phone_number}}"
+                       id="list_order_search_phone_number"></td>
+            </td>
             <td class="filter_start_time">
                 <div class="input-group date" id="order_filter_start_time" data-target-input="nearest">
                     <label style="margin-top:6px;">Từ ngày&nbsp;&nbsp;</label>
@@ -185,6 +191,28 @@
             });
             document.title = 'Hoá đơn';
             $('#sale_menu_item_orders').addClass('selected');
+
+            $("#list_order_search_phone_number").autocomplete({
+                source: function (request, response) {
+                    // Fetch data
+                    $.ajax({
+                        url: "/sale/search-phone-number/",
+                        type: 'get',
+                        dataType: "json",
+                        data: {
+                            search: request.term
+                        },
+                        success: function (data) {
+                            response(data);
+                        }
+                    });
+                },
+                select: function (event, ui) {
+                    // Set selection
+                    $('#list_order_search_phone_number').val(ui.item.value);
+                    return false;
+                }
+            });
         });
     </script>
 @endsection
