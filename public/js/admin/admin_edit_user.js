@@ -74,13 +74,36 @@ function handleCancelButton(){
         $('#edit_user_dialog').css('display', 'none');
     });
 }
+
+function handleChangeDepartment(){
+    $(".storage_address").css("display", "")
+    if($('#dropdown_user_department_text').text() == "Kho Vũ Ngọc Phan"){
+        $("#storage_address").text("LK01, 25 Vũ Ngọc Phan, Đống Đa, Hà Nội, Phố Vũ Ngọc Phan, Quận Đống Đa, Hà Nội");
+    }else{
+        if($('#dropdown_user_department_text').text() == "Kho Xã Đàn"){
+            $("#storage_address").text("136A Xã Đàn,PHƯƠNG LIÊN ,ĐỐNG ĐA.HN,PHƯỜNG PHƯƠNG LIÊN, HÀ NỘI, QUẬN ĐỐNG ĐA.");
+        }else{
+            $(".storage_address").css("display", "none")
+        }
+    }
+
+}
+
 $(document).ready(function () {
+    handleChangeDepartment();
+
     $('#dropdown_user_role a').click(function(){
         $('#dropdown_user_role_text').text($(this).text());
     });
-     $('#dropdown_user_department a').click(function(){
+    $('#dropdown_user_department a').click(function(){
         $('#dropdown_user_department_text').text($(this).text());
+        handleChangeDepartment();
     });
+
+    $('#dropdown_storage_address a').click(function(){
+        $('#dropdown_storage_address_text').text($(this).text());
+    });
+
     handleOkButton();
     handleCancelButton();
 });

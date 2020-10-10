@@ -4,11 +4,29 @@
 namespace App\models\functions;
 
 
+use App\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use mysql_xdevapi\Exception;
 
 class Util
 {
+
+    public static function getCurrentStorageId()
+    {
+        if (Session::has("current_department_code")) {
+            $departmentCode = Session::get("current_department_code");
+            if ($departmentCode == User::$DEPARTMENT_STOREKEEPER_XA_DAN) {
+                return 2;
+            }
+            if ($departmentCode == User::$DEPARTMENT_STOREKEEPER_VU_NGOC_PHAN) {
+                return 1;
+            }
+        }
+        return -1;
+    }
+
     public static function now()
     {
         return now();

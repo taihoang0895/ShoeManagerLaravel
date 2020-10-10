@@ -4,6 +4,7 @@
 <form method="post">
     @csrf
     <input type="hidden" id="edit_product_id" value="{{$product->code}}">
+    <input type="hidden" id="edit_product_storage_id" value="{{$product->storage_id}}">
     <div id="edit_product_dialog">
         <div id="edit_product_dialog_content">
             <div class="title">Nhập Thông Tin Sản phẩm</div>
@@ -44,6 +45,23 @@
                                    id="edit_product_is_test">
                         @endif
                     </td>
+                    <td class="lbl_name_col2">Địa Chỉ Kho</td>
+                    <td class="value_col2">
+                        <div class="dropdown" id="dropdown_storage_address">
+                            <button class="btn btn-secondary dropdown-toggle" type="button"
+                                    id="dropdown_storage_address_text"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                {{$product->storage_address}}
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                @foreach($list_storages as $storage)
+                                    <a class="dropdown-item"><input type="hidden" class="id"
+                                                                    value="{{$storage->id}}">{{$storage->address}}</a>
+                                @endforeach
+                            </div>
+                        </div>
+                    </td>
+
                 </tr>
             </table>
             <div id="detail_product_content">
@@ -103,7 +121,7 @@
     $("#detail_product_additional_color_text").autocomplete({
         source: list_suggest_product_colors
     });
-     @foreach($list_detail_products as $detail_product)
+            @foreach($list_detail_products as $detail_product)
 
     var row_index = $('.tbl_detail_product_item').length;
     $('#row_additional_detail_product').after(genRow(

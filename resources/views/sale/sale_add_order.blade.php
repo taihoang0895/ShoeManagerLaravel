@@ -5,6 +5,7 @@
 <meta name="csrf-token" content="{{ Session::token() }}">
 <form method="post">
     @csrf
+    <input type="hidden" id="edit_order_storage_id" value="{{$order->storage_id}}">
     <div id="edit_order_dialog">
         <input type="hidden" id="edit_order_id" value="{{$order->id}}">
         <input type="hidden" id="edit_order_state_id" value="{{$order->order_state_id}}">
@@ -27,23 +28,23 @@
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 {{$order_state_name}}
                             </button>
-                           {{-- @if($user->isLeader())
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton"
-                                     style="max-height:200px;overflow-y: auto;">
-                                    @foreach ($list_states as $state)
-                                        <a class="dropdown-item"
-                                           id="edit_order_state_id_{{$state->id}}">{{$state->name}}</a>
-                                    @endforeach
-                                </div>
-                            @endif--}}
+                            {{-- @if($user->isLeader())
+                                 <div class="dropdown-menu" aria-labelledby="dropdownMenuButton"
+                                      style="max-height:200px;overflow-y: auto;">
+                                     @foreach ($list_states as $state)
+                                         <a class="dropdown-item"
+                                            id="edit_order_state_id_{{$state->id}}">{{$state->name}}</a>
+                                     @endforeach
+                                 </div>
+                             @endif--}}
                         </div>
                     </td>
                 </tr>
                 <tr class="order_field_row">
-                    <td class="lbl_name_col1" style="padding-top:0px;">Mã Hóa Đơn Hoàn</td>
+                    <td class="lbl_name_col1" style="padding-top:0px;">Mã GHTK</td>
                     <td class="value_col1" style="padding-top:0px;"><input class="form-control" type="text"
                                                                            id="edit_order_replace_order"
-                                                                           placeholder="Nhập mã hóa đơn hoàn"
+                                                                           placeholder="Nhập mã ghtk"
                                                                            value="{{$order->replace_order_code}}"
                                                                            style="background-color:white;"></td>
                     <td class="lbl_name_col2">Lý Do Lỗi</td>
@@ -95,6 +96,24 @@
                             <div class="input-group-append" data-target="#edit_order_delivery_time"
                                  data-toggle="datetimepicker">
                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="order_field_row">
+                    <td class="lbl_name_col1">Địa Chỉ Kho</td>
+                    <td class="value_col1">
+                        <div class="dropdown" id="dropdown_storage_address">
+                            <button class="btn btn-secondary dropdown-toggle" type="button"
+                                    id="dropdown_storage_address_text"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                {{$order->storage_address}}
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                @foreach($list_storages as $storage)
+                                    <a class="dropdown-item"><input type="hidden" class="id"
+                                                                    value="{{$storage->id}}">{{$storage->address}}</a>
+                                @endforeach
                             </div>
                         </div>
                     </td>
@@ -242,8 +261,8 @@
         $("#edit_order_delivery_time").datetimepicker({
             format: 'DD/MM/YYYY',
         });
-        @if ($detailEditable)
-        @foreach ($list_detail_orders as $detail_order)
+                @if ($detailEditable)
+                @foreach ($list_detail_orders as $detail_order)
         var row_index = $('.tbl_detail_order_item').length;
 
         $('#row_additional_detail_order').after(genRow(

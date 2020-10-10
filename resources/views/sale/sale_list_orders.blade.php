@@ -2,6 +2,7 @@
 @section('extra_head')
     <link rel="stylesheet" href={{ asset('css/sale/sale_main.css'  ) }}>
     <link rel="stylesheet" href={{ asset('css/sale/sale_leader_list_orders.css'  ) }}>
+    <link rel="stylesheet" href={{ asset('css/context_menu.css'  ) }}>
     <script src={{ asset('js/sale/sale_leader_list_orders.js'  ) }}></script>
     <link rel="stylesheet" href={{ asset('css/extra/bootstrap_4_2_1.css'  ) }}>
 
@@ -15,20 +16,26 @@
     <meta name="csrf-token" content="{{ Session::token() }}">
     <link rel="stylesheet" type="text/css" href="{{asset('jqueryui/jquery-ui.min.css')}}">
     <script src="{{asset('jqueryui/jquery-ui.min.js')}}" type="text/javascript"></script>
+    <script src={{ asset('js/extra/context_menu.js') }}></script>
 @endsection
 @section('content')
     @include("confirm_dialog", ["confirm_dialog_id"=>"confirm_dialog_delete_order", "confirm_dialog_btn_positive_id"=>"order_delete_dialog_btn_ok","confirm_dialog_btn_negative_id"=>"order_delete_dialog_btn_cancel", "confirm_dialog_message"=>"Bạn có chắc chắn muốn xóa không?"])
     @csrf
     <div class="title">Danh Sách Hóa Đơn <span style="font-size : 0.9em;">({{$total_order}})</span></div>
+    <input type="hidden" id="filter_order_state_id_selected" value="{{$order_state_id_str}}">
+    <input type="hidden" id="filter_member_id_selected" value="{{$filter_member_id}}">
+    <input type="hidden" id="filter_order_type_selected" value="{{$filter_order_type}}">
     <table id="list_order_filter">
-        <input type="hidden" id="filter_order_state_id_selected" value="{{$order_state_id_str}}">
-        <input type="hidden" id="filter_member_id_selected" value="{{$filter_member_id}}">
-        <input type="hidden" id="filter_order_type_selected" value="{{$filter_order_type}}">
         <tr>
             <td class="filter_phone_number">
                 <input class="form-control" type="text" placeholder="Nhập SDT"
                        value="{{$search_phone_number}}"
                        id="list_order_search_phone_number"></td>
+            </td>
+            <td class="filter_ghtk_code">
+                <input class="form-control" type="text" placeholder="Nhập mã ghtk"
+                       value="{{$search_ghtk_code}}"
+                       id="list_order_search_ghtk_code"></td>
             </td>
             <td class="filter_start_time">
                 <div class="input-group date" id="order_filter_start_time" data-target-input="nearest">
@@ -52,6 +59,8 @@
                     </div>
                 </div>
             </td>
+        </tr>
+        <tr>
             <td class="filter_by_order_state">
                 <div class="dropdown" id="filter_order_dropdown_state">
                     <button class="btn btn-secondary dropdown-toggle" type="button"
@@ -60,7 +69,7 @@
                         {{$order_state_str}}
                     </button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <a class="dropdown-item"><input type="hidden" id="state_id" value="">_______</a>
+                        <a class="dropdown-item"><input type="hidden" id="state_id" value="-1">_______</a>
                         @foreach ($list_states as $state)
                             <a class="dropdown-item"><input type="hidden" id="state_id"
                                                             value="{{$state->id}}">{{$state->name}}
@@ -132,7 +141,7 @@
     </table>
     <table class="tbl">
         <tr class="tbl_header_item">
-            <td class="order_code">MHD</td>
+            <td class="order_code">Mã GHTK</td>
             <td class="order_sale">Người Tạo</td>
             <td class="order_created">Ngày lập</td>
             <td class="order_customer_name">Tên Khách</td>
@@ -145,7 +154,7 @@
 
             <tr class="tbl_item order_row" id="order_row_{{$order->id}}">
                 <td class="order_code">
-                    <div>{{$order->code}}</div>
+                    <div>{{$order->ghtk_label}}</div>
                 </td>
                 <td class="order_sale">
                     <div>{{$order->sale_name}}</div>
@@ -153,7 +162,9 @@
                 <td class="order_created">
                     <div>{{$order->created_str}}</div>
                 </td>
-                <td class="order_customer_name">  <div>{{$order->customer_name}}</div></td>
+                <td class="order_customer_name">
+                    <div>{{$order->customer_name}}</div>
+                </td>
                 <td class="order_customer_phone">
                     <div>{{$order->customer_phone}}</div>
                 </td>
@@ -181,7 +192,6 @@
     </table>
     <div id="detail_order_show_detail_item"></div>
     <script type="text/javascript">
-
         $(document).ready(function () {
             $("#order_filter_end_time").datetimepicker({
                 format: 'DD/MM/YYYY',
@@ -213,6 +223,60 @@
                     return false;
                 }
             });
+
+            $("#list_order_search_ghtk_code").autocomplete({
+                source: function (request, response) {
+                    // Fetch data
+                    $.ajax({
+                        url: "/sale/search-ghtk-code/",
+                        type: 'get',
+                        dataType: "json",
+                        data: {
+                            search: request.term
+                        },
+                        success: function (data) {
+                            response(data);
+                        }
+                    });
+                },
+                select: function (event, ui) {
+                    // Set selection
+                    $('#list_order_search_ghtk_code').val(ui.item.value);
+                    return false;
+                }
+            });
+            $.contextMenu({
+                selector: '.row_selected',
+                callback: function (key, options) {
+                    var order_id = $('.row_selected').first().attr('id');
+                    order_id = order_id.replace("order_row_", "");
+                    var data = {
+                        "order_id": order_id
+                    }
+                    var url = '/sale/summary-order/';
+                    $.get(url, data, function (response) {
+
+                        if (response['status'] == 200) {
+                            copyTextToClipboard(response['content']);
+                            showMessage("Tóm tắt hóa đơn thành công");
+                        } else {
+                            showMessage(response['message']);
+                        }
+                    })
+                        .fail(function () {
+                            showMessage("Lỗi tóm tắt hóa đơn");
+                        })
+                        .always(function () {
+                            is_waiting_for_request = false;
+                        });
+                },
+                items: {
+                    "summary_order": {
+                        name: "Tóm tắt hóa đơn"
+                    }
+                }
+            });
+
         });
     </script>
 @endsection

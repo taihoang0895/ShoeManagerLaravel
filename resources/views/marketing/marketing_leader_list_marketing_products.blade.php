@@ -150,14 +150,15 @@
                     {{$marketing_product->createdStr()}}
                 </td>
                 <td class="marketing_product_source">
-                    {{$marketing_product->totalPhone()}}
+                    {{$marketing_product->totalBill()}}&nbsp;
+
                 </td>
                 <td class="marketing_product_cmt_cost"
                     style="background-color:{{$marketing_product->commentCostColor()}};">
                     {{$marketing_product->commentCostStr()}}&nbsp;&#8363;
                 </td>
                 <td class="marketing_product_price">
-                    {{$marketing_product->totalBill()}}&nbsp;
+                    {{$marketing_product->totalPhone()}}
                 </td>
                 <td class="marketing_product_bill_cost"
                     style="background-color:{{$marketing_product->billCostColor()}};">

@@ -12,6 +12,7 @@ use App\models\functions\MarketingFunctions;
 use App\models\functions\ResultCode;
 use App\models\functions\StoreKeeperFunctions;
 use App\models\functions\Util;
+use App\models\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use mysql_xdevapi\Exception;
@@ -45,13 +46,14 @@ class MarketingController
                 $list_suggest_product_sizes = json_encode($list_suggest_product_sizes);
                 $list_suggest_product_colors = json_encode($list_suggest_product_colors);
                 $list_detail_products = $product->listDetailProducts;
-                Log::log("taih", "size " . count($list_detail_products));
+                $listStorages = Storage::findAll();
 
                 $response['content'] = view("marketing.marketing_edit_product", [
                     "product" => $product,
                     "list_suggest_product_sizes" => $list_suggest_product_sizes,
                     "list_suggest_product_colors" => $list_suggest_product_colors,
-                    'list_detail_products' => $list_detail_products
+                    'list_detail_products' => $list_detail_products,
+                    'list_storages' => $listStorages
                 ])->render();
             } else {
                 $response['status'] = 406;
@@ -78,17 +80,23 @@ class MarketingController
         $emptyProduct->price = "";
         $emptyProduct->is_test = false;
         $emptyProduct->historical_cost = "";
+
+        $listStorages = Storage::findAll();
+        $emptyProduct->storage_id = $listStorages[0]->id;
+        $emptyProduct->storage_address = $listStorages[0]->address;
         $list_suggest_product_sizes = config("settings.list_suggest_product_sizes");
         $list_suggest_product_colors = config("settings.list_suggest_product_color");
 
         $list_suggest_product_sizes = json_encode($list_suggest_product_sizes);
         $list_suggest_product_colors = json_encode($list_suggest_product_colors);
 
+
         $response['content'] = view("marketing.marketing_edit_product", [
             "product" => $emptyProduct,
             "list_suggest_product_sizes" => $list_suggest_product_sizes,
             "list_suggest_product_colors" => $list_suggest_product_colors,
-            "list_detail_products" => []
+            "list_detail_products" => [],
+            'list_storages' => $listStorages
         ])->render();
         return response()->json($response);
     }
@@ -106,7 +114,7 @@ class MarketingController
         $price = Util::parseInt($request->get("product_price", ''));
         $isTest = Util::parseInt($request->get("is_test", 0)) == 0;
         $historical_cost = Util::parseInt($request->get("product_historical_cost", ''));
-
+        $storageId = Util::parseInt($request->get("storage_id", 0));
         $listDetailProductJson = json_decode($request->get("list_detail_products", '[]'), true);
 
 
@@ -118,6 +126,7 @@ class MarketingController
             $product->name = $productName;
             $product->price = $price;
             $product->is_test = $isTest;
+            $product->storage_id = $storageId;
             $product->historical_cost = $historical_cost;
             $listProductDetails = array();
             foreach ($listDetailProductJson as $detailProductJson) {
@@ -160,7 +169,7 @@ class MarketingController
         $price = Util::parseInt($request->get("product_price", ''));
         $isTest = Util::parseInt($request->get("is_test", 0)) == 1;
         $historical_cost = Util::parseInt($request->get("product_historical_cost", ''));
-
+        $storageId = Util::parseInt($request->get("storage_id", 0));
         $listDetailProductJson = json_decode($request->get("list_detail_products", '[]'), true);
         if ($productCode != '' && $productName != '' && $price != null && $price >= 0 && $historical_cost != null &&
             $historical_cost >= 0) {
@@ -170,6 +179,7 @@ class MarketingController
             $product->name = $productName;
             $product->price = $price;
             $product->is_test = $isTest;
+            $product->storage_id = $storageId;
             $product->historical_cost = $historical_cost;
             $listProductDetails = array();
             foreach ($listDetailProductJson as $detailProductJson) {
@@ -199,11 +209,17 @@ class MarketingController
         $response = array(
             "status" => 406,
             "content" => "",
-            "message" => ""
+            "message" => "Lỗi xóa"
         );
         $productCode = trim($request->get("product_code", ''));
-        if (AdminFunctions::deleteProduct($productCode) == ResultCode::SUCCESS) {
+        $resultCode = AdminFunctions::deleteProduct($productCode);
+        if ($resultCode == ResultCode::SUCCESS) {
             $response['status'] = 200;
+        } else {
+            if ($resultCode == ResultCode::FAILED_DELETE_PRODUCT_EXISTED_IN_ORDER) {
+                $response['message'] = "Lỗi xóa. Sản phẩm này tồn tại trong hóa đơn";
+            }
+
         }
         return response()->json($response);
     }

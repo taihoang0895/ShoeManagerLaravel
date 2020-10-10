@@ -198,3 +198,4 @@ Route::get("sale/form-prepare-update-order-state/","SaleController@prepareUpdate
 Route::post("sale/update-order-state/","SaleController@updateOrderState")->middleware("auth", 'permission')->name("sale-update-order-state");
 Route::get("sale/report/","SaleController@reportOrder")->middleware("auth", 'permission', 'notification')->name("sale-report");
 Route::get("sale/customer-check-product-code/", "SaleController@customerCheckProductCode")->middleware("auth")->name("sale-customer-check-product-code");
+Route::get("sale/summary-order/", "SaleController@summaryOrder")->middleware("auth")->name("sale-summary-order");

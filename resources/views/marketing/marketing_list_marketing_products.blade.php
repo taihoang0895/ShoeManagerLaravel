@@ -11,6 +11,8 @@
     <script src={{ asset('js/extra/tempusdominus-moment.js') }}></script>
     <script src={{ asset('js/extra/tempusdominus-bootstrap-4.js' ) }}></script>
     <script src={{ asset('js/marketing/marketing_list_marketing_products.js' ) }}></script>
+    <link rel="stylesheet" type="text/css" href="{{asset('jqueryui/jquery-ui.min.css')}}">
+    <script src="{{asset('jqueryui/jquery-ui.min.js')}}" type="text/javascript"></script>
     <meta name="csrf-token" content="{{ Session::token() }}">
 @endsection
 @section('content')
@@ -125,14 +127,14 @@
                     {{$marketing_product->createdStr()}}
                 </td>
                 <td class="marketing_product_source">
-                    {{$marketing_product->totalPhone()}}
+                    {{$marketing_product->totalBill()}}&nbsp;
                 </td>
                 <td class="marketing_product_cmt_cost"
                     style="background-color:{{$marketing_product->commentCostColor()}};">
                     {{$marketing_product->commentCostStr()}}&nbsp;&#8363;
                 </td>
                 <td class="marketing_product_price">
-                    {{$marketing_product->totalBill()}}&nbsp;&#8363;
+                    {{$marketing_product->totalPhone()}}
                 </td>
                 <td class="marketing_product_bill_cost" style="background-color:{{$marketing_product->billCostColor()}};">
                     {{$marketing_product->billCostStr()}}&nbsp;&#8363;

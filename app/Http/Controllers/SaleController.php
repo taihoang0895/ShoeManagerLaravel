@@ -15,6 +15,7 @@ use App\models\functions\SaleFunctions;
 use App\models\functions\StoreKeeperFunctions;
 use App\models\functions\Util;
 use App\models\OrderState;
+use App\models\Storage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use mysql_xdevapi\Exception;
@@ -580,6 +581,7 @@ class SaleController
         $filterOrderType = Util::parseInt($request->get('filter_order_type', -1));
         $filterCustomerName = $request->get('search_customer_name', '');
         $search_phone_number = $request->get('search_phone_number', '');
+        $searchGHTKCode = $request->get('search_ghtk_code', '');
         $filterOrderTypeStr = "";
         $orderStateStr = "Chọn trạng thái";
         $filterMemberStr = "Chọn Người Tạo";
@@ -634,7 +636,7 @@ class SaleController
         }
 
         $listStates = SaleFunctions::getListOrderStates();
-        $listOrders = SaleFunctions::findOrders($listUserIds, $startTime, $endTime, $orderStateId, $filterOrderType, $search_phone_number);
+        $listOrders = SaleFunctions::findOrders($listUserIds, $startTime, $endTime, $orderStateId, $filterOrderType, $search_phone_number, $searchGHTKCode);
         return view("sale.sale_list_orders", [
             "list_orders" => $listOrders,
             "start_time_str" => $startTimeStr,
@@ -644,10 +646,11 @@ class SaleController
             'list_members' => $listMembers,
             'search_customer_name' => $filterCustomerName,
             'search_phone_number' => $search_phone_number,
+            'search_ghtk_code' => $searchGHTKCode,
             'filter_member_id' => strval($filterMemberId),
             'filter_member_str' => $filterMemberStr,
             'list_states' => $listStates,
-            'total_order' => SaleFunctions::countOrder($listUserIds, $startTime, $endTime, $orderStateId, $filterOrderType, $search_phone_number),
+            'total_order' => SaleFunctions::countOrder($listUserIds, $startTime, $endTime, $orderStateId, $filterOrderType, $search_phone_number, $searchGHTKCode),
             'filter_order_type' => $filterOrderType,
             'filter_order_type_str' => $filterOrderTypeStr
         ]);
@@ -670,6 +673,9 @@ class SaleController
         $emptyOrder->order_fail_cause = "___";
         $emptyOrder->note = Config::getOrNew()->order_note;
         $emptyOrder->is_test = false;
+        $listStorages = Storage::findAll();
+        $emptyOrder->storage_id = $listStorages[0]->id;
+        $emptyOrder->storage_address = $listStorages[0]->address;
         $listOrderStates = [];
         //$listOrderStates = SaleFunctions::getListOrderStates();
         $listFailReasons = SaleFunctions::getListFailReasons();
@@ -692,6 +698,7 @@ class SaleController
             'order_state_name' => OrderState::getName(OrderState::STATE_ORDER_PENDING),
             'detailEditable' => $detailEditable,
             'list_fail_reasons' => $listFailReasons,
+            'list_storages' => $listStorages,
             'list_suggestion_product_codes' => json_encode($listSuggestionProductCode)
         ])->render();
         return $response;
@@ -731,6 +738,7 @@ class SaleController
         $id = $request->get("order_id");
         $order = SaleFunctions::getOrder($id);
         if ($order != null) {
+            $listStorages = Storage::findAll();
             if ($order->order_fail_cause == "") {
                 $order->order_fail_cause = "___";
             }
@@ -746,7 +754,7 @@ class SaleController
                 "list_product_color" => [],
                 'list_product_discount' => [],
                 'start_time_str' => "",
-
+                'list_storages' => $listStorages,
                 'user' => Auth::user(),
                 'order_state_name' => OrderState::getName($order->order_state),
                 'detailEditable' => false,
@@ -774,6 +782,7 @@ class SaleController
             $orderFailId = Util::parseInt($request->get('order_fail_id', -1), -1);
             $isOrderTest = Util::parseInt($request->get('is_order_test', 0));
             $replace_order_code = $request->get('replace_order', '');
+            $storageId = Util::parseInt($request->get("storage_id", 0));
             $deliveryTime = Util::safeParseDate($request->get('delivery_time', ''));
             if ($deliveryTime != null) {
                 if ($deliveryTime < Util::now()) {
@@ -789,6 +798,7 @@ class SaleController
             $orderInfo->note = $note;
             $orderInfo->delivery_time = $deliveryTime;
             $orderInfo->is_test = $isOrderTest == 1;
+            $orderInfo->storage_id = $storageId;
             $orderInfo->order_state_id = CustomerState::STATE_CUSTOMER_CUSTOMER_AGREED;
             if ($orderFailId == -1) {
                 $orderInfo->order_fail_reason_id = null;
@@ -837,6 +847,12 @@ class SaleController
                 if ($resultCode == ResultCode::FAILED_SAVE_ORDER_DUPLICATE_CUSTOMER) {
                     $response['message'] = "Trùng mã khách hàng vui lòng tạo mới khách hàng";
                 }
+                if ($resultCode == ResultCode::FAILED_SAVE_ORDER_NOT_FOUND_REPLACE_ORDER) {
+                    $response['message'] = "Không tìm thấy mã hóa đơn hoàn";
+                }
+                if ($resultCode == ResultCode::FAILED_SAVE_ORDER_REPLACE_ORDER_LEAK_STATE) {
+                    $response['message'] = "Mã hóa đơn hoàn phải trong trạng thái đã trả về lỗi hoặc không lỗi";
+                }
             }
             return response()->json($response);
         } catch (\Exception $e) {
@@ -860,6 +876,8 @@ class SaleController
         $orderFailId = Util::parseInt($request->get('order_fail_id', -1), -1);
         $isOrderTest = Util::parseInt($request->get('is_order_test', 0));
         $replace_order_code = $request->get('replace_order', '');
+        $storageId = Util::parseInt($request->get("storage_id", 0));
+
         $deliveryTime = Util::safeParseDate($request->get('delivery_time', ''));
         if ($deliveryTime != null) {
             if ($deliveryTime < Util::now()) {
@@ -873,6 +891,7 @@ class SaleController
         $orderInfo->delivery_time = $deliveryTime;
         $orderInfo->is_test = $isOrderTest == 1;
         $orderInfo->order_state_id = $orderStateId;
+        $orderInfo->storage_id = $storageId;
         if ($orderFailId == -1) {
             $orderInfo->order_fail_reason_id = null;
         } else {
@@ -1338,6 +1357,25 @@ class SaleController
             }
         }
         return response()->json($response);
+    }
+
+    public function summaryOrder(Request $request)
+    {
+        $response = array(
+            "status" => 403,
+            'message' => '',
+            'content' => ''
+        );
+
+        $orderId = $request->get("order_id", "");
+        if ($orderId == null || $orderId == "") {
+            $response['message'] = "Không tìm thấy hóa đơn";
+        } else {
+            $response['status'] = 200;
+            $response['content'] = SaleFunctions::summaryOrder($orderId);
+        }
+        return response()->json($response);
+
     }
 
 

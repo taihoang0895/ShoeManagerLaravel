@@ -3,7 +3,7 @@
 }
 
 .tbl .order_code {
-    width : 8%;
+    width : 15%;
 
 }
 
@@ -20,7 +20,7 @@
 }
 
 .tbl .order_state {
-    width : 15%;
+    width : 10%;
 }
 
 .tbl .customer_name {
@@ -28,7 +28,7 @@
 }
 
 .tbl .order_product_name {
-    width : 15%;
+    width : 13%;
 }
 
 .tbl .show_detail_order {
@@ -78,6 +78,7 @@
     text-align:center;
     margin-left:15px;
     margin-right:15px;
+    margin-top: 15px;
 
 }
 
@@ -86,7 +87,7 @@
     text-align:center;
     margin-left:15px;
     margin-right:15px;
-
+    margin-top: 15px;
 }
 
 #list_order_filter .btn_filter{
@@ -97,6 +98,9 @@
     font-size : 16px;
     color : white;
 }
+#filter_order_type,#order_btn_filter,#filter_by_member,#filter_order_dropdown_state {
+    margin-top: 15px;
+}
 
 #list_order_filter #list_order_search_phone_number{
     margin-left:15px;
@@ -104,4 +108,8 @@
     width : 150px;
 }
 
-
+#list_order_filter #list_order_search_ghtk_code{
+    margin-left:15px;
+    margin-right:15px;
+    width : 200px;
+}

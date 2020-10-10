@@ -13,7 +13,8 @@ class User extends Authenticatable
 {
     static $DEPARTMENT_SALE = 0;
     static $DEPARTMENT_MARKETING = 1;
-    static $DEPARTMENT_STOREKEEPER = 2;
+    static $DEPARTMENT_STOREKEEPER_VU_NGOC_PHAN = 2;
+    static $DEPARTMENT_STOREKEEPER_XA_DAN = 3;
 
     static $ROLE_MEMBER = 0;
     static $ROLE_LEADER = 1;
@@ -46,8 +47,10 @@ class User extends Authenticatable
         }
         return "";
     }
-    public function getDepartmentName(){
-        if($this->isAdmin()){
+
+    public function getDepartmentName()
+    {
+        if ($this->isAdmin()) {
             return "Admin";
         }
         switch ($this->department) {
@@ -55,11 +58,14 @@ class User extends Authenticatable
                 return "Sale";
             case User::$DEPARTMENT_MARKETING:
                 return "Marketing";
-            case User::$DEPARTMENT_STOREKEEPER:
-                return "Kho";
+            case User::$DEPARTMENT_STOREKEEPER_VU_NGOC_PHAN:
+                return "Kho Vũ Ngọc Phan";
+            case User::$DEPARTMENT_STOREKEEPER_XA_DAN:
+                return "Kho Xã Đàn";
         }
         return "";
     }
+
     public static function convertCodeToDepartmentName($department)
     {
         switch ($department) {
@@ -67,14 +73,17 @@ class User extends Authenticatable
                 return "Sale";
             case User::$DEPARTMENT_MARKETING:
                 return "Marketing";
-            case User::$DEPARTMENT_STOREKEEPER:
-                return "Kho";
+            case User::$DEPARTMENT_STOREKEEPER_VU_NGOC_PHAN:
+                return "Kho Vũ Ngọc Phan";
+            case User::$DEPARTMENT_STOREKEEPER_XA_DAN:
+                return "Kho Xã Đàn";
         }
         return "";
     }
 
     public static function parseDepartmentName($name)
     {
+
         $name = Util::toUpper($name);
         if ($name == "SALE") {
             return User::$DEPARTMENT_SALE;
@@ -82,8 +91,11 @@ class User extends Authenticatable
         if ($name == "MARKETING") {
             return User::$DEPARTMENT_MARKETING;
         }
-        if ($name == "KHO") {
-            return User::$DEPARTMENT_STOREKEEPER;
+        if ($name == "KHO VŨ NGỌC PHAN") {
+            return User::$DEPARTMENT_STOREKEEPER_VU_NGOC_PHAN;
+        }
+        if ($name == "KHO XÃ ĐÀN") {
+            return User::$DEPARTMENT_STOREKEEPER_XA_DAN;
         }
         return -1;
     }
@@ -135,6 +147,7 @@ class User extends Authenticatable
     {
         return $this->role == User::$ROLE_ADMIN;
     }
+
     public function isSaleAdmin()
     {
         return $this->role == User::$ROLE_SALE_ADMIN;
@@ -157,6 +170,6 @@ class User extends Authenticatable
 
     public function isStoreKeeper()
     {
-        return $this->department == User::$DEPARTMENT_STOREKEEPER;
+        return in_array($this->department, [User::$DEPARTMENT_STOREKEEPER_VU_NGOC_PHAN, User::$DEPARTMENT_STOREKEEPER_XA_DAN]);
     }
 }

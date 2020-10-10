@@ -54,10 +54,12 @@
                                 <a class="dropdown-item" href="/admin">Admin</a>
                                 <a class="dropdown-item" href="/sale">Sale</a>
                                 <a class="dropdown-item" href="/marketing">Marketing</a>
-                                <a class="dropdown-item" href="/storekeeper">Kho</a>
+                                <a class="dropdown-item" href="/storekeeper?department_code=2">Kho Vũ Ngọc Phan</a>
+                                <a class="dropdown-item" href="/storekeeper?department_code=3">Kho Xã Đàn</a>
                             @elseif(Auth::user()->isSaleAdmin())
                                 <a class="dropdown-item" href="/sale">Sale</a>
-                                <a class="dropdown-item" href="/storekeeper">Kho</a>
+                                <a class="dropdown-item" href="/storekeeper?department_code=2">Kho Vũ Ngọc Phan</a>
+                                <a class="dropdown-item" href="/storekeeper?department_code=3">Kho Xã Đàn</a>
                             @endif
                         </div>
                     @endif

@@ -44,7 +44,8 @@
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                 <a class="dropdown-item">Sale</a>
                                 <a class="dropdown-item">Marketing</a>
-                                <a class="dropdown-item">Kho</a>
+                                <a class="dropdown-item">Kho Vũ Ngọc Phan</a>
+                                <a class="dropdown-item">Kho Xã Đàn</a>
                             </div>
                         </div>
                     </td>
@@ -63,6 +64,14 @@
                                 <a class="dropdown-item">Leader</a>
                                 <a class="dropdown-item">Sale Admin</a>
                             </div>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr class="user_field_row storage_address">
+                    <td class="lbl_name">Địa Điểm</td>
+                    <td class="value">
+                        <div id="storage_address">
                         </div>
                     </td>
                 </tr>

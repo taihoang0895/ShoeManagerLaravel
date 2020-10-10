@@ -27,7 +27,7 @@ class StorekeeperController
 
         $listProductColors = CommonFunctions::listProductColors();
         $listProductSizes = CommonFunctions::listProductSizes();
-        $listProductCodes = json_encode(CommonFunctions::listProductCodes());
+        $listProductCodes = json_encode(StoreKeeperFunctions::listProductCodes());
         return view("storekeeper.storekeeper_importing_products", [
             "list_importing_products" => $listImportingProducts,
             "list_product_sizes" => $listProductSizes,
@@ -55,7 +55,7 @@ class StorekeeperController
 
         $listProductColors = CommonFunctions::listProductColors();
         $listProductSizes = CommonFunctions::listProductSizes();
-        $listProductCodes = json_encode(CommonFunctions::listProductCodes());
+        $listProductCodes = json_encode(StoreKeeperFunctions::listProductCodes());
         if (count($listProductSizes) > 0) {
             $productSizeSelected = $listProductSizes[0];
         }
@@ -97,7 +97,7 @@ class StorekeeperController
 
             $listProductColors = CommonFunctions::listProductColors();
             $listProductSizes = CommonFunctions::listProductSizes();
-            $listProductCodes = json_encode(CommonFunctions::listProductCodes());
+            $listProductCodes = json_encode(StoreKeeperFunctions::listProductCodes());
 
             $productSizeSelected = $importingProduct->product_size;
             $productCodeSelected = $importingProduct->product_code;

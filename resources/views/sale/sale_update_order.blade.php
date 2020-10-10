@@ -3,6 +3,7 @@
 <meta name="csrf-token" content="{{ Session::token() }}">
 <form method="post">
     @csrf
+    <input type="hidden" id="edit_order_storage_id" value="{{$order->storage_id}}">
     <div id="edit_order_dialog">
         <input type="hidden" id="edit_order_id" value="{{$order->id}}">
         <input type="hidden" id="edit_order_state_id" value="{{$order->order_state}}">
@@ -89,6 +90,24 @@
                             <div class="input-group-append" data-target="#edit_order_delivery_time"
                                  data-toggle="datetimepicker">
                                 <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                <tr class="order_field_row">
+                    <td class="lbl_name_col1">Địa Chỉ Kho</td>
+                    <td class="value_col1">
+                        <div class="dropdown" id="dropdown_storage_address">
+                            <button class="btn btn-secondary dropdown-toggle" type="button"
+                                    id="dropdown_storage_address_text"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                {{$order->storage_address}}
+                            </button>
+                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                @foreach($list_storages as $storage)
+                                    <a class="dropdown-item"><input type="hidden" class="id"
+                                                                    value="{{$storage->id}}">{{$storage->address}}</a>
+                                @endforeach
                             </div>
                         </div>
                     </td>

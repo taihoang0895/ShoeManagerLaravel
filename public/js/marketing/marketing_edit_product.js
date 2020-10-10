@@ -288,6 +288,7 @@ function saveProduct() {
     var product_name = $('#edit_product_name').val().trim();
     var price = $('#edit_product_price').val().trim();
     var historical_cost = $('#edit_product_historical_cost').val().trim();
+    var storage_id = $("#edit_product_storage_id").val();
     var is_test = 0;
     if($('#edit_product_is_test').is(":checked")){
         is_test = 1;
@@ -302,6 +303,7 @@ function saveProduct() {
     product['product_price'] = price;
     product['product_historical_cost'] = historical_cost;
     product['is_test'] = is_test;
+    product['storage_id'] = storage_id;
     product['list_detail_products'] = JSON.stringify(listDetailProduct);
 
     var url = '/marketing/add-product/';
@@ -339,8 +341,14 @@ function handleCancelButtonClicked() {
         $('#edit_product_dialog').css('display', 'none');
     });
 }
-
+function init(){
+    $('#dropdown_storage_address a').click(function(){
+        $('#dropdown_storage_address_text').text($(this).text());
+        $("#edit_product_storage_id").val($(this).find(".id").val());
+    });
+}
 $(document).ready(function () {
+    init();
     handleAddDetailProductButton();
     handleCancelButtonClicked();
     handleOkButtonClicked();

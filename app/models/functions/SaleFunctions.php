@@ -25,14 +25,11 @@ use App\models\Product;
 use App\models\ProductCategory;
 use App\models\Province;
 use App\models\Remind;
+use App\models\Storage;
 use App\models\Street;
 use App\User;
-use Carbon\Carbon;
-use Dotenv\Result\Result;
-use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
-use mysql_xdevapi\Exception;
 
 class SaleFunctions
 {
@@ -491,10 +488,13 @@ class SaleFunctions
         $detailOrder->pick_money_str = "";
         $detailOrder->actually_collected_str = "";
         $detailOrder->product_code = "";
+        Log::log("taih", $detailOrder->id);
         if ($detailOrder->marketing_product_id != null) {
             $marketingProduct = MarketingProduct::where("id", $detailOrder->marketing_product_id)->first();
             if ($marketingProduct != null) {
+
                 $detailOrder->marketing_product_code = $marketingProduct->code;
+                $detailOrder->product_code = $marketingProduct->product_code;
             }
         }
         if ($detailOrder->discount_id != null) {
@@ -516,9 +516,6 @@ class SaleFunctions
             $detailOrder->product_color = $productCat->color;
         }
         if ($product != null) {
-            if ($detailOrder->marketing_product_code == "") {
-                $detailOrder->marketing_product_code = $product->code;
-            }
             $detailOrder->product_code = $product->code;
             $detailOrder->price_str = Util::formatMoney($product->price);
         }
@@ -596,7 +593,7 @@ class SaleFunctions
 
     }
 
-    public static function countOrder($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $filterOrderType = -1, $search_phone_number = "")
+    public static function countOrder($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $filterOrderType = -1, $search_phone_number = "", $searchGHTKCode = "")
     {
         $filterOptions = [];
         if ($orderStateId != -1) {
@@ -606,6 +603,10 @@ class SaleFunctions
             $filterOptions[] = ["created", ">=", $startTime];
             $filterOptions[] = ["created", "<=", $endTime];
         }
+        if ($searchGHTKCode != "") {
+            $filterOptions[] = ["ghtk_label", $searchGHTKCode];
+        }
+
         if ($filterOrderType != -1) {
             if ($filterOrderType == 1) {
                 $filterOptions['is_test'] = true;
@@ -623,7 +624,7 @@ class SaleFunctions
         return $query->count();
     }
 
-    public static function findOrders($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $filterOrderType = -1, $search_phone_number = "")
+    public static function findOrders($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $filterOrderType = -1, $search_phone_number = "", $searchGHTKCode = "")
     {
         $filterOptions = [];
         if ($orderStateId != -1) {
@@ -639,6 +640,9 @@ class SaleFunctions
             } else {
                 $filterOptions['is_test'] = false;
             }
+        }
+        if ($searchGHTKCode != "") {
+            $filterOptions[] = ["ghtk_label", $searchGHTKCode];
         }
 
         $perPage = config('settings.per_page');
@@ -721,6 +725,7 @@ class SaleFunctions
     {
         $order = Order::where("id", $id)->first();
         if ($order != null) {
+            $order->storage_address = Storage::getShortName($order->storage_id)->address;
             self::attachExtraOrderProperty($order);
             $listDetailOrders = DetailOrder::where("order_id", $order->id)->get();
             foreach ($listDetailOrders as $detailOrder) {
@@ -751,6 +756,7 @@ class SaleFunctions
                 $order->order_state_updated = Util::now();
             }
         }
+        $order->storage_id = $orderInfo->storage_id;
         if ($customer == null) {
             return ResultCode::FAILED_SAVE_ORDER_CUSTOMER_NOT_FOUND;
         } else {
@@ -765,12 +771,23 @@ class SaleFunctions
         if (OrderState::getName($orderInfo->order_state_id) == "") {
             return ResultCode::FAILED_SAVE_ORDER_UNKNOWN_ORDER_STATE;
         }
-        $replaceOrder = Order::where("code", $orderInfo->replace_order_code)->first();
-        if ($replaceOrder != null) {
-            $order->replace_order_id = $replaceOrder->id;
-        } else {
-            $order->replace_order_id = null;
+
+        $order->replace_order_id = null;
+
+        if ($orderInfo->replace_order_code != null && $orderInfo->replace_order_code != "") {
+            $replaceOrder = Order::where("ghtk_label", $orderInfo->replace_order_code)->first();
+            if ($replaceOrder != null) {
+                if (!in_array($replaceOrder->order_state,
+                    [OrderState::STATE_ORDER_IS_RETURNED_AND_BROKEN, OrderState::STATE_ORDER_IS_RETURNED_AND_NO_BROKEN])) {
+                    return ResultCode::FAILED_SAVE_ORDER_REPLACE_ORDER_LEAK_STATE;
+                }
+                $order->replace_order_id = $replaceOrder->id;
+            } else {
+                return ResultCode::FAILED_SAVE_ORDER_NOT_FOUND_REPLACE_ORDER;
+            }
         }
+
+
         if ($orderInfo->note == null) {
             $orderInfo->note = "";
         }
@@ -1208,7 +1225,7 @@ class SaleFunctions
         if ($startTime != null && $endTime != null) {
             $filterOptions[] = ["orders.created", ">=", $startTime];
             $filterOptions[] = ["orders.created", "<=", $endTime];
-            $perPage = 106;
+            $perPage = 10e6;
         }
 
 
@@ -1322,6 +1339,7 @@ class SaleFunctions
                         ];
                         array_push($listProducts, $product);
                     }
+                    $pickAddress = Storage::get($order->storage_id)->address;
                     $time = Util::currentTime();
                     $data = [
                         "products" => $listProducts,
@@ -1331,7 +1349,7 @@ class SaleFunctions
                             "pick_tel" => $config->pick_tel,
                             "pick_province" => $config->pick_province,
                             "pick_district" => $config->pick_district,
-                            "pick_address" => $config->pick_address,
+                            "pick_address" => $pickAddress,
                             "pick_money" => $order->sum_pick_money,
                             "tel" => $order->customer_phone,
                             "name" => $order->customer_name,
@@ -1706,5 +1724,31 @@ class SaleFunctions
         } else {
             return ResultCode::FAILED_CUSTOMER_MARKETING_PRODUCT_NOT_FOUND_TODAY;
         }
+    }
+
+    public static function summaryOrder($orderId)
+    {
+
+        $order = self::getOrder($orderId);
+        if ($order != null) {
+            $content = "Dạ em gửi Anh/Chị thông tin đặt hàng:\n";
+            $content .= "\tNgười nhận : " . $order->customer_name . "\n";
+            $content .= "\tSĐT : " . $order->customer_phone . "\n";
+            $content .= "\tĐịa chi : " . $order->customer_address . "\n";
+            $content .= "Thông tin sản phẩm:\n";
+            $totalMoney = 0;
+            foreach ($order->list_detail_orders as $detailOrder) {
+                $productCode = $detailOrder->product_code;
+                if($productCode == ""){
+
+                }
+                $content .= "\tMSP : " . $detailOrder->product_code . "\n";
+                $content .= "\tSize : " . $detailOrder->product_size . " " . $detailOrder->product_color . "\n";
+                $totalMoney += $detailOrder->actually_collected;
+            }
+            $content .= "Tổng đơn hàng của mình là : " . Util::formatMoney($totalMoney) . " đ và miễn phí ship";
+            return $content;
+        }
+        return "";
     }
 }

@@ -11,6 +11,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies as Middleware;
 use Closure;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class PermissionMiddleware extends Middleware
 {
@@ -30,47 +31,79 @@ class PermissionMiddleware extends Middleware
         );
 
         if (Auth::check()) {
-            if(Auth::user()->isAdmin()){
-                $request->session()->put("current_department_name", "Admin");
-                if($request->is('sale/*', 'sale')){
-                    $request->session()->put("current_department_name", User::convertCodeToDepartmentName(User::$DEPARTMENT_SALE));
+            if (Auth::user()->isAdmin()) {
+                if ($request->is('admin/*', 'admin')) {
+                    $request->session()->put("current_department_name", "Admin");
+                    $request->session()->put("current_department_code", "Admin");
                 }
-                if($request->is('marketing/*', 'marketing')){
-                    $request->session()->put("current_department_name", User::convertCodeToDepartmentName(User::$DEPARTMENT_MARKETING));
+                if ($request->is('sale/*', 'sale')) {
+                    $departmentCode = User::$DEPARTMENT_SALE;
+                    $request->session()->put("current_department_name", User::convertCodeToDepartmentName($departmentCode));
+                    $request->session()->put("current_department_code", $departmentCode);
                 }
-                if($request->is('storekeeper/*', 'storekeeper')){
-                    $request->session()->put("current_department_name", User::convertCodeToDepartmentName(User::$DEPARTMENT_STOREKEEPER));
+                if ($request->is('marketing/*', 'marketing')) {
+                    $departmentCode = User::$DEPARTMENT_MARKETING;
+                    $request->session()->put("current_department_name", User::convertCodeToDepartmentName($departmentCode));
+                    $request->session()->put("current_department_code", $departmentCode);
+                }
+                if ($request->is('storekeeper/*', 'storekeeper')) {
+                    $departmentCode = $request->get("department_code", -1);
+                    if($departmentCode == -1){
+                        if(Session::has("current_department_code")){
+                            Log::log("taih", "current_department_code".  Session::get("current_department_code") );
+                            $departmentCode = Session::get("current_department_code");
+                        }
+                    }
+                    $request->session()->put("current_department_name", User::convertCodeToDepartmentName($departmentCode));
+                    $request->session()->put("current_department_code", $departmentCode);
                 }
 
                 return $next($request);
             }
-            if(Auth::user()->isSale()){
-                if(Auth::user()->isSaleAdmin()){
-                    if(!$request->is('sale/*', 'sale') && !$request->is('storekeeper/*', 'storekeeper')){
+            if (Auth::user()->isSale()) {
+                if (Auth::user()->isSaleAdmin()) {
+                    if (!$request->is('sale/*', 'sale') && !$request->is('storekeeper/*', 'storekeeper')) {
                         return response()->json($response);
-                    }else{
-                        if($request->is('sale/*', 'sale')){
-                            $request->session()->put("current_department_name", User::convertCodeToDepartmentName(User::$DEPARTMENT_SALE));
+                    } else {
+                        if ($request->is('sale/*', 'sale')) {
+                            $departmentCode = User::$DEPARTMENT_SALE;
+                            $request->session()->put("current_department_name", User::convertCodeToDepartmentName($departmentCode));
+                            $request->session()->put("current_department_code", $departmentCode);
                         }
-                        if($request->is('storekeeper/*', 'storekeeper')){
-                            $request->session()->put("current_department_name", User::convertCodeToDepartmentName(User::$DEPARTMENT_STOREKEEPER));
+                        if ($request->is('storekeeper/*', 'storekeeper')) {
+                            $departmentCode = $request->get("department_code", -1);
+                            if($departmentCode == -1){
+                                if(Session::has("current_department_code")){
+                                    $departmentCode = Session::get("current_department_code");
+                                }
+                            }
+                            $request->session()->put("current_department_name", User::convertCodeToDepartmentName($departmentCode));
+                            $request->session()->put("current_department_code", $departmentCode);
                         }
                     }
-                }else{
-                    if(!$request->is('sale/*', 'sale')){
+                } else {
+                    if (!$request->is('sale/*', 'sale')) {
                         return response()->json($response);
                     }
                 }
 
             }
-            if(Auth::user()->isMarketing()){
-                if(!$request->is('marketing/*', 'marketing')){
+            if (Auth::user()->isMarketing()) {
+                if (!$request->is('marketing/*', 'marketing')) {
                     return response()->json($response);
+                }else{
+                    $departmentCode = Auth::user()->department;
+                    $request->session()->put("current_department_name", User::convertCodeToDepartmentName($departmentCode));
+                    $request->session()->put("current_department_code", $departmentCode);
                 }
             }
-            if(Auth::user()->isStoreKeeper()){
-                if(!$request->is('storekeeper/*', 'storekeeper')){
+            if (Auth::user()->isStoreKeeper()) {
+                if (!$request->is('storekeeper/*', 'storekeeper')) {
                     return response()->json($response);
+                }else{
+                    $departmentCode = Auth::user()->department;
+                    $request->session()->put("current_department_name", User::convertCodeToDepartmentName($departmentCode));
+                    $request->session()->put("current_department_code", $departmentCode);
                 }
             }
         } else {

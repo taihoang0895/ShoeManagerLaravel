@@ -9,13 +9,13 @@ function collectFilterParam() {
     var filter_member_id = $('#filter_member_id_selected').val().trim();
     var filter_order_type = $('#filter_order_type_selected').val();
     var search_phone_number = $('#list_order_search_phone_number').val().trim();
-
-
+    var search_ghtk_code = $('#list_order_search_ghtk_code').val().trim();
     var param = "";
     if (start_time != '' && end_time != '') {
         param = 'start_time=' + start_time + "&" + "end_time=" + end_time;
     }
     if (order_state_id != "-1") {
+
         param += "&order_state_id=" + order_state_id
     }
     if (filter_member_id != "-1") {
@@ -23,6 +23,9 @@ function collectFilterParam() {
     }
     if (search_phone_number != "") {
         param += "&search_phone_number=" + search_phone_number
+    }
+    if (search_ghtk_code != "") {
+        param += "&search_ghtk_code=" + search_ghtk_code
     }
     param += "&filter_order_type=" + filter_order_type;
     if (param.startsWith("&")) {

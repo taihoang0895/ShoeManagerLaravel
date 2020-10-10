@@ -44,7 +44,8 @@ function handlePushOrderButton() {
     });
 
 }
-function handleUpdateOrderStateButton(){
+
+function handleUpdateOrderStateButton() {
     $('#btn_update_order_state').click(function () {
         var list_order_ids = collectAllOrdersSelected();
         if (list_order_ids.length == 0) {
@@ -77,6 +78,7 @@ function handleUpdateOrderStateButton(){
 
     });
 }
+
 function handleCancelOrderButton() {
     $('#btn_cancel_order').click(function () {
         var list_order_ids = collectAllOrdersSelected();
@@ -192,10 +194,10 @@ function collectFilterParam() {
     if (order_state_id != "-1") {
         param += "&order_state_id=" + order_state_id
     }
-    if(search_ghtk_code != ""){
+    if (search_ghtk_code != "") {
         param += "&search_ghtk_code=" + search_ghtk_code
     }
-    if(search_phone_number != ""){
+    if (search_phone_number != "") {
         param += "&search_phone_number=" + search_phone_number
     }
 
@@ -208,6 +210,7 @@ function collectFilterParam() {
 
 function handleFilterButton() {
     $('#order_btn_filter').click(function () {
+
         var start_time = $('#order_filter_start_time_text').val().trim();
         var end_time = $('#order_filter_end_time_text').val().trim();
 

@@ -236,7 +236,7 @@ function addNewDetailOrder() {
     var quantity = $('#detail_order_additional_product_quantity').val().trim();
     var productDiscount = $('#detail_order_additional_discount_text').text().trim();
     var discountId = $('#detail_order_additional_discount_id').val().trim();
-
+    var storage_id = $("#edit_order_storage_id").val();
     if (!validate_detail_order(productCode, productSize, productColor, quantity, 0, 0)) {
         return;
     }
@@ -245,7 +245,8 @@ function addNewDetailOrder() {
         'product_size': productSize,
         'product_color': productColor,
         'quantity': quantity,
-        'discount_id' : discountId
+        'discount_id' : discountId,
+        'storage_id' : storage_id
     }
     $.get('/product/price', param, function (response) {
         if (response['status'] == 200) {
@@ -569,8 +570,10 @@ function save_order(order_id, customer_code, order_state_id, order_fail_id, note
         return;
     }
     is_waiting_for_request = true;
+    var storage_id = $("#edit_order_storage_id").val();
     var order = {
-        '_token': $('meta[name=csrf-token]').attr('content')
+        '_token': $('meta[name=csrf-token]').attr('content'),
+        'storage_id' : storage_id
     };
     order['order_id'] = order_id;
     order['customer_code'] = customer_code;
@@ -579,6 +582,7 @@ function save_order(order_id, customer_code, order_state_id, order_fail_id, note
     order['note'] = note;
     order['replace_order'] = replace_order;
     order['delivery_time'] = delivery_time;
+
     if(is_order_test){
         order['is_order_test'] = 1;
     }else{
@@ -603,8 +607,15 @@ function save_order(order_id, customer_code, order_state_id, order_fail_id, note
 
 }
 
-$(document).ready(function () {
+function init(){
+    $('#dropdown_storage_address a').click(function(){
+        $('#dropdown_storage_address_text').text($(this).text());
+        $("#edit_order_storage_id").val($(this).find(".id").val());
+    });
+}
 
+$(document).ready(function () {
+    init();
     $('#edit_order_dropdown_state a').click(function () {
         $('#edit_order_dropdown_state_text').text($(this).text());
         var state_id = $(this).attr('id');

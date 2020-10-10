@@ -9,6 +9,7 @@ use App\models\functions\CommonFunctions;
 use App\models\functions\Log;
 use App\models\functions\ResultCode;
 use App\models\functions\Util;
+use App\models\Storage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -218,6 +219,7 @@ class AdminController extends Controller
 
         $emptyUser = new \stdClass();
         $emptyUser->id = -1;
+        $emptyUser->storage_id = -1;
         $emptyUser->username = "";
         $emptyUser->password = "";
         $emptyUser->alias_name = "";
@@ -242,6 +244,9 @@ class AdminController extends Controller
             $response['message'] = '';
         } else {
             $user = AdminFunctions::getUser($userId);
+            if($user->storage_id == null){
+                $user->storage_id = -1;
+            }
             $response['content'] = view("admin.admin_edit_user", [
                 "user" => $user
             ])->render();

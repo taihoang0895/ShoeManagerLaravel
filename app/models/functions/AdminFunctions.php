@@ -16,6 +16,7 @@ use App\models\MarketingProduct;
 use App\models\Order;
 use App\models\Product;
 use App\models\ProductCategory;
+use App\models\Storage;
 use App\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -159,6 +160,7 @@ class AdminFunctions
             $product->name = $productInfo->name;
             $product->price = $productInfo->price;
             $product->is_test = $productInfo->is_test;
+            $product->storage_id = $productInfo->storage_id;
             $product->historical_cost = $productInfo->historical_cost;
             $product->created = Util::now();
             if ($product->save()) {
@@ -215,6 +217,7 @@ class AdminFunctions
             $product->price = $productInfo->price;
             $product->historical_cost = $productInfo->historical_cost;
             $product->is_test = $productInfo->is_test;
+            $product->storage_id = $productInfo->storage_id;
             if ($product->save()) {
                 $listOldDetailProducts = DetailProduct::where("product_code", $product->code)->get();
                 foreach ($listOldDetailProducts as $oldDetailProduct) {
@@ -254,8 +257,10 @@ class AdminFunctions
         try {
             $product = Product::where("code", $productCode)->first();
             if ($product != null) {
-                $product->is_active = false;
-                if ($product->save()) {
+                if (DetailOrder::existProduct($productCode)) {
+                    return ResultCode::FAILED_DELETE_PRODUCT_EXISTED_IN_ORDER;
+                }
+                if ($product->delete()) {
                     return ResultCode::SUCCESS;
                 }
             }
@@ -269,6 +274,8 @@ class AdminFunctions
     {
         $product = Product::where("code", $productCode)->first();
         if ($product != null) {
+
+            $product->storage_address = Storage::getShortName($product->storage_id)->address;
             $listDetailProducts = DetailProduct::where("product_code", $productCode)->get();
             foreach ($listDetailProducts as $detailProduct) {
                 $productCategory = ProductCategory::where("id", $detailProduct->product_category_id)->first();

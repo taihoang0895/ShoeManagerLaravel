@@ -26,10 +26,12 @@ class CretateOrderTable extends Migration
             $table->dateTime("delivery_time")->nullable();
             $table->dateTime("created");
             $table->dateTime("order_state_updated")->nullable();
+            $table->integer('storage_id')->default(1);
 
             $table->foreign('customer_id')->references('id')->on('customers');
             $table->foreign('order_fail_reason_id')->references('id')->on('order_fail_reasons');
             $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('storage_id')->references('id')->on('storages');
         });
     }
 

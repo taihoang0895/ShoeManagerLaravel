@@ -11,6 +11,7 @@ use App\models\HistoryImportingProduct;
 use App\models\HistoryReturningProduct;
 use App\models\ImportingProduct;
 use App\models\Inventory;
+use App\models\Product;
 use App\models\ProductCategory;
 use App\models\ReturningProduct;
 use App\User;
@@ -19,6 +20,22 @@ use Illuminate\Support\Facades\DB;
 
 class StoreKeeperFunctions
 {
+
+    public static function listProductCodes()
+    {
+        $listProductCodes = [];
+        foreach (DB::table('products')
+                     ->where("is_active", true)
+                     ->where("is_test", false)
+                     ->where("storage_id", Util::getCurrentStorageId())
+                     ->distinct()->get(['code']) as $productCat) {
+            array_push($listProductCodes, $productCat->code);
+        }
+        return $listProductCodes;
+
+    }
+
+
     public static function findImportingProducts($listUserIds, $filterTime = null, $filterProductCode = "___",
                                                  $filterProductSize = "___", $filterProductColor = "___")
     {
@@ -91,7 +108,6 @@ class StoreKeeperFunctions
             if ($productCat == null) {
                 return ResultCode::FAILED_UNKNOWN;
             }
-
             $condition = [];
             $condition[] = ["product_code", $importingProductInfo->product_code];
             $condition[] = ["product_category_id", $productCat->id];
@@ -581,13 +597,13 @@ class StoreKeeperFunctions
             " INNER JOIN product_categories ON detail_products.product_category_id=product_categories.id" .
             " INNER JOIN products ON detail_products.product_code=products.code" .
             " LEFT JOIN inventories ON detail_products.id=inventories.detail_product_id" .
-            " WHERE products.is_active=1 and products.is_test=0 " .
+            " WHERE products.is_active=1 and products.is_test=0 and products.storage_id=" . Util::getCurrentStorageId() .
             " ORDER BY product_size";
 
         $listInventoryReports = array();
         $results = DB::select(DB::raw($sql));
         foreach ($results as $inventoryReport) {
-            $inventoryReport->remaining_quantity = $inventoryReport->importing_quantity + $inventoryReport->returning_quantity + $inventoryReport->failed_quantity - $inventoryReport->exporting_quantity;
+            $inventoryReport->remaining_quantity = $inventoryReport->importing_quantity + $inventoryReport->returning_quantity - $inventoryReport->exporting_quantity;
             array_push($listInventoryReports, $inventoryReport);
         }
         return $listInventoryReports;
@@ -600,6 +616,7 @@ class StoreKeeperFunctions
             ->join('products', 'detail_products.product_code', "=", "products.code")
             ->where("products.is_active", true)
             ->where("products.is_test", false)
+            ->where("products.storage_id", Util::getCurrentStorageId())
             ->select("detail_products.id as id", "detail_products.product_code as product_code", "product_categories.size as size", "product_categories.color as color")
             ->get();
     }
@@ -635,13 +652,15 @@ class StoreKeeperFunctions
                 ->join('products', "detail_products.product_code", "=", "products.code")
                 ->where("products.is_active", true)
                 ->where("products.is_test", false)
+                ->where("products.storage_id", Util::getCurrentStorageId())
                 ->where("orders.is_test", false);
         } else {
             $query->select("detail_product_id", DB::raw('SUM(' . $tableName . '.quantity) as total_quantity'), DB::raw('DATE(' . $tableName . '.created) as day'))
                 ->join('detail_products', $tableName . ".detail_product_id", "=", "detail_products.id")
                 ->join('products', "detail_products.product_code", "=", "products.code")
                 ->where("products.is_active", true)
-                ->where("products.is_test", false);
+                ->where("products.is_test", false)
+                ->where("products.storage_id", Util::getCurrentStorageId());
         }
         $results = $query->where($filterOptions)
             ->groupBy('detail_product_id', 'day')

@@ -3,6 +3,7 @@
 namespace App\models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class DetailOrder extends Model
 {
@@ -22,15 +23,15 @@ class DetailOrder extends Model
             $marketingProduct = MarketingProduct::where("id", $this->marketing_product_id)->first();
             if ($marketingProduct != null) {
                 $marketingProductId = $marketingProduct->id;
-                $marketingProductCode= $marketingProduct->code;
+                $marketingProductCode = $marketingProduct->code;
             }
         }
         $detailProduct = DetailProduct::where("id", $this->detail_product_id)->first();
-        if($detailProduct != null){
+        if ($detailProduct != null) {
             $productCode = $detailProduct->product_code;
             $detailProductId = $detailProduct->id;
             $productCategory = ProductCategory::where("id", $detailProduct->product_category_id)->first();
-            if($productCategory != null){
+            if ($productCategory != null) {
                 $productSize = $productCategory->size;
                 $productColor = $productCategory->color;
             }
@@ -43,13 +44,26 @@ class DetailOrder extends Model
             "marketing_product_id" => $marketingProductId,
             "marketing_product_code" => $marketingProductCode,
             "quantity" => $this->quantity,
-            "detail_product_id" =>$detailProductId,
+            "detail_product_id" => $detailProductId,
             "actually_collected" => $this->actually_collected,
             "pick_money" => $this->pick_money,
             "discount_id" => strval($this->discount_id),
-            "product_code"=> $productCode,
-            "product_size"=> $productSize,
-            "product_color"=> $productColor
+            "product_code" => $productCode,
+            "product_size" => $productSize,
+            "product_color" => $productColor
         ]);
+    }
+
+    public static function existProduct($code)
+    {
+        $listDetailProducts = DetailProduct::where("product_code", $code)->get();
+        if (count($listDetailProducts) == 0) {
+            return false;
+        }
+        $listIds = [];
+        foreach ($listDetailProducts as $detailProduct) {
+            array_push($listIds, $detailProduct->id);
+        }
+        return DB::table("detail_orders")->whereIn("detail_product_id", $listIds)->count() > 0;
     }
 }
