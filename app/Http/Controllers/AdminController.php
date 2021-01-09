@@ -8,11 +8,15 @@ use App\models\functions\AdminFunctions;
 use App\models\functions\CommonFunctions;
 use App\models\functions\Log;
 use App\models\functions\ResultCode;
+use App\models\functions\SaleFunctions;
 use App\models\functions\Util;
+use App\models\Order;
+use App\models\OrderState;
 use App\models\Storage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -244,7 +248,7 @@ class AdminController extends Controller
             $response['message'] = '';
         } else {
             $user = AdminFunctions::getUser($userId);
-            if($user->storage_id == null){
+            if ($user->storage_id == null) {
                 $user->storage_id = -1;
             }
             $response['content'] = view("admin.admin_edit_user", [
@@ -496,7 +500,7 @@ class AdminController extends Controller
         $landingPageInfo = new \stdClass();
         $landingPageInfo->id = $landingPageId;
         $landingPageInfo->name = $name;
-        if($note == null){
+        if ($note == null) {
             $note = "";
         }
         $landingPageInfo->note = $note;
@@ -545,7 +549,50 @@ class AdminController extends Controller
         return response()->json($response);
     }
 
-    public function syncCustomerSource(Request $request){
+    public function syncOrderState(Request $request)
+    {
+        $response = array(
+            "status" => 200,
+            "content" => "",
+            "message" => ""
+        );
+        try {
+            $listOrders = Order::where("order_state", OrderState::STATE_PAYMENT_SUCCESSFUL)->get();
+            foreach ($listOrders as $order) {
+                SaleFunctions::syncOrderState(Auth::user(), $order->id);
+            }
+        } catch (\Exception $e) {
+            $response['status'] = 406;
+            $response['message'] = 'Lỗi syncOrderState';
+        }
+        return response()->json($response);
+
+
+    }
+
+    public function syncSumActuallyCollected(Request $request)
+    {
+        $response = array(
+            "status" => 200,
+            "content" => "Done",
+            "message" => ""
+        );
+
+        $listRows = DB::table("detail_orders")
+            ->select(DB::raw('SUM(actually_collected) as sum_actually_collected'), "order_id")
+            ->groupBy("order_id")->get();
+        foreach ($listRows as $row) {
+            $order = Order::where("id", $row->order_id)->first();
+            if ($order != null) {
+                $order->sum_actually_collected = $row->sum_actually_collected;
+                $order->save();
+            }
+        }
+        return response()->json($response);
+    }
+
+    public function syncCustomerSource(Request $request)
+    {
         $response = array(
             "status" => 200,
             "content" => "",
@@ -553,27 +600,290 @@ class AdminController extends Controller
         );
         $resultCode = AdminFunctions::syncCustomerSource();
         $response['message'] = $resultCode;
-        if($resultCode == ResultCode::SUCCESS){
+        if ($resultCode == ResultCode::SUCCESS) {
             $response['content'] = "syncCustomerSource success";
-        }else{
+        } else {
             $response['content'] = "syncCustomerSource failed";
         }
         return response()->json($response);
     }
 
-    public static function syncCustomerState(Request $request){
+    public static function syncCustomerState(Request $request)
+    {
         $response = array(
             "status" => 200,
             "content" => "",
             "message" => ""
         );
         $resultCode = AdminFunctions::syncCustomerState();
-        if($resultCode == ResultCode::SUCCESS){
+        if ($resultCode == ResultCode::SUCCESS) {
             $response['content'] = "syncCustomerSource success";
-        }else{
+        } else {
             $response['content'] = "syncCustomerSource failed";
         }
         return response()->json($response);
+    }
+
+    public static function reportProductRevenue(Request $request)
+    {
+
+        $listMembers = [];
+        $filterMemberId = Util::parseInt($request->get('filter_member_id', -1));
+        $filterMemberStr = Auth::user()->alias_name;
+
+        $filterOrderTimeType = Util::parseInt($request->get('filter_order_time_type'), 0);
+        $filterOrderTimeTypeText = "";
+        $reportTime1Str = $request->get('time1');
+        $reportTime2Str = $request->get('time2');
+        $fromDateStr = "";
+        $toDateStr = "";
+        switch ($filterOrderTimeType) {
+            case 0:
+                $filterOrderTimeTypeText = "Ngày";
+                $fromDateStr = $reportTime1Str;
+                $toDateStr = $reportTime2Str;
+                break;
+            case 1:
+                $filterOrderTimeTypeText = "Tháng";
+                $fromDateStr = "1/" . $reportTime1Str;
+                $toDateStr = "1/" . $reportTime2Str;
+                break;
+            case 2:
+                $filterOrderTimeTypeText = "Năm";
+                $fromDateStr = "1/1/" . $reportTime1Str;
+                $toDateStr = "1/1/" . $reportTime2Str;
+                break;
+        }
+        $fromDate = null;
+        $toDate = null;
+
+
+        $fromDate = Util::safeParseDate($fromDateStr, null);
+        $toDate = Util::safeParseDate($toDateStr, null);
+
+
+        $actives = ["", "", "", "", ""];
+        $actives[1] = "active";
+
+        $listRows = AdminFunctions::reportProductRevenue($filterMemberId, $fromDate, $toDate, $filterOrderTimeType);
+
+        $result = SaleFunctions::findAllSales();
+        if (Auth::user()->isAdmin()) {
+            array_push($listMembers, Auth::user());
+        }
+        foreach ($result as $member) {
+            array_push($listMembers, $member);
+        }
+
+        if ($filterMemberId != -1) {
+            foreach ($listMembers as $member) {
+                if ($member->id == $filterMemberId) {
+                    $filterMemberStr = $member->alias_name;
+                    break;
+                }
+            }
+        } else {
+            $filterMemberId = -1;
+            $filterMemberStr = "_______";
+        }
+
+        Log::log("taih", "time1 ".$reportTime1Str);
+
+        return view("admin.admin_product_revenue_report", [
+            "actives" => $actives,
+            "list_rows" => $listRows,
+            'filter_member_id' => strval($filterMemberId),
+            'filter_member_str' => $filterMemberStr,
+            'list_members' => $listMembers,
+            "time1" => $reportTime1Str,
+            "time2" => $reportTime2Str,
+            'filter_order_time_type_text' => $filterOrderTimeTypeText,
+            'filter_order_time_type' => $filterOrderTimeType
+        ]);
+    }
+
+    public static function reportOrderType(Request $request)
+    {
+
+
+        $filterOrderTimeType = Util::parseInt($request->get('filter_order_time_type'), 0);
+        $filterOrderTimeTypeText = "";
+        $reportTime1Str = $request->get('time1');
+        $reportTime2Str = $request->get('time2');
+        $fromDateStr = "";
+        $toDateStr = "";
+
+        switch ($filterOrderTimeType) {
+            case 0:
+                $filterOrderTimeTypeText = "Ngày";
+                $fromDateStr = $reportTime1Str;
+                $toDateStr = $reportTime2Str;
+                break;
+            case 1:
+                $filterOrderTimeTypeText = "Tháng";
+                $fromDateStr = "1/" . $reportTime1Str;
+                $toDateStr = "1/" . $reportTime2Str;
+                break;
+            case 2:
+                $filterOrderTimeTypeText = "Năm";
+                $fromDateStr = "1/1/" . $reportTime1Str;
+                $toDateStr = "1/1/" . $reportTime2Str;
+                break;
+        }
+        $fromDate = null;
+        $toDate = null;
+
+
+        $fromDate = Util::safeParseDate($fromDateStr, null);
+        $toDate = Util::safeParseDate($toDateStr, null);
+
+        $actives = ["", "", "", "", ""];
+        $actives[2] = "active";
+
+        $report = AdminFunctions::reportOrderType($fromDate, $toDate, $filterOrderTimeType);
+        return view("admin.admin_order_type_report", [
+            "actives" => $actives,
+            "report" => $report,
+            "time1" => $reportTime1Str,
+            "time2" => $reportTime2Str,
+            'filter_order_time_type_text' => $filterOrderTimeTypeText,
+            'filter_order_time_type' => $filterOrderTimeType
+        ]);
+    }
+
+    public static function reportOrderEffection(Request $request)
+    {
+        $listMembers = [];
+        $filterMemberId = Util::parseInt($request->get('filter_member_id', -1));
+        $filterMemberStr = Auth::user()->alias_name;
+
+        $filterOrderTimeType = Util::parseInt($request->get('filter_order_time_type'), 0);
+        $filterOrderTimeTypeText = "";
+        $reportTime1Str = $request->get('time1');
+        $reportTime2Str = $request->get('time2');
+        $fromDateStr = "";
+        $toDateStr = "";
+        switch ($filterOrderTimeType) {
+            case 0:
+                $filterOrderTimeTypeText = "Ngày";
+                $fromDateStr = $reportTime1Str;
+                $toDateStr = $reportTime2Str;
+                break;
+            case 1:
+                $filterOrderTimeTypeText = "Tháng";
+                $fromDateStr = "1/" . $reportTime1Str;
+                $toDateStr = "1/" . $reportTime2Str;
+                break;
+            case 2:
+                $filterOrderTimeTypeText = "Năm";
+                $fromDateStr = "1/1/" . $reportTime1Str;
+                $toDateStr = "1/1/" . $reportTime2Str;
+                break;
+        }
+        $fromDate = null;
+        $toDate = null;
+
+
+        $fromDate = Util::safeParseDate($fromDateStr, null);
+        $toDate = Util::safeParseDate($toDateStr, null);
+        $result = SaleFunctions::findAllSales();
+        if (Auth::user()->isAdmin()) {
+            array_push($listMembers, Auth::user());
+        }
+        foreach ($result as $member) {
+            array_push($listMembers, $member);
+        }
+
+        if ($filterMemberId != -1) {
+            foreach ($listMembers as $member) {
+                if ($member->id == $filterMemberId) {
+                    $filterMemberStr = $member->alias_name;
+                    break;
+                }
+            }
+        } else {
+            $filterMemberId = -1;
+            $filterMemberStr = "_______";
+        }
+
+        $listRows = AdminFunctions::reportOrderEffection($filterMemberId, $fromDate, $toDate, $filterOrderTimeType);
+
+        $actives = ["", "", "", "", ""];
+        $actives[3] = "active";
+        return view("admin.admin_order_effection_report", [
+            "actives" => $actives,
+            "list_rows" => $listRows,
+            'filter_member_id' => strval($filterMemberId),
+            'filter_member_str' => $filterMemberStr,
+            'list_members' => $listMembers,
+            "time1" => $reportTime1Str,
+            "time2" => $reportTime2Str,
+            'filter_order_time_type_text' => $filterOrderTimeTypeText,
+            'filter_order_time_type' => $filterOrderTimeType
+        ]);
+    }
+
+    public static function reportOverviewWeekly(Request $request)
+    {
+        $time = Util::parseInt($request->get('time'), -1);
+        if ($time == -1) {
+            $time = Util::now()->year;
+        }
+        $weeklyReports = AdminFunctions::reportWeeklyOverviewOrder($time);
+        return view("admin.admin_overview_report_weekly", [
+            "time" => $time,
+            "weekly_reports" => $weeklyReports
+        ]);
+    }
+
+    public static function reportOverviewDetailOrderState(Request $request)
+    {
+        $filterOrderTimeType = Util::parseInt($request->get('filter_order_time_type'), 0);
+        $filterOrderTimeTypeText = "";
+        $reportTime1Str = $request->get('time1');
+        $reportTime2Str = $request->get('time2');
+        $fromDateStr = "";
+        $toDateStr = "";
+        switch ($filterOrderTimeType) {
+            case 0:
+                $filterOrderTimeTypeText = "Ngày";
+                $fromDateStr = $reportTime1Str;
+                $toDateStr = $reportTime2Str;
+                break;
+            case 1:
+                $filterOrderTimeTypeText = "Tháng";
+                $fromDateStr = "1/" . $reportTime1Str;
+                $toDateStr = "1/" . $reportTime2Str;
+                break;
+            case 2:
+                $filterOrderTimeTypeText = "Năm";
+                $fromDateStr = "1/1/" . $reportTime1Str;
+                $toDateStr = "1/1/" . $reportTime2Str;
+                break;
+        }
+        $fromDate = null;
+        $toDate = null;
+
+
+        $fromDate = Util::safeParseDate($fromDateStr, null);
+        $toDate = Util::safeParseDate($toDateStr, null);
+        $summary = AdminFunctions::reportOverviewOrder($fromDate, $toDate, $filterOrderTimeType);
+        return view("admin.admin_overview_report_detail_order_state", [
+            "summary" => $summary,
+            "time1" => $reportTime1Str,
+            "time2" => $reportTime2Str,
+            'filter_order_time_type_text' => $filterOrderTimeTypeText,
+            'filter_order_time_type' => $filterOrderTimeType
+        ]);
+    }
+
+    public static function reports(Request $request)
+    {
+        $actives = ["", "", "", "", ""];
+        $actives[0] = "active";
+        return view("admin.admin_overview_report", [
+            "actives" => $actives,
+        ]);
     }
 
 }

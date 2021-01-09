@@ -69,7 +69,7 @@ function handleUpdateButton() {
             var data = {
                 'customer_id': customer_id
             }
-            $.get("/sale/form-update-customer/",data, function (response) {
+            $.get("/sale/form-update-customer/", data, function (response) {
                 if (response['status'] == 200) {
                     $('#dialog_edit_customer').empty();
                     $('#dialog_edit_customer').html(response['content']);
@@ -151,34 +151,41 @@ function handlePagination() {
     });
 
 }
-function collectFilterParam(){
+
+function collectFilterParam() {
     var search_phone_number = $('#list_customer_search_phone_number').val().trim();
     var filter_member_id = $('#filter_member_id_selected').val().trim();
+    var filter_customer_state = $('#filter_customer_state_selected').val().trim();
     var param = "";
-    if(search_phone_number != ''){
-        param = 'search_phone_number='+search_phone_number;
+    if (search_phone_number != '') {
+        param = 'search_phone_number=' + search_phone_number;
     }
     if (filter_member_id != "-1") {
         param += "&filter_member_id=" + filter_member_id
+    }
+    if (filter_customer_state != "-1") {
+        param += "&filter_customer_state=" + filter_customer_state
     }
     if (param.startsWith("&")) {
         param = param.substring(1);
     }
     return param;
 }
+
 function handleSearchButton() {
     $('#list_customer_btn_search').click(function () {
         var curr_url = location.href.toString().toLowerCase();
         curr_url = removeAllParam(curr_url);
         filter_param = collectFilterParam();
-        if (filter_param != ''){
+        if (filter_param != '') {
             curr_url = addParam(curr_url, filter_param);
         }
 
         location.href = curr_url;
     });
 }
-function init(){
+
+function init() {
     $('.customer_row').click(function () {
         $('.customer_row_selected').removeClass('customer_row_selected');
         $(this).addClass('customer_row_selected');
@@ -188,7 +195,13 @@ function init(){
         $('#filter_member_id_selected').val($(this).find('input').val());
     });
 
+    $('#filter_customer_state a').click(function () {
+        $('#filter_customer_state_text').text($(this).text());
+        $('#filter_customer_state_selected').val($(this).find('input').val());
+    });
+
 }
+
 $(document).ready(function () {
     init();
     handleAddButton();

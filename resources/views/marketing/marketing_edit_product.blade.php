@@ -56,7 +56,7 @@
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                 @foreach($list_storages as $storage)
                                     <a class="dropdown-item"><input type="hidden" class="id"
-                                                                    value="{{$storage->id}}">{{$storage->address}}</a>
+                                                                    value="{{$storage->id}}">{{$storage->name}}</a>
                                 @endforeach
                             </div>
                         </div>

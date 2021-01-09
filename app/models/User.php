@@ -4,6 +4,7 @@ namespace App;
 
 use App\models\functions\Log;
 use App\models\functions\Util;
+use App\models\Storage;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -15,6 +16,7 @@ class User extends Authenticatable
     static $DEPARTMENT_MARKETING = 1;
     static $DEPARTMENT_STOREKEEPER_VU_NGOC_PHAN = 2;
     static $DEPARTMENT_STOREKEEPER_XA_DAN = 3;
+    static $DEPARTMENT_STOREKEEPER_XUAN_LA = 4;
 
     static $ROLE_MEMBER = 0;
     static $ROLE_LEADER = 1;
@@ -59,9 +61,11 @@ class User extends Authenticatable
             case User::$DEPARTMENT_MARKETING:
                 return "Marketing";
             case User::$DEPARTMENT_STOREKEEPER_VU_NGOC_PHAN:
-                return "Kho Vũ Ngọc Phan";
+                return Storage::STORAGE_VU_NGOC_PHAN_NAME;
             case User::$DEPARTMENT_STOREKEEPER_XA_DAN:
-                return "Kho Xã Đàn";
+                return Storage::STORAGE_XA_DAN_NAME;
+            case User::$DEPARTMENT_STOREKEEPER_XUAN_LA:
+                return Storage::STORAGE_XUAN_LA_NAME;
         }
         return "";
     }
@@ -74,9 +78,11 @@ class User extends Authenticatable
             case User::$DEPARTMENT_MARKETING:
                 return "Marketing";
             case User::$DEPARTMENT_STOREKEEPER_VU_NGOC_PHAN:
-                return "Kho Vũ Ngọc Phan";
+                return Storage::STORAGE_VU_NGOC_PHAN_NAME;
             case User::$DEPARTMENT_STOREKEEPER_XA_DAN:
-                return "Kho Xã Đàn";
+                return Storage::STORAGE_XA_DAN_NAME;
+            case User::$DEPARTMENT_STOREKEEPER_XUAN_LA:
+                return Storage::STORAGE_XUAN_LA_NAME;
         }
         return "";
     }
@@ -91,11 +97,15 @@ class User extends Authenticatable
         if ($name == "MARKETING") {
             return User::$DEPARTMENT_MARKETING;
         }
-        if ($name == "KHO VŨ NGỌC PHAN") {
+        if ($name == Util::toUpper(Storage::STORAGE_VU_NGOC_PHAN_NAME)) {
             return User::$DEPARTMENT_STOREKEEPER_VU_NGOC_PHAN;
         }
-        if ($name == "KHO XÃ ĐÀN") {
+        if ($name ==  Util::toUpper(Storage::STORAGE_XA_DAN_NAME)) {
             return User::$DEPARTMENT_STOREKEEPER_XA_DAN;
+        }
+
+        if ($name ==  Util::toUpper(Storage::STORAGE_XUAN_LA_NAME)) {
+            return User::$DEPARTMENT_STOREKEEPER_XUAN_LA;
         }
         return -1;
     }
@@ -170,6 +180,6 @@ class User extends Authenticatable
 
     public function isStoreKeeper()
     {
-        return in_array($this->department, [User::$DEPARTMENT_STOREKEEPER_VU_NGOC_PHAN, User::$DEPARTMENT_STOREKEEPER_XA_DAN]);
+        return in_array($this->department, [User::$DEPARTMENT_STOREKEEPER_VU_NGOC_PHAN, User::$DEPARTMENT_STOREKEEPER_XA_DAN, User::$DEPARTMENT_STOREKEEPER_XUAN_LA]);
     }
 }

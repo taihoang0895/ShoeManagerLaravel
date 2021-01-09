@@ -487,7 +487,7 @@ class StorekeeperController
         $sum_failed_quantity = 0;
         $sum_remaining_quantity = 0;
 
-        $listInventoryReports = StoreKeeperFunctions::reportInventory();
+        $listInventoryReports = StoreKeeperFunctions::reportInventory(Auth::user());
 
         foreach ($listInventoryReports as $inventoryReport) {
             $key = json_encode([$inventoryReport->product_code, $inventoryReport->product_color]);

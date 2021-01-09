@@ -254,6 +254,7 @@ class SaleController
     {
         $searchPhoneNumber = $request->get('search_phone_number', "");
         $filterMemberId = Util::parseInt($request->get('filter_member_id', -1));
+        $filterCustomerState = Util::parseInt($request->get('filter_customer_state', -1));
 
         $filterMemberStr = "Chọn Người Tạo";
         $listMembers = [];
@@ -289,7 +290,19 @@ class SaleController
             $filterMemberId = Auth::user()->id;
         }
 
-        $listCustomer = SaleFunctions::findCustomers($listUserIds, $searchPhoneNumber);
+        $listCustomer = SaleFunctions::findCustomers($listUserIds, $searchPhoneNumber, $filterCustomerState);
+
+
+        $listOrderStates = SaleFunctions::listCustomerState();
+        $filterCustomerStateStr = "";
+        if ($filterCustomerState != -1) {
+            foreach ($listOrderStates as $orderState) {
+                if ($orderState->id == $filterCustomerState) {
+                    $filterCustomerStateStr = $orderState->name;
+                    break;
+                }
+            }
+        }
         $filterMemberDisplay = "";
 
         if (!Auth::user()->isLeader()) {
@@ -299,11 +312,14 @@ class SaleController
         return view("sale.sale_list_customers", [
             "list_customers" => $listCustomer,
             'search_phone_number' => $searchPhoneNumber,
-            'total_customer' => SaleFunctions::countCustomer($listUserIds, $searchPhoneNumber),
+            'total_customer' => SaleFunctions::countCustomer($listUserIds, $searchPhoneNumber, $filterCustomerState),
             'list_members' => $listMembers,
             'filter_member_id' => strval($filterMemberId),
             'filter_member_str' => $filterMemberStr,
-            "filter_member_display" => $filterMemberDisplay
+            "filter_member_display" => $filterMemberDisplay,
+            "listOrderStates" => $listOrderStates,
+            "filter_customer_state" => $filterCustomerState,
+            "filter_customer_state_str" => $filterCustomerStateStr
         ]);
 
     }
@@ -342,6 +358,7 @@ class SaleController
         $emptyCustomer->phone_number = "";
         $emptyCustomer->birthday_str = "";
         $emptyCustomer->address = "";
+        $emptyCustomer->note = "";
         $emptyCustomer->is_public_phone_number = false;
         $emptyCustomer->customer_state = CustomerState::STATE_CUSTOMER_WAITING_FOR_CONFIRMING_CUSTOMER;
         $emptyCustomer->customer_state_name = CustomerState::getName(CustomerState::STATE_CUSTOMER_WAITING_FOR_CONFIRMING_CUSTOMER);
@@ -445,6 +462,7 @@ class SaleController
             $districtName = $request->get('district_name', '');
             $streetName = $request->get('street_name', '');
             $address = $request->get('address', '');
+            $note = $request->get('note', '');
             $listMarketingProducts = json_decode($request->get('list_marketing_product', '{}'));
 
 
@@ -496,6 +514,7 @@ class SaleController
             $customerInfo->id = $id;
             $customerInfo->name = $name;
             $customerInfo->address = $address;
+            $customerInfo->note = $note;
             $customerInfo->listMarketingProducts = $listMarketingProducts;
             if ($street != null) {
                 $customerInfo->street_id = $street->id;
@@ -534,10 +553,15 @@ class SaleController
 
             } else {
                 $response['status'] = 200;
-                if ($customerInfo->state_id == CustomerState::STATE_CUSTOMER_CUSTOMER_AGREED) {
+                if ($customerInfo->state_id == CustomerState::STATE_CUSTOMER_CUSTOMER_AGREED ||
+                    $customerInfo->state_id == CustomerState::STATE_CUSTOMER_WAITING_FOR_PRODUCT_AVAILABLE) {
                     if ($prevCustomer == null || $prevCustomer->order_state != $customerInfo->state_id) {
                         $response['status'] = 302;
-                        $response['content'] = $this->createFormAddOrder(Auth::user(), $customerInfo->code)['content'];
+                        $isTest = false;
+                        if ($customerInfo->state_id == CustomerState::STATE_CUSTOMER_WAITING_FOR_PRODUCT_AVAILABLE) {
+                            $isTest = true;
+                        }
+                        $response['content'] = $this->createFormAddOrder(Auth::user(), $customerInfo->code, $isTest)['content'];
                     }
                 }
 
@@ -656,7 +680,7 @@ class SaleController
         ]);
     }
 
-    private function createFormAddOrder($user, $customerCode = "")
+    private function createFormAddOrder($user, $customerCode = "", $isTest = false)
     {
         $response = array(
             "status" => 200,
@@ -666,16 +690,29 @@ class SaleController
         $emptyOrder = new \stdClass();
         $emptyOrder->id = -1;
         $emptyOrder->customer_code = $customerCode;
+        $storage = SaleFunctions::findStorageFromCustomer($customerCode);
         $emptyOrder->order_state_id = OrderState::STATE_ORDER_PENDING;
         $emptyOrder->order_fail_reason_id = -1;
         $emptyOrder->created = Util::now();
         $emptyOrder->replace_order_code = "";
         $emptyOrder->order_fail_cause = "___";
         $emptyOrder->note = Config::getOrNew()->order_note;
-        $emptyOrder->is_test = false;
+        $emptyOrder->is_test = $isTest;
         $listStorages = Storage::findAll();
-        $emptyOrder->storage_id = $listStorages[0]->id;
-        $emptyOrder->storage_address = $listStorages[0]->address;
+        if ($storage == null) {
+            $emptyOrder->storage_id = $listStorages[0]->id;
+            $emptyOrder->storage_address = $listStorages[0]->name;
+        } else {
+            $emptyOrder->storage_id = $storage->id;
+            foreach ($listStorages as $ele) {
+                if ($ele->id == $storage->id) {
+                    $emptyOrder->storage_address = $ele->name;
+                    break;
+                }
+            }
+
+        }
+
         $listOrderStates = [];
         //$listOrderStates = SaleFunctions::getListOrderStates();
         $listFailReasons = SaleFunctions::getListFailReasons();
@@ -851,7 +888,7 @@ class SaleController
                     $response['message'] = "Không tìm thấy mã hóa đơn hoàn";
                 }
                 if ($resultCode == ResultCode::FAILED_SAVE_ORDER_REPLACE_ORDER_LEAK_STATE) {
-                    $response['message'] = "Mã hóa đơn hoàn phải trong trạng thái đã trả về lỗi hoặc không lỗi";
+                    $response['message'] = "Mã hóa đơn hoàn chưa được đẩy lên giao hàng tiết kiệm";
                 }
             }
             return response()->json($response);
@@ -902,6 +939,10 @@ class SaleController
         $resultCode = SaleFunctions::updateOrder(Auth::user(), $orderInfo);
         if ($resultCode == ResultCode::SUCCESS) {
             $response['status'] = 200;
+        } else {
+            if ($resultCode == ResultCode::FAILED_DELETE_ORDER_STATE_MORE_THAN_STATE_ORDER_CREATED) {
+                $response['message'] = "Lỗi sửa hóa đơn đã được đăng lên GHTK";;
+            }
         }
         return response()->json($response);
     }
@@ -1088,7 +1129,7 @@ class SaleController
                 array_push($listUserIds, $member->id);
             }
             $listOrders = SaleFunctions::listOrderStateManager($listUserIds, $startTime, $endTime, $orderStateId, $searchGHTKCode, $search_phone_number);
-            $listState = SaleFunctions::getListOrderStates();
+            $listState = SaleFunctions::getListOrderStatesAndCountOrder( $startTime, $endTime);
             return view("sale.sale_leader_order_state_manager", [
                 "list_orders" => $listOrders,
                 'list_states' => $listState,
@@ -1139,7 +1180,7 @@ class SaleController
             return response()->json($response);
         }
         $orderId = $request->get("order_id");
-        $result = SaleFunctions::syncOrderState($orderId);
+        $result = SaleFunctions::syncOrderState(Auth::user(), $orderId);
         if ($result->result_code == ResultCode::SUCCESS) {
             $response['status'] = 200;
             $response['new_order_state'] = $result->new_order_state;
@@ -1250,6 +1291,9 @@ class SaleController
         $filterMemberId = Util::parseInt($request->get('filter_member_id', -1));
         $filterMemberStr = Auth::user()->alias_name;
         $listMembers = [];
+        $fromDateStr = $request->get('time1');
+        $toDateStr = $request->get('time2');
+
         $result = SaleFunctions::findAllSales();
         if (Auth::user()->isAdmin()) {
             array_push($listMembers, Auth::user());
@@ -1259,8 +1303,6 @@ class SaleController
         }
 
 
-        $listUserIds = [];
-
         if ($filterMemberId != -1) {
             foreach ($listMembers as $member) {
                 if ($member->id == $filterMemberId) {
@@ -1269,16 +1311,28 @@ class SaleController
                 }
             }
         } else {
-            $filterMemberId = Auth::user()->id;
+            $filterMemberId = -1;
+            $filterMemberStr = "_______";
         }
 
+        $fromDate = null;
+        $toDate = null;
 
-        $listOrderReports = SaleFunctions::reportOrder($filterMemberId);
+        $fromDate = Util::safeParseDate($fromDateStr, null);
+        $toDate = Util::safeParseDate($toDateStr, null);
+
+        $reports = SaleFunctions::reportOrder($filterMemberId, $fromDate, $toDate);
+        $actives = ["", "", "", ""];
+        $actives[0] = "active";
+
         return view("sale.sale_report", [
-            "list_order_reports" => $listOrderReports,
+            "actives" => $actives,
+            "reports" => $reports,
             'list_members' => $listMembers,
             'filter_member_id' => strval($filterMemberId),
             'filter_member_str' => $filterMemberStr,
+            'time1' => $fromDateStr,
+            'time2' => $toDateStr,
         ]);
     }
 

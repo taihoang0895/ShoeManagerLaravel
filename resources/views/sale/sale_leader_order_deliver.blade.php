@@ -20,6 +20,7 @@
         <tr class="tbl_header_item">
             <td class="col_mark"><input type="checkbox" style="width:20px;height:20px;" id="cb_selected_all"></td>
             <td class="order_code">MHD</td>
+            <td class="sale_name">Người Tạo</td>
             <td class="phone_number">SĐT</td>
             <td class="customer_name">Tên khách hàng</td>
 
@@ -39,6 +40,8 @@
                 <td class="col_mark"><input type="checkbox" style="width:20px;height:20px;" class="cb_mark"><input
                         type="hidden" class="order_id" value="{{$order->id}}"></td>
                 <td class="order_code">{{$order->code}}</td>
+                <td class="sale_name">{{$order->sale_name}}</td>
+                <td class="phone_number">{{$order->customer_phone}}</td>
                 <td class="phone_number">{{$order->customer_phone}}</td>
                 <td class="customer_name">{{$order->customer_name}}</td>
                 <td class="customer_province">{{$order->customer_province_name}}</td>

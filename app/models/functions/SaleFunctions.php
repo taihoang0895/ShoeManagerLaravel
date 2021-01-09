@@ -30,6 +30,7 @@ use App\models\Street;
 use App\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use mysql_xdevapi\Exception;
 
 class SaleFunctions
 {
@@ -235,21 +236,26 @@ class SaleFunctions
         }
     }
 
-    public static function countCustomer($listUserIds, $searchPhoneNumber = "")
+    public static function countCustomer($listUserIds, $searchPhoneNumber = "", $customerState = -1)
     {
         $filterOptions = [];
         if ($searchPhoneNumber != "") {
             $filterOptions[] = ["phone_number", "like", "%" . $searchPhoneNumber . "%"];
         }
-
+        if ($customerState != -1) {
+            $filterOptions[] = ["customer_state", $customerState];
+        }
         return Customer::where($filterOptions)->whereIn("user_id", $listUserIds)->count();
     }
 
-    public static function findCustomers($listUserIds, $searchPhoneNumber = "")
+    public static function findCustomers($listUserIds, $searchPhoneNumber = "", $customerState = -1)
     {
         $filterOptions = [];
         if ($searchPhoneNumber != "") {
             $filterOptions[] = ["phone_number", "like", "%" . $searchPhoneNumber . "%"];
+        }
+        if ($customerState != -1) {
+            $filterOptions[] = ["customer_state", $customerState];
         }
         $perPage = config('settings.per_page');
         $listCustomers = Customer::where($filterOptions)->whereIn("user_id", $listUserIds)->orderBy("created", "DESC")->paginate($perPage);
@@ -395,6 +401,7 @@ class SaleFunctions
             $customer->landing_page_id = $customerInfo->landing_page_id;
             $customer->phone_number = $customerInfo->phone_number;
             $customer->birthday = $customerInfo->birthday;
+            $customer->note = $customerInfo->note;
 
             $customer->public_phone_number = $customerInfo->is_public_phone_number;
             $customer->street_id = $customerInfo->street_id;
@@ -465,11 +472,19 @@ class SaleFunctions
             if ($customer->user_id != $user->id) {
                 return ResultCode::FAILED_PERMISSION_DENY;
             }
+            DB::beginTransaction();
             try {
+                if (Order::existCustomer($id)) {
+                    throw new \Exception("customer is existed");
+                }
+                CustomerSource::where("customer_id", $id)->delete();
                 if (Customer::where("id", $id)->delete()) {
+                    DB::commit();
                     return ResultCode::SUCCESS;
                 }
-            } catch (QueryException $e) {
+            } catch (\Exception $e) {
+                DB::rollBack();
+                Log::log("error message ", $e->getMessage());
                 return ResultCode::FAILED_DELETE_CUSTOMER_EXISTED_IN_ORDER;
             }
 
@@ -488,7 +503,7 @@ class SaleFunctions
         $detailOrder->pick_money_str = "";
         $detailOrder->actually_collected_str = "";
         $detailOrder->product_code = "";
-        Log::log("taih", $detailOrder->id);
+
         if ($detailOrder->marketing_product_id != null) {
             $marketingProduct = MarketingProduct::where("id", $detailOrder->marketing_product_id)->first();
             if ($marketingProduct != null) {
@@ -509,6 +524,7 @@ class SaleFunctions
         $detailProduct = DetailProduct::where("id", $detailOrder->detail_product_id)->first();
         $product = null;
         if ($detailProduct != null) {
+            $detailOrder->product_code = $detailProduct->product_code;
             $product = Product::where("code", $detailProduct->product_code)->first();
         }
         if ($productCat != null) {
@@ -516,13 +532,12 @@ class SaleFunctions
             $detailOrder->product_color = $productCat->color;
         }
         if ($product != null) {
-            $detailOrder->product_code = $product->code;
+
             $detailOrder->price_str = Util::formatMoney($product->price);
         }
 
         $detailOrder->pick_money_str = Util::formatMoney($detailOrder->pick_money);
         $detailOrder->actually_collected_str = Util::formatMoney($detailOrder->actually_collected);
-
     }
 
     private static function attachExtraOrderProperty($order)
@@ -654,7 +669,7 @@ class SaleFunctions
             $query->join("customers", "orders.customer_id", "=", "customers.id")
                 ->where("customers.phone_number", "like", "%" . $search_phone_number . "%");
         }
-
+        $query->select("orders.*");
         $orders = $query->paginate($perPage);
 
         foreach ($orders as $order) {
@@ -697,6 +712,9 @@ class SaleFunctions
         return $listOrderState;
     }
 
+
+
+
     public static function getListFailReasons()
     {
         return OrderFailReason::all();
@@ -725,7 +743,7 @@ class SaleFunctions
     {
         $order = Order::where("id", $id)->first();
         if ($order != null) {
-            $order->storage_address = Storage::getShortName($order->storage_id)->address;
+            $order->storage_address = Storage::get($order->storage_id)->name;
             self::attachExtraOrderProperty($order);
             $listDetailOrders = DetailOrder::where("order_id", $order->id)->get();
             foreach ($listDetailOrders as $detailOrder) {
@@ -747,7 +765,7 @@ class SaleFunctions
             $order->created = Util::now();
             $order->order_state_updated = Util::now();
             $order->code = "";
-            $order->is_test = $orderInfo->is_test;
+
             $isInsertAction = true;
             $customer = Customer::where("code", $orderInfo->customer_code)->first();
         } else {
@@ -756,14 +774,24 @@ class SaleFunctions
                 $order->order_state_updated = Util::now();
             }
         }
+        $order->is_test = $orderInfo->is_test;
         $order->storage_id = $orderInfo->storage_id;
         if ($customer == null) {
             return ResultCode::FAILED_SAVE_ORDER_CUSTOMER_NOT_FOUND;
         } else {
-            if ($customer->customer_state != CustomerState::STATE_CUSTOMER_ORDER_CREATED) {
-                $customer->customer_state = CustomerState::STATE_CUSTOMER_ORDER_CREATED;
-                if (!$customer->save()) {
-                    return ResultCode::FAILED_UNKNOWN;
+            if ($order->is_test) {
+                if ($customer->customer_state != CustomerState::STATE_CUSTOMER_WAITING_FOR_PRODUCT_AVAILABLE) {
+                    $customer->customer_state = CustomerState::STATE_CUSTOMER_WAITING_FOR_PRODUCT_AVAILABLE;
+                    if (!$customer->save()) {
+                        return ResultCode::FAILED_UNKNOWN;
+                    }
+                }
+            } else {
+                if ($customer->customer_state != CustomerState::STATE_CUSTOMER_ORDER_CREATED) {
+                    $customer->customer_state = CustomerState::STATE_CUSTOMER_ORDER_CREATED;
+                    if (!$customer->save()) {
+                        return ResultCode::FAILED_UNKNOWN;
+                    }
                 }
             }
         }
@@ -777,8 +805,7 @@ class SaleFunctions
         if ($orderInfo->replace_order_code != null && $orderInfo->replace_order_code != "") {
             $replaceOrder = Order::where("ghtk_label", $orderInfo->replace_order_code)->first();
             if ($replaceOrder != null) {
-                if (!in_array($replaceOrder->order_state,
-                    [OrderState::STATE_ORDER_IS_RETURNED_AND_BROKEN, OrderState::STATE_ORDER_IS_RETURNED_AND_NO_BROKEN])) {
+                if ($replaceOrder->order_state < OrderState::STATE_ORDER_CREATED) {
                     return ResultCode::FAILED_SAVE_ORDER_REPLACE_ORDER_LEAK_STATE;
                 }
                 $order->replace_order_id = $replaceOrder->id;
@@ -796,6 +823,16 @@ class SaleFunctions
         $order->delivery_time = $orderInfo->delivery_time;
         $order->customer_id = $customer->id;
         $order->order_fail_reason_id = $orderInfo->order_fail_reason_id;
+
+        if ($order->id == null) {
+            $sumActuallyCollected = 0;
+            foreach ($orderInfo->detail_orders as $detailOrder) {
+                $sumActuallyCollected += $detailOrder->actually_collected;
+            }
+            $order->sum_actually_collected = $sumActuallyCollected;
+        }
+
+
         if ($orderInfo->order_state_id != null) {
             $order->order_state = $orderInfo->order_state_id;
         }
@@ -908,8 +945,13 @@ class SaleFunctions
             return ResultCode::FAILED_UNKNOWN;
         }
 
-        if (!$order->is_test) {
-            $inventory = Inventory::getOrNew($detailProduct->id);
+        return self::updateInventoryForAddingDetailProduct($user, $detailOrder, $order->is_test);
+    }
+
+    private static function updateInventoryForAddingDetailProduct($user, $detailOrder, $isOrderTest)
+    {
+        if (!$isOrderTest) {
+            $inventory = Inventory::getOrNew($detailOrder->detail_product_id);
             $inventory->exporting_quantity += $detailOrder->quantity;
             if (!$inventory->save()) {
                 return ResultCode::FAILED_UNKNOWN;
@@ -927,16 +969,11 @@ class SaleFunctions
         return ResultCode::SUCCESS;
     }
 
-    private static function deleteDetailOrder($user, $order, $detailOrder)
+    private static function updateInventoryForRemovingDetailProduct($user, $detailOrder, $isOrderTest)
     {
-        if (!DetailOrder::where("id", $detailOrder->id)->delete()) {
-            return ResultCode::FAILED_UNKNOWN;
-        }
-        if (!$order->is_test) {
+        if (!$isOrderTest) {
             $detailProduct = DetailProduct::where("id", $detailOrder->detail_product_id)->first();
-
             $inventory = Inventory::getOrNew($detailProduct->id);
-            Log::log("taih", "dssds");
             $inventory->exporting_quantity -= $detailOrder->quantity;
             if (!$inventory->save()) {
                 return ResultCode::FAILED_UNKNOWN;
@@ -951,9 +988,15 @@ class SaleFunctions
             }
 
         }
-
-
         return ResultCode::SUCCESS;
+    }
+
+    private static function deleteDetailOrder($user, $order, $detailOrder)
+    {
+        if (!DetailOrder::where("id", $detailOrder->id)->delete()) {
+            return ResultCode::FAILED_UNKNOWN;
+        }
+        return self::updateInventoryForRemovingDetailProduct($user, $detailOrder, $order->is_test);
     }
 
     public static function addOrder($user, $orderInfo)
@@ -1000,10 +1043,32 @@ class SaleFunctions
         try {
             $order = Order::where("id", $orderInfo->id)->first();
             if ($order != null) {
+                $orderTypeChanged = $order->is_test != $orderInfo->is_test;
+                if ($orderTypeChanged) {
+                    if ($order->order_state != OrderState::STATE_ORDER_PENDING) {
+                        return ResultCode::FAILED_DELETE_ORDER_STATE_MORE_THAN_STATE_ORDER_CREATED;
+                    }
+                }
                 if ($order->user_id == $user->id || $user->isLeader()) {
                     $resultCode = self::saveOnlyOrder($user, $orderInfo);
-                    Log::log("taih", "resultCode $resultCode");
                     if ($resultCode == ResultCode::SUCCESS) {
+                        if ($orderTypeChanged) {
+                            $listDetailOrders = DetailOrder::where("order_id", $order->id)->get();
+                            Log::log("taih", "sdnsjkndsnd");
+                            foreach ($listDetailOrders as $detailOrder) {
+                                if ($orderInfo->is_test) {
+                                    if (self::updateInventoryForRemovingDetailProduct($user, $detailOrder, false) != ResultCode::SUCCESS) {
+                                        return ResultCode::FAILED_UNKNOWN;
+                                    }
+                                } else {
+                                    if (self::updateInventoryForAddingDetailProduct($user, $detailOrder, false) != ResultCode::SUCCESS) {
+                                        return ResultCode::FAILED_UNKNOWN;
+                                    }
+
+                                }
+                            }
+
+                        }
                         DB::commit();
                         return ResultCode::SUCCESS;
                     }
@@ -1043,12 +1108,14 @@ class SaleFunctions
                 if ($historyOrder->save()) {
                     if ($order->delete()) {
                         $resultCode = ResultCode::SUCCESS;
-                        DB::commit();
+                        $customer = Customer::get($order->customer_id);
+                        $customer->customer_state = CustomerState::STATE_CUSTOMER_CUSTOMER_DISAGREED;
+                        if ($customer->save()) {
+                            DB::commit();
+                        }
+
                     }
-
                 }
-
-
             }
 
         } catch (\Exception $e) {
@@ -1189,7 +1256,9 @@ class SaleFunctions
 
     public static function countOrderStateManager($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $searchGHTKCode = "", $search_phone_number = "")
     {
-        $filterOptions = [];
+        $filterOptions = [
+            "is_test" => false
+        ];
         if ($orderStateId != -1) {
             $filterOptions['order_state'] = $orderStateId;
         }
@@ -1200,14 +1269,36 @@ class SaleFunctions
             $filterOptions[] = ["orders.created", ">=", $startTime];
             $filterOptions[] = ["orders.created", "<=", $endTime];
         }
-        $query = Order::where($filterOptions)
-            ->whereIn("orders.user_id", $listUserIds);
+        $query = Order::where($filterOptions);
+            //->whereIn("orders.user_id", $listUserIds);
         if ($search_phone_number != '') {
             $query->join("customers", "orders.customer_id", "=", "customers.id")
                 ->where("customers.phone_number", "like", "%" . $search_phone_number . "%");
         }
 
         return $query->count();
+    }
+    public static function getListOrderStatesAndCountOrder($startTime = null, $endTime = null)
+    {
+        $listOrderState = [];
+        foreach (OrderState::listIds() as $stateId) {
+            $orderState = new \stdClass();
+            $orderState->id = $stateId;
+            $orderState->name = OrderState::getName($stateId);
+
+            $filterOptions = [
+                "is_test" => false
+            ];
+            $filterOptions['order_state'] = $stateId;
+            if ($startTime != null && $endTime != null) {
+                $filterOptions[] = ["orders.created", ">=", $startTime];
+                $filterOptions[] = ["orders.created", "<=", $endTime];
+            }
+
+            $orderState->total_order = Order::where($filterOptions)->count();
+            array_push($listOrderState, $orderState);
+        }
+        return $listOrderState;
     }
 
     public static function listOrderStateManager($listUserIds, $startTime = null, $endTime = null, $orderStateId = -1, $searchGHTKCode = "", $search_phone_number = "")
@@ -1230,7 +1321,7 @@ class SaleFunctions
 
 
         $query = Order::where($filterOptions)
-            ->whereIn("orders.user_id", $listUserIds)
+            //->whereIn("orders.user_id", $listUserIds)
             ->orderBy('orders.created', 'DESC');
         if ($search_phone_number != '') {
             $query->join("customers", "orders.customer_id", "=", "customers.id")
@@ -1339,14 +1430,17 @@ class SaleFunctions
                         ];
                         array_push($listProducts, $product);
                     }
-                    $pickAddress = Storage::get($order->storage_id)->address;
+                    $storage = Storage::get($order->storage_id);
+                    $pickAddress = $storage->address;
                     $time = Util::currentTime();
+                    $pick_tel = $storage->phone;
+
                     $data = [
                         "products" => $listProducts,
                         "order" => [
                             "id" => "ms." . $time,
                             "pick_name" => $config->pick_name,
-                            "pick_tel" => $config->pick_tel,
+                            "pick_tel" => $pick_tel,
                             "pick_province" => $config->pick_province,
                             "pick_district" => $config->pick_district,
                             "pick_address" => $pickAddress,
@@ -1357,6 +1451,7 @@ class SaleFunctions
                             "province" => $order->customer_province_name,
                             "district" => $order->customer_district_name,
                             "ward" => $order->customer_street_name,
+                            "street" => $order->customer_street_name,
                             "hamlet" => "Khác",
                             "is_freeship" => "1",
                             "note" => $order->note,
@@ -1397,6 +1492,11 @@ class SaleFunctions
                             self::cancelOrderFromGHTK($ghtkLabel);
                         }
                     } else {
+                        Log::log("pushOrderToGHTK",
+                            " address " . $order->customer_address
+                            . " province " . $order->customer_province_name
+                            . " district " . $order->customer_district_name
+                            . " ward " . $order->customer_street_name);
                         Log::log("pushOrderToGHTK", " failed " . $result['message']);
                     }
 
@@ -1447,13 +1547,14 @@ class SaleFunctions
             case 21:
                 return OrderState::STATE_ORDER_IS_RETURNED;
             case 6:
-            case 11:
                 return OrderState::STATE_PAYMENT_SUCCESSFUL;
+            case 11:
+                return OrderState::STATE_PAYMENT_SUCCESSFUL_2;
         }
         return -1;
     }
 
-    public static function syncOrderState($orderId)
+    public static function syncOrderState($user, $orderId)
     {
         $result = new \stdClass();
         $result->result_code = ResultCode::FAILED_UNKNOWN;
@@ -1491,8 +1592,7 @@ class SaleFunctions
                                 if ($order->order_state != $order_state) {
                                     $result->is_change = true;
                                     $result->new_order_state = OrderState::getName($order_state);
-                                    $order->order_state = $order_state;
-                                    if ($order->save()) {
+                                    if (self::changeOrderState($user, $order, $order_state) == ResultCode::SUCCESS) {
 
                                         $result->result_code = ResultCode::SUCCESS;
                                     }
@@ -1665,39 +1765,228 @@ class SaleFunctions
         return $result;
     }
 
-    public static function reportOrder($userId)
+    public static function reportOrder($userId, $fromDate = null, $toDate = null)
     {
-        $perPage = config('settings.per_page');
-        $result = DB::table("orders")
-            ->select(DB::raw('COUNT(orders.id) as total_order'),
-                DB::raw('DATE(orders.created) as day'))
-            ->where('user_id', $userId)
-            ->groupBy('day')
-            ->orderBy('day', 'DESC')
-            ->paginate($perPage);
-        $today = Util::now();
-        foreach ($result as $report) {
-            $date = Util::convertDateSql($report->day);
-            $yesterday = Util::yesterday();
-            if ($today->day == $date->day && $today->month == $date->month && $today->year == $date->year) {
-                $report->date_str = "Hôm nay";
-            } else {
-                if ($yesterday->day == $date->day && $yesterday->month == $date->month && $yesterday->year == $date->year) {
-                    $report->date_str = "Hôm qua";
-                } else {
-                    $report->date_str = Util::formatDate($date);
-                }
-
-            }
-            $listOrders = Order::whereDate("created", $date)->where('user_id', $userId)->get();
-            $listCustomerIds = [];
-            foreach ($listOrders as $order) {
-                array_push($listCustomerIds, $order->customer_id);
-            }
-            $remain = Customer::whereDate("created", $date)->where('user_id', $userId)->whereNotIn("id", $listCustomerIds)->count();
-            $report->total_customer = $report->total_order + $remain;
-            $report->percent = (int)($report->total_order * 1.0 / $report->total_customer * 100);
+        $query = DB::table("customer_sources");
+        $query->select(DB::raw('DATE(customer_sources.created) as day'))
+            ->groupBy("day")
+            ->orderBy('day', 'DESC');
+        if ($fromDate != null && $toDate != null) {
+            $toDate = $toDate->modify('+1 day');
+            $query->whereDate("customer_sources.created", ">=", $fromDate);
+            $query->whereDate("customer_sources.created", "<", $toDate);
         }
+
+
+        $perPage = config('settings.per_page');
+        $result = $query->paginate($perPage);
+        $listDate = [];
+        foreach ($result as $date) {
+            array_push($listDate, $date->day);
+        }
+
+
+        $queryData = DB::table("customer_sources")
+            ->select(
+                DB::raw('DATE(customer_sources.created) as day'),
+                "products.code as product_code",
+                "products.price as product_price",
+                "orders.id as order_id")
+            ->leftJoin("orders", function ($join) {
+                $join->on('customer_sources.customer_id', '=', 'orders.customer_id')
+                    ->where('orders.order_state', '!=', OrderState::STATE_ORDER_CANCEL);
+            })
+            ->whereNull('orders.replace_order_id')
+            ->join("products", "customer_sources.product_code", "=", "products.code")
+            //->groupBy('day', "products.code", "products.price")
+            ->orderBy('day', 'DESC');
+        if ($userId != -1) {
+            $queryData->join("customers", "customer_sources.customer_id", "=", "customers.id");
+            $queryData->where('customers.user_id', $userId);
+        }
+        $reportsData = [];
+        if (count($listDate) > 0) {
+            if (count($listDate) == 1) {
+                $from = Util::convertDateSql($listDate[0]);
+                $to = Util::convertDateSql($listDate[0]);
+                $to = $to->modify('+1 day');
+                $queryData->whereDate("customer_sources.created", ">=", $from);
+                $queryData->whereDate("customer_sources.created", "<", $to);
+
+
+            } else {
+                $to = Util::convertDateSql($listDate[0]);
+                $from = Util::convertDateSql($listDate[count($listDate) - 1]);
+                $to = $to->modify('+1 day');
+                $queryData->whereDate("customer_sources.created", ">=", $from);
+                $queryData->whereDate("customer_sources.created", "<", $to);
+            }
+            $reportsData = $queryData->get();
+
+        }
+
+        $dayMapListOrder = [];
+        foreach ($reportsData as $report) {
+            $date = Util::convertDateSql($report->day);
+            $dateStr = Util::formatDate($date);
+            if (array_key_exists($dateStr, $dayMapListOrder)) {
+                if (!array_key_exists($report->product_code, $dayMapListOrder[$dateStr])) {
+                    $dayMapListOrder[$dateStr][$report->product_code] = new \stdClass();
+                    $dayMapListOrder[$dateStr][$report->product_code]->price = $report->product_price;
+                    $dayMapListOrder[$dateStr][$report->product_code]->data = 0;
+                    $dayMapListOrder[$dateStr][$report->product_code]->total_order = 0;
+                    $dayMapListOrder[$dateStr][$report->product_code]->list_order_ids = [];
+                }
+                if ($report->order_id != null) {
+                    $dayMapListOrder[$dateStr][$report->product_code]->total_order += 1;
+                    array_push($dayMapListOrder[$dateStr][$report->product_code]->list_order_ids, $report->order_id);
+                }
+                $dayMapListOrder[$dateStr][$report->product_code]->data += 1;
+            } else {
+                $dayMapListOrder[$dateStr] = [];
+                $dayMapListOrder[$dateStr][$report->product_code] = new \stdClass();
+                $dayMapListOrder[$dateStr][$report->product_code]->data = 0;
+                $dayMapListOrder[$dateStr][$report->product_code]->price = $report->product_price;
+                $dayMapListOrder[$dateStr][$report->product_code]->total_order = 0;
+                $dayMapListOrder[$dateStr][$report->product_code]->list_order_ids = [];
+                if ($report->order_id != null) {
+                    $dayMapListOrder[$dateStr][$report->product_code]->total_order += 1;
+                    array_push($dayMapListOrder[$dateStr][$report->product_code]->list_order_ids, $report->order_id);
+                }
+                $dayMapListOrder[$dateStr][$report->product_code]->data += 1;
+            }
+
+        }
+        $today = Util::now();
+        $yesterday = Util::yesterday();
+
+        $listRows = [];
+        foreach ($dayMapListOrder as $dateStr => $listProducts) {
+            $sumRevenue = 0;
+            $sumData = 0;
+            $sumOrder = 0;
+
+            foreach ($listProducts as $productCode => $data) {
+                $revenueRow = DB::table("detail_orders")
+                    ->select(DB::raw('SUM(actually_collected) as revenue'))
+                    ->leftJoin("detail_products", "detail_orders.detail_product_id", "=", "detail_products.id")
+                    ->leftJoin("marketing_products", "detail_orders.marketing_product_id", "=", "marketing_products.id")
+                    ->join("orders", "orders.id", "=", "detail_orders.order_id")
+                    ->whereIn("order_id", array_values($data->list_order_ids))
+                    ->where("orders.is_test", false)
+                    ->where(function ($query) use($productCode) {
+                        $query->where('detail_products.product_code',$productCode)
+                            ->orWhere('marketing_products.product_code', $productCode);
+                    })
+                    ->first();
+
+                $listProducts[$productCode]->revenue = $revenueRow->revenue;
+                $sumRevenue += $revenueRow->revenue;
+
+                $row = new \stdClass();
+                if ($today == $dateStr) {
+                    $row->date_str = "Hôm nay";
+                } else {
+                    if (Util::equalDate($yesterday, $date)) {
+                        $row->date_str = "Hôm qua";
+                    } else {
+                        $row->date_str = $dateStr;
+                    }
+                }
+                $row->revenue = $revenueRow->revenue;
+                $row->total_order = count($data->list_order_ids);
+                $row->product_code = $productCode;
+                $row->data = $listProducts[$productCode]->data;
+                $row->cr2 = round($row->total_order * 1.0 / $row->data * 100, 2);
+                $row->product_price = Util::formatMoney($listProducts[$productCode]->price);
+                $row->revenue = Util::formatMoney($row->revenue);
+                array_push($listRows, $row);
+                $sumData += $row->data;
+                $sumOrder +=  $row->total_order;
+            }
+              $row = new \stdClass();
+              $row->date_str = "";
+              $row->product_code = "TỔNG";
+              $row->total_order = $sumOrder;
+              $row->data = $sumData;
+              $row->cr2 = "";
+              $row->product_price = "";
+              $row->revenue = Util::formatMoney($sumRevenue);
+              array_push($listRows, $row);
+        }
+
+
+        /*  $today = Util::formatDate(Util::now());
+          $yesterday = Util::formatDate(Util::yesterday());
+
+          $sumOrder = 0;
+          $sumData = 0;
+          $sumRevenue = 0;
+
+          $prevDate = null;
+          $listRows = [];
+          foreach ($reportsData as $report) {
+
+              $date = Util::convertDateSql($report->day);
+              $dateStr = Util::formatDate($date);
+
+              if ($prevDate != null && !Util::equalDate($prevDate, $date)) {
+                  $row = new \stdClass();
+                  $row->date_str = "";
+                  $row->product_code = "TỔNG";
+                  $row->total_order = $sumOrder;
+                  $row->data = $sumData;
+                  $row->cr2 = "";
+                  $row->product_price = "";
+                  $row->revenue = Util::formatMoney($sumRevenue);
+                  array_push($listRows, $row);
+
+                  $sumOrder = 0;
+                  $sumData = 0;
+                  $sumRevenue = 0;
+              }
+              $row = new \stdClass();
+              $prevDate = $date;
+              if (Util::equalDate($today, $date)) {
+                  $row->date_str = "Hôm nay";
+              } else {
+                  if (Util::equalDate($yesterday, $date)) {
+                      $row->date_str = "Hôm qua";
+                  } else {
+                      $row->date_str = $dateStr;
+                  }
+
+              }
+              $row->total_order = 0;
+              $row->revenue = 0;
+              $row->product_code = $report->product_code;
+              $key = json_encode([$report->day, $report->product_code]);
+              if (array_key_exists($key, $dayMapReportRevenue)) {
+                  $reportRevenue = $dayMapReportRevenue[$key];
+                  $row->revenue = $reportRevenue->total_revenue;
+                  $row->total_order = $reportRevenue->total_order;
+                  $sumRevenue += $reportRevenue->total_revenue;
+              }
+
+              $row->data = $report->data;
+              $row->cr2 = round($row->total_order * 1.0 / $report->data * 100, 2);
+              $row->product_price = Util::formatMoney($report->product_price);
+              $row->revenue = Util::formatMoney($row->revenue);
+              array_push($listRows, $row);
+              $sumOrder += $row->total_order;
+              $sumData += $report->data;
+
+          }
+          $row = new \stdClass();
+          $row->date_str = "";
+          $row->product_code = "TỔNG";
+          $row->total_order = $sumOrder;
+          $row->data = $sumData;
+          $row->cr2 = "";
+          $row->product_price = "";
+          $row->revenue = Util::formatMoney($sumRevenue);
+          array_push($listRows, $row);*/
+        $result->list_rows = $listRows;
         return $result;
 
     }
@@ -1726,6 +2015,20 @@ class SaleFunctions
         }
     }
 
+    public static function findStorageFromCustomer($customerCode)
+    {
+        $result = DB::table("customers")
+            ->select("products.storage_id as storage_id")
+            ->join("customer_sources", "customers.id", "=", "customer_sources.customer_id")
+            ->join("products", "products.code", "=", "customer_sources.product_code")
+            ->where("customers.code", $customerCode)->first();
+        if ($result != null) {
+            return Storage::get($result->storage_id);
+        }
+        return null;
+
+    }
+
     public static function summaryOrder($orderId)
     {
 
@@ -1739,7 +2042,7 @@ class SaleFunctions
             $totalMoney = 0;
             foreach ($order->list_detail_orders as $detailOrder) {
                 $productCode = $detailOrder->product_code;
-                if($productCode == ""){
+                if ($productCode == "") {
 
                 }
                 $content .= "\tMSP : " . $detailOrder->product_code . "\n";

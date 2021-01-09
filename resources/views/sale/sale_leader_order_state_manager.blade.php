@@ -17,6 +17,17 @@
 @endsection
 @section('content')
     <div class="title">Quản Lý Trạng Thái Đơn Hàng <span style="font-size : 0.9em;">({{$total_order}})</span></div>
+    <table class="list_order_state">
+        <tr>
+            @foreach ($list_states as $state)
+                <td>
+                    <div class="order_state_item"><span class="name">{{$state->name}}</span>({{$state->total_order}})<input type="hidden" id="state_id"
+                                                                               value="{{$state->id}}"></div>
+                </td>
+            @endforeach
+        </tr>
+    </table>
+
     <table id="list_order_filter">
         <input type="hidden" id="filter_order_state_id_selected" value="{{$order_state_id_str}}">
         <tr>
@@ -119,7 +130,7 @@
         @foreach ($list_orders as $order)
             <tr class="tbl_item order_state_manager_row">
                 <td class="col_mark"><input type="checkbox" style="width:20px;height:20px;" class="cb_mark"><input
-                        type="hidden" class="order_id" value="{{$order->id}}"></td>
+                            type="hidden" class="order_id" value="{{$order->id}}"></td>
                 <td class="order_code">{{$order->code}}</td>
                 <td class="sale">{{$order->sale_name}}</td>
                 <td class="ghtk_label">{{$order->ghtk_label}}</td>

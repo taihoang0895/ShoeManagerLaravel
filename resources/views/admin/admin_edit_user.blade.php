@@ -44,8 +44,9 @@
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                 <a class="dropdown-item">Sale</a>
                                 <a class="dropdown-item">Marketing</a>
-                                <a class="dropdown-item">Kho Vũ Ngọc Phan</a>
-                                <a class="dropdown-item">Kho Xã Đàn</a>
+                                <a class="dropdown-item">{{\App\models\Storage::STORAGE_VU_NGOC_PHAN_NAME}}</a>
+                                <a class="dropdown-item">{{\App\models\Storage::STORAGE_XA_DAN_NAME}}</a>
+                                <a class="dropdown-item">{{\App\models\Storage::STORAGE_XUAN_LA_NAME}}</a>
                             </div>
                         </div>
                     </td>

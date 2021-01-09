@@ -83,7 +83,7 @@ class MarketingController
 
         $listStorages = Storage::findAll();
         $emptyProduct->storage_id = $listStorages[0]->id;
-        $emptyProduct->storage_address = $listStorages[0]->address;
+        $emptyProduct->storage_address = $listStorages[0]->name;
         $list_suggest_product_sizes = config("settings.list_suggest_product_sizes");
         $list_suggest_product_colors = config("settings.list_suggest_product_color");
 
@@ -112,7 +112,7 @@ class MarketingController
         $productCode = trim($request->get("product_code", ''));
         $productName = trim($request->get("product_name", ''));
         $price = Util::parseInt($request->get("product_price", ''));
-        $isTest = Util::parseInt($request->get("is_test", 0)) == 0;
+        $isTest = Util::parseInt($request->get("is_test", 0)) == 1;
         $historical_cost = Util::parseInt($request->get("product_historical_cost", ''));
         $storageId = Util::parseInt($request->get("storage_id", 0));
         $listDetailProductJson = json_decode($request->get("list_detail_products", '[]'), true);
@@ -792,7 +792,7 @@ class MarketingController
         $sum_failed_quantity = 0;
         $sum_remaining_quantity = 0;
 
-        $listInventoryReports = StoreKeeperFunctions::reportInventory();
+        $listInventoryReports = StoreKeeperFunctions::reportInventory(Auth::user());
 
         foreach ($listInventoryReports as $inventoryReport) {
             $key = json_encode([$inventoryReport->product_code, $inventoryReport->product_color]);

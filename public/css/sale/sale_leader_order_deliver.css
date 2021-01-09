@@ -36,6 +36,10 @@
      min-width :  210px;
       text-align : center;
 }
+.tbl_order_deliver .sale_name{
+    min-width :  210px;
+    text-align : center;
+}
 .tbl_order_deliver .product_name{
      min-width :  250px;
       text-align : center;

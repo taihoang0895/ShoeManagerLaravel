@@ -19,10 +19,16 @@ function handleOKButon(){
         var fail_reason_id = $('#edit_order_fail_reason_id').val();
         var delivery_time = $('#edit_order_delivery_time_text').val();
         var storage_id = $("#edit_order_storage_id").val();
+        var is_order_test = $('#edit_order_is_test').is(':checked');
         is_waiting_for_request = true;
         var order = {
             '_token': $('meta[name=csrf-token]').attr('content'),
         };
+        if(is_order_test){
+            order['is_order_test'] = 1;
+        }else{
+            order['is_order_test'] = 0;
+        }
         order['order_id'] = order_id;
         order['order_state_id'] = state_id;
         order['order_fail_id'] = fail_reason_id;

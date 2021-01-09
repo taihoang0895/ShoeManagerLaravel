@@ -54,12 +54,14 @@
                                 <a class="dropdown-item" href="/admin">Admin</a>
                                 <a class="dropdown-item" href="/sale">Sale</a>
                                 <a class="dropdown-item" href="/marketing">Marketing</a>
-                                <a class="dropdown-item" href="/storekeeper?department_code=2">Kho Vũ Ngọc Phan</a>
-                                <a class="dropdown-item" href="/storekeeper?department_code=3">Kho Xã Đàn</a>
+                                <a class="dropdown-item" href="/storekeeper?department_code=2">{{\App\models\Storage::STORAGE_VU_NGOC_PHAN_NAME}}</a>
+                                <a class="dropdown-item" href="/storekeeper?department_code=3">{{\App\models\Storage::STORAGE_XA_DAN_NAME}}</a>
+                                <a class="dropdown-item" href="/storekeeper?department_code=4">{{\App\models\Storage::STORAGE_XUAN_LA_NAME}}</a>
                             @elseif(Auth::user()->isSaleAdmin())
                                 <a class="dropdown-item" href="/sale">Sale</a>
-                                <a class="dropdown-item" href="/storekeeper?department_code=2">Kho Vũ Ngọc Phan</a>
-                                <a class="dropdown-item" href="/storekeeper?department_code=3">Kho Xã Đàn</a>
+                                <a class="dropdown-item" href="/storekeeper?department_code=2">{{\App\models\Storage::STORAGE_VU_NGOC_PHAN_NAME}}</a>
+                                <a class="dropdown-item" href="/storekeeper?department_code=3">{{\App\models\Storage::STORAGE_XA_DAN_NAME}}</a>
+                                <a class="dropdown-item" href="/storekeeper?department_code=4">{{\App\models\Storage::STORAGE_XUAN_LA_NAME}}</a>
                             @endif
                         </div>
                     @endif

@@ -202,7 +202,7 @@ function updateRow(id) {
             }
 
             if ($(this).attr('id') === budget_id_selected) {
-                $('#' + view_budget_id_selected).text($(this).val());
+                $('#' + view_budget_id_selected).text(parseBudget($(this).val()));
             }
             if ($(this).attr('id') === comment_id_selected) {
                 $('#' + view_comment_id_selected).text($(this).val());
@@ -270,6 +270,11 @@ function showRowInUpdateMode(id) {
     });
 }
 
+function parseBudget(budget) {
+    budget = budget.replaceAll(",", "");
+    budget = budget.replaceAll(".", "");
+    return budget;
+}
 
 function handleUpdateBtnClicked() {
     var updateVal = $(this).val();
@@ -283,6 +288,7 @@ function handleUpdateBtnClicked() {
         var comment_id_selected = "detail_campaign_updating_comment_" + id;
 
         var budget = $('#' + budget_id_selected).val().trim();
+        budget = parseBudget(budget);
         var totalComment = $('#' + comment_id_selected).val().trim();
 
         if (validateCampaign(bank_account_selected_id, campaignNameSelectedId, budget, totalComment)) {
@@ -333,7 +339,7 @@ function addNewCampaign() {
     var backAccountSelectedId = $('#detail_campaign_additional_bank_account_selected_id').val().trim();
     var campaignNameSelectedId = $('#detail_campaign_additional_campaign_name_selected_id').val().trim();
     var budget = $('#detail_campaign_additional_budget').val().trim();
-    budget = budget.replaceAll(",", "");
+    budget = parseBudget(budget);
     var totalComment = $('#detail_campaign_additional_comment').val().trim();
 
     if (validateCampaign(backAccountSelectedId, campaignNameSelectedId, budget, totalComment)) {

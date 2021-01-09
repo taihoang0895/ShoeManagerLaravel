@@ -71,10 +71,10 @@
                     <td class="value_col2">
                         @if($order->is_test)
                             <input type="checkbox" value="" style="width:20px;height:20px;"
-                                   id="edit_order_is_test" checked disabled>
+                                   id="edit_order_is_test" checked>
                         @else
                             <input type="checkbox" value="" style="width:20px;height:20px;"
-                                   id="edit_order_is_test" disabled>
+                                   id="edit_order_is_test">
                         @endif
                     </td>
                 </tr>
@@ -106,7 +106,7 @@
                             <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                                 @foreach($list_storages as $storage)
                                     <a class="dropdown-item"><input type="hidden" class="id"
-                                                                    value="{{$storage->id}}">{{$storage->address}}</a>
+                                                                    value="{{$storage->id}}">{{$storage->name}}</a>
                                 @endforeach
                             </div>
                         </div>

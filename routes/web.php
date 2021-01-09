@@ -64,6 +64,14 @@ Route::post("admin/delete-landing-page/", "AdminController@deleteLandingPage")->
 Route::post("admin/save-landing-page/", "AdminController@saveLandingPage")->middleware("auth", 'permission')->name("admin-save-landing-page");
 Route::get("admin/sync-customer-source", "AdminController@syncCustomerSource")->middleware("auth", 'permission')->name("admin-sync-customer-source");
 Route::get("admin/sync-customer-state", "AdminController@syncCustomerState")->middleware("auth", 'permission')->name("admin-sync-customer-customer-state");
+Route::get("admin/sync-order-state", "AdminController@syncOrderState")->middleware("auth", 'permission')->name("admin-sync-order-state");
+Route::get("admin/sync-sum-actually-collected", "AdminController@syncSumActuallyCollected")->middleware("auth", 'permission')->name("sync-sum-actually-collected");
+Route::get("admin/reports/", "AdminController@reports")->middleware("auth", 'permission')->name("admin-reports");
+Route::get("admin/report-product-revenue/", "AdminController@reportProductRevenue")->middleware("auth", 'permission')->name("admin-report-product-revenue");
+Route::get("admin/report-order-type/", "AdminController@reportOrderType")->middleware("auth", 'permission')->name("admin-report-order-type");
+Route::get("admin/report-order-effection/", "AdminController@reportOrderEffection")->middleware("auth", 'permission')->name("admin-report-order-effection");
+Route::get("admin/overview-report-detail_order_state/", "AdminController@reportOverviewDetailOrderState")->middleware("auth", 'permission')->name("admin-overview-report-detail_order_state");
+Route::get("admin/overview-report-weekly/", "AdminController@reportOverviewWeekly")->middleware("auth", 'permission')->name("admin-overview-report-weekly");
 
 
 Route::get("admin/config/", "AdminController@config")->middleware("auth", 'permission', 'notification')->name("admin-config");

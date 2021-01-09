@@ -21,7 +21,8 @@
                 <tr class="customer_field_row">
                     <td class="lbl_name">Số điện thoại</td>
                     <td class="value"><input class="form-control" type="text" placeholder="Nhập số điện thoại"
-                                             id="customer_phone_number" value="{{$customer->phone_number}}" autocomplete="off"></td>
+                                             id="customer_phone_number" value="{{$customer->phone_number}}"
+                                             autocomplete="off"></td>
                 </tr>
                 <tr class="customer_field_row">
                     <td class="lbl_name">Số điện thoại công khai</td>
@@ -98,6 +99,12 @@
                     <td class="value">
                         <input class="form-control" type="text" placeholder="Địa chỉ"
                                id="customer_address" value="{{$customer->address}}">
+                    </td>
+                </tr>
+                <tr class="customer_field_row">
+                    <td class="lbl_name">Ghi Chú</td>
+                    <td class="value">
+                        <textarea class="form-control" rows="2" id="customer_note">{{$customer->note}}</textarea>
                     </td>
                 </tr>
                 <tr class="customer_field_row">
@@ -244,13 +251,13 @@
 
                         if (response['customer']['district'] == '') {
                             $("#list_districts").prop('disabled', true);
-                        }else{
+                        } else {
                             $("#list_districts").prop('disabled', false);
                         }
 
                         if (response['customer']['street'] == '') {
                             $("#list_streets").prop('disabled', true);
-                        }else{
+                        } else {
                             $("#list_streets").prop('disabled', false);
                         }
 

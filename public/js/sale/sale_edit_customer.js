@@ -207,6 +207,7 @@ function handleOkButton() {
         var province_name = $('#list_provinces').val().trim();
         var district_name = $('#list_districts').val().trim();
         var street_name = $('#list_streets').val().trim();
+        var note = $('#customer_note').val().trim();
         var list_marketing_product_code = [];
         $("#list_marketing_product .item").each(function () {
             var code = $(this).text().trim();
@@ -231,7 +232,8 @@ function handleOkButton() {
                 'state_id': customer_state_id,
                 'list_marketing_product': JSON.stringify(list_marketing_product_code),
                 'landing_page_id': customer_landing_page_id,
-                '_token': $('meta[name=csrf-token]').attr('content'),
+                'note': note,
+                '_token': $('meta[name=csrf-token]').attr('content')
             }
             saveCustomer(data);
         }
@@ -255,13 +257,13 @@ function handleAddMarketingProductButton() {
         var code = $('#search_marketing_product').val().trim();
         if (code != "") {
             var param = {
-                "product_code" : code
+                "product_code": code
             }
             $.get('/sale/customer-check-product-code/', param, function (response) {
-                if(response['status'] == 200){
+                if (response['status'] == 200) {
                     addMarketingProductitem(code);
                     $('#search_marketing_product').val("")
-                }else{
+                } else {
                     showMessage(response['message'])
                 }
 

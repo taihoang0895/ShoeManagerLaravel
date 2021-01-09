@@ -83,7 +83,12 @@ function handleChangeDepartment(){
         if($('#dropdown_user_department_text').text() == "Kho Xã Đàn"){
             $("#storage_address").text("136A Xã Đàn,PHƯƠNG LIÊN ,ĐỐNG ĐA.HN,PHƯỜNG PHƯƠNG LIÊN, HÀ NỘI, QUẬN ĐỐNG ĐA.");
         }else{
-            $(".storage_address").css("display", "none")
+            if($('#dropdown_user_department_text').text() == "Kho Xuân La"){
+                $("#storage_address").text("340 Lạc Long Quân");
+            }else{
+                $(".storage_address").css("display", "none")
+            }
+
         }
     }
 

@@ -18,6 +18,7 @@
     <div class="title">Danh Sách Khách Hàng <span style="font-size : 0.9em;">({{$total_customer}})</span></div>
     <div id="list_customer_filter">
         <input type="hidden" id="filter_member_id_selected" value="{{$filter_member_id}}">
+        <input type="hidden" id="filter_customer_state_selected" value="{{$filter_customer_state}}">
         <table>
             <tr>
                 <td><input class="form-control" type="text" placeholder="Nhập số điện thoại"
@@ -40,6 +41,27 @@
                             @foreach ($list_members as $member)
                                 <a class="dropdown-item"><input type="hidden"
                                                                 value="{{$member->id}}">{{$member->alias_name}}</a>
+                            @endforeach
+                        </div>
+                    </div>
+
+                </td>
+                <td class="filter_customer_state" style="text-align: center;vertical-align: middle;">
+                    <div class="dropdown" id="filter_customer_state">
+                        <button class="btn btn-secondary dropdown-toggle" type="button"
+                                id="filter_customer_state_text"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            @if($filter_customer_state == -1 )
+                                Chọn Trạng Thái
+                            @else
+                                {{$filter_customer_state_str}}
+                            @endif
+                        </button>
+                        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                            <a class="dropdown-item"><input type="hidden" value="-1">_______</a>
+                            @foreach ($listOrderStates as $orderState)
+                                <a class="dropdown-item"><input type="hidden"
+                                                                value="{{$orderState->id}}">{{$orderState->name}}</a>
                             @endforeach
                         </div>
                     </div>

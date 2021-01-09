@@ -101,33 +101,38 @@
 
 
                 @foreach ($order->list_detail_orders as $detail_order)
-                <tr class="tbl_detail_order_item" id="tbl_detail_order_item_{{$loop->iteration}}">
-                    <input type="hidden" id="detail_order_item_{{$loop->iteration}}_discount_id" value="-1">
-                    <td style="text-align:center;">
-                        <div>{{$detail_order->marketing_product_code}}</div>
-                    </td>
-                    <td style="text-align:center;">
-                        <div>{{$detail_order->product_size}}</div>
-                    </td>
-                    <td style="text-align:center;">
-                        <div>{{$detail_order->product_color}}</div>
-                    </td>
-                    <td style="text-align:center;">
-                        <div>{{$detail_order->quantity}}</div>
-                    </td>
-                    <td style="text-align:center;">
-                        <div>{{$detail_order->discount_name}}</div>
-                    </td>
-                    <td style="text-align:center;">
-                        {{$detail_order->price_str}}&nbsp;&#8363;
-                    </td>
-                    <td style="text-align:center;">
-                        <div>{{$detail_order->pick_money_str}}&nbsp;&#8363;</div>
-                    </td>
-                    <td style="text-align:center;">
-                        <div>{{$detail_order->actually_collected_str}}&nbsp;&#8363;</div>
-                    </td>
-                </tr>
+                    <tr class="tbl_detail_order_item" id="tbl_detail_order_item_{{$loop->iteration}}">
+                        <input type="hidden" id="detail_order_item_{{$loop->iteration}}_discount_id" value="-1">
+                        <td style="text-align:center;">
+                            @if($detail_order->marketing_product_code == "")
+                                <div>{{$detail_order->product_code}}</div>
+                            @else
+                                <div>{{$detail_order->marketing_product_code}}</div>
+                            @endif
+
+                        </td>
+                        <td style="text-align:center;">
+                            <div>{{$detail_order->product_size}}</div>
+                        </td>
+                        <td style="text-align:center;">
+                            <div>{{$detail_order->product_color}}</div>
+                        </td>
+                        <td style="text-align:center;">
+                            <div>{{$detail_order->quantity}}</div>
+                        </td>
+                        <td style="text-align:center;">
+                            <div>{{$detail_order->discount_name}}</div>
+                        </td>
+                        <td style="text-align:center;">
+                            {{$detail_order->price_str}}&nbsp;&#8363;
+                        </td>
+                        <td style="text-align:center;">
+                            <div>{{$detail_order->pick_money_str}}&nbsp;&#8363;</div>
+                        </td>
+                        <td style="text-align:center;">
+                            <div>{{$detail_order->actually_collected_str}}&nbsp;&#8363;</div>
+                        </td>
+                    </tr>
                 @endforeach
             </table>
         </div>

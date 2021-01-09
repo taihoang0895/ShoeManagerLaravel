@@ -66,7 +66,8 @@ class StoreKeeperFunctions
         $perPage = config('settings.per_page');
         $result = $listImportingProducts
             ->select("importing_products.id", "product_size", "product_color", "note", "created", "quantity", "product_code")
-            ->whereIn("user_id", $listUserIds)->paginate($perPage);
+            ->whereIn("user_id", $listUserIds)
+            ->orderBy("importing_products.created", "DESC")->paginate($perPage);
 
         foreach ($result as $importingProduct) {
             $importingProduct->created_str = Util::formatDate(Util::convertDateTimeSql($importingProduct->created));
@@ -583,8 +584,13 @@ class StoreKeeperFunctions
         return ResultCode::FAILED_UNKNOWN;
     }
 
-    public static function reportInventory()
+    public static function reportInventory($user)
     {
+        $extrasWhere = "";
+        if (!$user->isMarketing() && !$user->isAdmin()) {
+            $extrasWhere = "and products.storage_id=" . Util::getCurrentStorageId();
+        }
+
         $sql = "SELECT " .
             "         detail_products.product_code as product_code," .
             "         product_categories.size as product_size," .
@@ -597,8 +603,8 @@ class StoreKeeperFunctions
             " INNER JOIN product_categories ON detail_products.product_category_id=product_categories.id" .
             " INNER JOIN products ON detail_products.product_code=products.code" .
             " LEFT JOIN inventories ON detail_products.id=inventories.detail_product_id" .
-            " WHERE products.is_active=1 and products.is_test=0 and products.storage_id=" . Util::getCurrentStorageId() .
-            " ORDER BY product_size";
+            " WHERE products.is_active=1 and products.is_test=0 " . $extrasWhere .
+            " ORDER BY product_code,product_size";
 
         $listInventoryReports = array();
         $results = DB::select(DB::raw($sql));

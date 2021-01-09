@@ -107,11 +107,11 @@
             <td class="marketing_code">Mã</td>
             <td class="marketing_product_code">MSP</td>
             <td class="marketing_product_created">Ngày</td>
-            <td class="marketing_product_source">Số Đơn</td>
+            <td class="marketing_product_total_bill">Số Đơn</td>
             <td class="marketing_product_cmt_cost">Giá CMT</td>
-            <td class="marketing_product_price">Data</td>
+            <td class="marketing_product_data">Data</td>
             <td class="marketing_product_bill_cost">Cost Đơn</td>
-
+            <td class="marketing_product_total_budget">Ngân Sách</td>
             <td class="detail"></td>
         </tr>
         @foreach ($list_marketing_products as $marketing_product)
@@ -126,21 +126,20 @@
                 <td class="marketing_product_created">
                     {{$marketing_product->createdStr()}}
                 </td>
-                <td class="marketing_product_source">
+                <td class="marketing_product_total_bill">
                     {{$marketing_product->totalBill()}}&nbsp;
                 </td>
                 <td class="marketing_product_cmt_cost"
                     style="background-color:{{$marketing_product->commentCostColor()}};">
                     {{$marketing_product->commentCostStr()}}&nbsp;&#8363;
                 </td>
-                <td class="marketing_product_price">
+                <td class="marketing_product_data">
                     {{$marketing_product->totalPhone()}}
                 </td>
                 <td class="marketing_product_bill_cost" style="background-color:{{$marketing_product->billCostColor()}};">
                     {{$marketing_product->billCostStr()}}&nbsp;&#8363;
-
-
                 </td>
+                <td class="marketing_product_total_budget">{{$marketing_product->sumBudgetStr()}}&nbsp;&#8363;</td>
                 <td class="show_detail_markting_product" style="text-align:center"><input type="hidden"
                                                                                           value="{{$marketing_product->id}}">Xem
                     chi tiết

@@ -1,201 +1,224 @@
-.tbl_order_state_manager{
-    overflow-x:auto;
+.tbl_order_state_manager {
+    overflow-x: auto;
     border-collapse: collapse;
-    display : block;
-    margin : auto;
-    margin-top : 15px;
-    margin-left : 15px;
+    display: block;
+    margin: auto;
+    margin-top: 15px;
+    margin-left: 15px;
 
 }
 
 .tbl_order_state_manager .tbl_header_item {
-    background-color : #778F9B;
-    text-align : center;
-    font-family : 'roboto_bold';
-    min-height : 50px;
-    height : 50px;
+    background-color: #778F9B;
+    text-align: center;
+    font-family: 'roboto_bold';
+    min-height: 50px;
+    height: 50px;
 
-    font-size : 18px;
+    font-size: 18px;
     color: white;
     padding: 0;
     margin: 0;
 }
 
 .tbl_order_state_manager .col_mark {
-    min-width : 50px;
-    text-align : center;
-}
-.tbl_order_state_manager .sale{
-    min-width : 150px;
-    text-align : center;
+    min-width: 50px;
+    text-align: center;
 }
 
-.tbl_order_state_manager .order_code{
-    min-width : 150px;
-    text-align : center;
+.tbl_order_state_manager .sale {
+    min-width: 150px;
+    text-align: center;
 }
-.tbl_order_state_manager .ghtk_label{
-    min-width : 320px;
-    text-align : center;
 
+.tbl_order_state_manager .order_code {
+    min-width: 150px;
+    text-align: center;
 }
-.tbl_order_state_manager .created{
-    min-width : 250px;
-    text-align : center;
+
+.tbl_order_state_manager .ghtk_label {
+    min-width: 320px;
+    text-align: center;
 
 }
 
-.tbl_order_state_manager .order_state{
-    min-width : 210px;
-    text-align : center;
+.tbl_order_state_manager .created {
+    min-width: 250px;
+    text-align: center;
+
 }
+
+.tbl_order_state_manager .order_state {
+    min-width: 210px;
+    text-align: center;
+}
+
 .tbl_order_state_manager .phone_number {
-    min-width : 210px;
-    text-align : center;
+    min-width: 210px;
+    text-align: center;
 
 }
-.tbl_order_state_manager .customer_name{
-    min-width :  210px;
-    text-align : center;
+
+.tbl_order_state_manager .customer_name {
+    min-width: 210px;
+    text-align: center;
 }
-.tbl_order_state_manager .product_name{
-    min-width :  250px;
-    text-align : center;
+
+.tbl_order_state_manager .product_name {
+    min-width: 250px;
+    text-align: center;
 }
 
 .tbl_order_state_manager .customer_province {
-    min-width : 250px;
-    text-align : center;
+    min-width: 250px;
+    text-align: center;
 }
 
 .tbl_order_state_manager .customer_district {
-    min-width : 250px;
-    text-align : center;
+    min-width: 250px;
+    text-align: center;
 
 }
 
 .tbl_order_state_manager .customer_street {
-    min-width : 250px;
-    text-align : center;
+    min-width: 250px;
+    text-align: center;
 }
 
 .tbl_order_state_manager .customer_address {
-    min-width : 250px;
-    text-align : center;
+    min-width: 250px;
+    text-align: center;
 }
 
 .tbl_order_state_manager .quantity {
-    min-width : 140px;
-    text-align : center;
+    min-width: 140px;
+    text-align: center;
 }
 
 .tbl_order_state_manager .kg {
-    min-width : 140px;
-    text-align : center;
+    min-width: 140px;
+    text-align: center;
 }
 
 .tbl_order_state_manager .actually_collected {
-    min-width : 210px;
-    text-align : center;
+    min-width: 210px;
+    text-align: center;
 }
 
 .tbl_order_state_manager .pick_money {
-    min-width :210px;
-    text-align : center;
+    min-width: 210px;
+    text-align: center;
 }
+
 .tbl_order_state_manager .note {
-    min-width :500px;
-    text-align : center;
+    min-width: 500px;
+    text-align: center;
 
 }
 
-.tbl_order_state_manager .show_detail_order:hover{
-     cursor: pointer;
-     text-decoration: underline;
+.tbl_order_state_manager .show_detail_order:hover {
+    cursor: pointer;
+    text-decoration: underline;
 }
+
 .tbl_order_state_manager .tbl_item {
-    background-color : #ffffff;
-    text-align : center;
-    font-family : 'roboto_regular';
-    min-height : 50px;
-    height : 5vh;
-    font-size : 16px;
+    background-color: #ffffff;
+    text-align: center;
+    font-family: 'roboto_regular';
+    min-height: 50px;
+    height: 5vh;
+    font-size: 16px;
     color: #000000;
     border-bottom: 1px solid #E5E5E5;
 }
-
-
-#list_order_filter{
-   overflow: auto; /* Enable scroll if needed */
-    margin : 0 auto;
+.order_state_item{
+    color: #49a06d;
+    text-decoration: underline;
+}
+.list_order_state {
+    overflow: auto; /* Enable scroll if needed */
+    margin: 0 auto;
+    font-size: 16px;
+    text-align: center;
+    margin-left: 15px;
+    margin-right: 15px;
+    margin-bottom: 15px;
+    cursor: pointer;
 }
 
-#list_order_filter .filter_start_time{
-     width : 250px;
-    text-align:center;
-
-}
-#list_order_filter .filter_end_time{
-     width : 250px;
-    text-align:center;
-
+#list_order_filter {
+    overflow: auto; /* Enable scroll if needed */
+    margin: 0 auto;
 }
 
-#list_order_filter #list_order_state_search_ghtk_code{
-    margin-left:15px;
-    margin-right:15px;
-    width : 200px;
-}
-
-#list_order_filter #list_order_state_search_phone_number{
-    margin-left:15px;
-    margin-right:15px;
-    width : 150px;
-}
-
-#list_order_filter .filter_by_order_state{
-     width : 200px;
-    text-align:center;
-    margin-left:15px;
-    margin-right:15px;
+#list_order_filter .filter_start_time {
+    width: 250px;
+    text-align: center;
 
 }
-#list_order_filter .btn_filter{
-    width : 100px;
-    margin-left:15px;
-    margin-right:15px;
-     font-family : 'roboto_bold';
-    font-size : 16px;
-    color : white;
+
+#list_order_filter .filter_end_time {
+    width: 250px;
+    text-align: center;
+
 }
 
-#btn_sync_order{
-    width:100px;
-    height : 40px;
-    text-align : center;
-    border-radius : 5px;
+#list_order_filter #list_order_state_search_ghtk_code {
+    margin-left: 15px;
+    margin-right: 15px;
+    width: 200px;
+}
+
+#list_order_filter #list_order_state_search_phone_number {
+    margin-left: 15px;
+    margin-right: 15px;
+    width: 150px;
+}
+
+#list_order_filter .filter_by_order_state {
+    width: 200px;
+    text-align: center;
+    margin-left: 15px;
+    margin-right: 15px;
+
+}
+
+#list_order_filter .btn_filter {
+    width: 100px;
+    margin-left: 15px;
+    margin-right: 15px;
+    font-family: 'roboto_bold';
+    font-size: 16px;
     color: white;
-    font-family : 'roboto_bold';
-    background-image :  linear-gradient(to right, rgba(6,185,224,1), rgba(13,211,255,0.8));
 }
 
-#btn_cancel_order{
-    background-image :  linear-gradient(to right, rgba(255,0,0,1), rgba(237,35,35,1));
-    width:100px;
-    height : 40px;
-    text-align : center;
-    border-radius : 5px;
+#btn_sync_order {
+    width: 100px;
+    height: 40px;
+    text-align: center;
+    border-radius: 5px;
     color: white;
-    font-family : 'roboto_bold';
+    font-family: 'roboto_bold';
+    background-image: linear-gradient(to right, rgba(6, 185, 224, 1), rgba(13, 211, 255, 0.8));
 }
 
-#btn_update_order_state{
-    background-image :  linear-gradient(to right, rgba(28,196,136,1), rgba(28,196,135,0.7));
-    width:150px;
-    height : 40px;
-    text-align : center;
-    border-radius : 5px;
+#btn_cancel_order {
+    background-image: linear-gradient(to right, rgba(255, 0, 0, 1), rgba(237, 35, 35, 1));
+    width: 100px;
+    height: 40px;
+    text-align: center;
+    border-radius: 5px;
     color: white;
-    font-family : 'roboto_bold';
+    font-family: 'roboto_bold';
+}
+
+#btn_update_order_state {
+    background-image: linear-gradient(to right, rgba(28, 196, 136, 1), rgba(28, 196, 135, 0.7));
+    width: 150px;
+    height: 40px;
+    text-align: center;
+    border-radius: 5px;
+    color: white;
+    font-family: 'roboto_bold';
 }
 

@@ -1,0 +1,59 @@
+#filter_panel{
+    margin-top: 15px;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+#filter_panel fieldset.scheduler-border {
+    border: 1px groove #ccc !important;
+    padding: 0 1.4em 1.4em 1.4em !important;
+    -webkit-box-shadow:  0px 0px 0px 0px #000;
+    box-shadow:  0px 0px 0px 0px #000;
+}
+
+#filter_panel legend.scheduler-border {
+    font-size: 18px !important;
+    text-align: left !important;
+    width:auto;
+    padding:0 10px;
+    border-bottom:none;
+    font-family : 'roboto_regular';
+}
+
+#report_content_panel{
+    margin-top: 15px;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+#report_content_panel legend.scheduler-border {
+    font-size: 18px !important;
+    text-align: left !important;
+    width:auto;
+    padding:0 10px;
+    border-bottom:none;
+    font-family : 'roboto_regular';
+}
+
+#filter_panel .btn_filter{
+    width : 100px;
+    font-family : 'roboto_bold';
+    font-size : 16px;
+    color : white;
+    margin-left:15px;
+    margin-right:15px;
+}
+
+#filter_panel #order_report_time, #order_report_time_2{
+    width: 180px;
+}
+#filter_panel #order_report_time_2{
+    margin-left: 15px;
+}
+
+#filter_panel #filter_order_report_by_time_type{
+    margin-left: 15px;
+}
+#filter_panel #filter_by_member{
+    margin-left: 15px;
+}

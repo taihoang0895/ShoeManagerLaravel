@@ -77,7 +77,11 @@ class Util
 
     public static function convertDateSql($datetimeSql)
     {
-        return Carbon::createFromFormat('Y-m-d', $datetimeSql);
+        $date = Carbon::createFromFormat('Y-m-d', $datetimeSql);
+        $date->hour = 0;
+        $date->minute = 0;
+        $date->second = 0;
+        return $date;
     }
 
 
@@ -88,7 +92,7 @@ class Util
 
     public static function formatDateTime($dateTime)
     {
-        return $dateTime->format('d/m/Y h:i:s');
+        return $dateTime->format('d/m/Y H:i:s');
     }
 
     public static function formatMoney($number)

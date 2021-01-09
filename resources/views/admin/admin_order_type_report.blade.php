@@ -1,15 +1,14 @@
 @extends ('base_layout')
 @section('extra_head')
-    <link rel="stylesheet" href={{ asset('css/sale/sale_main.css' ) }}>
-    <link rel="stylesheet" href={{ asset('css/sale/sale_daily_report.css' ) }}>
+    <link rel="stylesheet" href={{ asset('css/admin/admin_main.css' ) }}>
+    <link rel="stylesheet" href={{ asset('css/admin/admin_report_product_revenue.css' ) }}>
     <link rel="stylesheet" href={{ asset('css/extra/bootstrap_4_2_1.css') }}>
     <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
           integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
     <link rel="stylesheet" href={{ asset('css/extra/tempusdominus-bootstrap-4.css') }}>
     <script src={{ asset('js/extra/tempusdominus-moment.js' ) }}></script>
     <script src={{ asset('js/extra/tempusdominus-bootstrap-4.js' ) }}></script>
-    <script src={{ asset('js/sale/sale_daily_report.js' ) }}></script>
-
+    <script src={{ asset('js/admin/admin_order_type_report.js' ) }}></script>
     <style>
         fieldset.scheduler-border {
             border: 1px groove #ddd !important;
@@ -33,24 +32,35 @@
 @endsection
 @section('content')
     <ul class="nav nav-tabs">
-
         <li class="nav-item">
-            <a class="nav-link {{$actives[0]}}" href="/sale/report/">Báo cáo Hằng Ngày</a>
+            <a class="nav-link {{$actives[0]}}" href="/admin/reports/">Tổng quan chung</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{$actives[1]}}" href="/admin/report-product-revenue/">Doanh thu mẫu</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{$actives[2]}}" href="/admin/report-order-type/">Tổng đơn</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{$actives[3]}}" href="/admin/report-order-effection/">Hiệu suất đơn</a>
         </li>
     </ul>
     <div id="filter_panel">
-        <form method="get" action="/sale/report/">
-            <input type="hidden" id="filter_member_id_selected" name="filter_member_id" value="{{$filter_member_id}}">
+        <form method="get" action="/admin/report-order-type/">
+            <input type="hidden" id="filter_order_time_type" name="filter_order_time_type"
+                   value="{{$filter_order_time_type}}">
             <fieldset class="scheduler-border">
                 <legend class="scheduler-border">Lọc theo thời gian</legend>
                 <table>
                     <tr>
                         <td class="filter_order_report_time" id="filter_order_report_time_cell">
-                            <div class="input-group date" id="order_report_time" data-target-input="nearest">
+                            <div class="input-group date" id="order_report_time"
+                                 data-target-input="nearest">
 
                                 <input type="text" class="form-control datetimepicker-input" name="time1"
                                        data-target="#order_report_time"
-                                       placeholder="dd/mm/yyyy" id="order_report_time_text" value="{{$time1}}"/>
+                                       placeholder="dd/mm/yyyy" id="order_report_time_text"
+                                       value="{{$time1}}"/>
                                 <div class="input-group-append" data-target="#order_report_time"
                                      data-toggle="datetimepicker">
                                     <div class="input-group-text"><i class="fa fa-calendar"></i></div>
@@ -58,45 +68,48 @@
                             </div>
                         </td>
                         <td class="filter_order_report_time_2" id="filter_order_report_time_2_cell">
-                            <div class="input-group date" id="order_report_time_2" data-target-input="nearest">
+                            <div class="input-group date" id="order_report_time_2"
+                                 data-target-input="nearest">
 
                                 <input type="text" class="form-control datetimepicker-input" name="time2"
                                        data-target="#order_report_time_2"
-                                       placeholder="dd/mm/yyyy" id="order_report_time_2_text" value="{{$time2}}"/>
+                                       placeholder="dd/mm/yyyy" id="order_report_time_2_text"
+                                       value="{{$time2}}"/>
                                 <div class="input-group-append" data-target="#order_report_time_2"
                                      data-toggle="datetimepicker">
                                     <div class="input-group-text"><i class="fa fa-calendar"></i></div>
                                 </div>
                             </div>
                         </td>
-                        <td class="filter_by_member">
-                            <div class="dropdown" id="filter_by_member">
+                        <td class="filter_order_report_by_time_type">
+                            <div class="dropdown" id="filter_order_report_by_time_type">
                                 <button class="btn btn-secondary dropdown-toggle" type="button"
-                                        id="filter_by_member_text"
+                                        id="filter_order_report_by_time_type_text"
                                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    {{$filter_member_str}}
+                                    {{$filter_order_time_type_text}}
                                 </button>
-                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton"
-                                     style="max-height:200px;overflow-y: auto;">
-                                    <a class="dropdown-item"><input type="hidden" value="-1">_______</a>
-                                    @foreach ($list_members as $member)
-                                        <a class="dropdown-item"><input type="hidden"
-                                                                        value="{{$member->id}}">{{$member->alias_name}}
-                                        </a>
-                                    @endforeach
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                    <a class="dropdown-item"><input type="hidden" value="0">Ngày</a>
+                                    <a class="dropdown-item"><input type="hidden" value="1">Tháng</a>
+                                    <a class="dropdown-item"><input type="hidden" value="2">Năm</a>
+
                                 </div>
                             </div>
 
                         </td>
                         <td class="btn_filter">
-                            <button type="submit" class="btn btn-warning btn_filter" id="order_report_btn_filter">Lọc
+                            <button type="submit" class="btn btn-warning btn_filter"
+                                    id="order_report_btn_filter">Lọc
                             </button>
                         </td>
                     </tr>
                 </table>
             </fieldset>
+
         </form>
     </div>
+
+
     <div id="report_content_panel">
         <fieldset class="scheduler-border">
             <legend class="scheduler-border">Báo cáo hiệu quả</legend>
@@ -104,83 +117,96 @@
                 <thead>
                 <tr>
                     <th>
-                        Ngày
+                        Đơn Thực
                     </th>
                     <th>
-                        Mẫu
+                        Đơn Test
                     </th>
                     <th>
-                        Đơn
-                    </th>
-                    <th>
-                        Data
-                    </th>
-                    <th>
-                        %CR2
-                    </th>
-                    <th>
-                        Giá Bán
-                    </th>
-                    <th>
-                        Doanh Thu
+                        Tổng Đơn
                     </th>
                 </tr>
                 </thead>
                 <tbody>
-                @foreach($reports->list_rows as $row)
+                <td>
+                    {{$report->total_real_order}}
+                </td>
+                <td>
+                    {{$report->total_test_order}}
+                </td>
+                <td>
+                    {{$report->total_order}}
+                </td>
+                </tbody>
+            </table>
+        </fieldset>
+    </div>
+
+    <div id="report_content_panel">
+        <fieldset class="scheduler-border">
+            <legend class="scheduler-border">Báo cáo hiệu quả từng nhân viên</legend>
+            <table class="table table-bordered table-dark table-striped" style="text-align: center;margin-top: 15px">
+                <thead>
+                <tr>
+                    <th>
+                        Nhân viên
+                    </th>
+                    <th>
+                        Đơn Thực
+                    </th>
+                    <th>
+                        Đơn Test
+                    </th>
+                    <th>
+                        Tổng Đơn
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach($report->list_report_by_sale as $report)
                     <tr>
-
                         <td>
-                            {{$row->date_str}}
+                            {{$report->username}}
                         </td>
                         <td>
-                            {{$row->product_code}}
+                            {{$report->total_real_order}}
                         </td>
                         <td>
-                            {{$row->total_order}}
+                            {{$report->total_test_order}}
                         </td>
                         <td>
-                            {{$row->data}}
+                            {{$report->total_order}}
                         </td>
-                        <td>
-                            @if($row->cr2 !== "")
-                                {{$row->cr2}}%
-                            @endif
-                        </td>
-                        <td>
-                            @if($row->product_price !== "")
-                                {{$row->product_price}}&nbsp;&#8363;
-                            @endif
-                        </td>
-                        <td>
-                            {{$row->revenue}}&nbsp;&#8363;
-                        </td>
-
                     </tr>
                 @endforeach
                 </tbody>
             </table>
         </fieldset>
     </div>
-    <table width="10%" style="margin-left:auto;margin-right:auto;margin-top : 15px; margin-bottom:30px;">
-        <tr>
-            <td>
-                {{$reports->withQueryString()->links()}}
-            </td>
-        </tr>
-    </table>
     <script type="text/javascript">
         $(document).ready(function () {
             document.title = 'Báo Cáo';
-            $('#sale_menu_item_report').addClass('selected');
+            $('#admin_menu_item_report').addClass('selected');
         });
 
         $(document).ready(function () {
             $("#order_report_time").datetimepicker({
+                @if ($filter_order_time_type == 0)
                 format: 'DD/MM/YYYY'
+                @elseif($filter_order_time_type == 1)
+                format: 'MM/YYYY'
+                @else
+                format: 'YYYY'
+                @endif
             });
             $("#order_report_time_2").datetimepicker({
+                @if ($filter_order_time_type == 0)
                 format: 'DD/MM/YYYY'
+                @elseif($filter_order_time_type == 1)
+                format: 'MM/YYYY'
+                @else
+                format: 'YYYY'
+                @endif
             });
 
         });
@@ -189,5 +215,5 @@
 @endsection
 
 @section('menu')
-    @include( "sale.menu")
+    @include( "admin.menu")
 @endsection

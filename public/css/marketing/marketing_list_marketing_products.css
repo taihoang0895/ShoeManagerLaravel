@@ -14,16 +14,19 @@
     width : 15%;
 }
 
-.tbl .marketing_product_source {
+.tbl .marketing_product_total_bill {
     width : 15%;
 }
-.tbl .marketing_product_price {
+.tbl .marketing_product_data {
     width : 10%;
 }
 .tbl .marketing_product_bill_cost {
     width : 10%;
 }
 .tbl .marketing_product_cmt_cost {
+    width : 10%;
+}
+.tbl .marketing_product_total_budget {
     width : 10%;
 }
 .tbl .detail{

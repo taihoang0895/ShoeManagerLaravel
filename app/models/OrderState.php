@@ -18,9 +18,11 @@ class OrderState
 
     public const STATE_ORDER_IS_RETURNING = 13;
     public const STATE_ORDER_IS_RETURNED = 14;
-    public const STATE_PAYMENT_SUCCESSFUL = 15;
+    public const STATE_PAYMENT_SUCCESSFUL_2 = 15;
     public const STATE_ORDER_IS_RETURNED_AND_NO_BROKEN = 16;
     public const STATE_ORDER_IS_RETURNED_AND_BROKEN = 17;
+
+    public const STATE_PAYMENT_SUCCESSFUL = 18;
 
     public static function getName($stateId)
     {
@@ -49,6 +51,8 @@ class OrderState
                 return "Đã trả hàng";
             case self::STATE_PAYMENT_SUCCESSFUL:
                 return "Đã đối soát";
+            case self::STATE_PAYMENT_SUCCESSFUL_2:
+                return "Đã đối soát công nợ";
             case self::STATE_ORDER_IS_RETURNED_AND_NO_BROKEN:
                 return "Đã trả hàng và không lỗi";
             case self::STATE_ORDER_IS_RETURNED_AND_BROKEN:
@@ -73,6 +77,7 @@ class OrderState
             self::STATE_ORDER_IS_RETURNED,
             self::STATE_ORDER_IS_RETURNED_AND_NO_BROKEN,
             self::STATE_ORDER_IS_RETURNED_AND_BROKEN,
-            self::STATE_PAYMENT_SUCCESSFUL];
+            self::STATE_PAYMENT_SUCCESSFUL,
+            self::STATE_PAYMENT_SUCCESSFUL_2];
     }
 }

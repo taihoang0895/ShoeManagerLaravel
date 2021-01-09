@@ -178,6 +178,12 @@ function init() {
         $('#filter_order_state_id_selected').val($(this).find('#state_id').val());
     });
 
+    $('.order_state_item').click(function () {
+        $('#filter_order_dropdown_state_text').text($(this).find('.name').text());
+        $('#filter_order_state_id_selected').val($(this).find('#state_id').val());
+        $('#order_btn_filter').click()
+    });
+
 }
 
 function collectFilterParam() {
